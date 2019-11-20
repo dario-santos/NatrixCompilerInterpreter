@@ -16,7 +16,7 @@
 
 <binop>	::=	'+' | '-' | '/' | '*' | '<' | '<=' | '>' | '>=' | '&' | '|' | '!=' | '='
 
-<array-definition> ::= 'type' <type-specifier> ':' 'array' (<identifier> | <type-specifier>) 'of' (<identifier> | <type-specifier>) ('filled' 'by' <integer-literal> <delimiter-operator> | <delimiter-operator>)
+<array-definition> ::= 'type' <type-specifier> ':' 'array' <type-identifier> 'of' <type-identifier> ('filled' 'by' <integer-literal> <delimiter-operator> | <delimiter-operator>)
 
 <set-definition> ::= 'type' <type-specifier> '=' '[' <integer-literal> '..' <integer-literal> ']' <delimiter-operator>
                     
@@ -55,8 +55,9 @@
                        
 <iteration-statement> ::= 'foreach' <expression> 'in' <expression> 'do' '{' <statement> '}'
 
-<declaration-statement> ::= 'val' <identifier> ':' <type-specifier> '=' <expression> 
-				          | 'val' <identifier> ':' <type-specifier> 'filled' 'by' <expression>
+<declaration-statement> ::= 'val' <identifier> ':' <type-identifier> '=' <expression> 
+				          | 'val' <identifier> ':' <type-identifier> 'filled' 'by' <expression>
+						  
 <assignment-statement> ::= <identifier-expression> <assignment-operator> <expression> <delimiter-operator>
 
 
