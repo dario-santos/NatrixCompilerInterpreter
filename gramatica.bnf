@@ -1,0 +1,76 @@
+# Definição da Gramática
+
+<digit> ::= [0-9]
+
+<letter> ::= [a-zA-Z]
+
+<whitespace> ::= ' '
+
+<delimiter-operator> ::= ';'
+
+<assignment-operator> ::= ':='
+
+<identifier> ::= <letter> (<letter> | <digit>)*
+
+<integer-literal> ::= <digit> <digit>*
+
+<binop>	::=	'+' | '-' | '/' | '*' | '<' | '<=' | '>' | '>=' | '&' | '|' | '!=' | '='
+
+<array-definition> ::= 'type' <type-specifier> ':' 'array' (<identifier> | <type-specifier>) 'of' (<identifier> | <type-specifier>) ('filled' 'by' <integer-literal> <delimiter-operator> | <delimiter-operator>)
+
+<set-definition> ::= 'type' <type-specifier> '=' '[' <integer-literal> '..' <integer-literal> ']' <delimiter-operator>
+                    
+<type-definition> ::= <set-definition>
+                    | <array-definition>
+
+<type-specifier> ::= <identifier>
+
+<type-identifier> ::= 'int'
+                    | <type-specifier>
+
+<identifier-expression> ::= <identifier>
+					      | <identifier> '[' <expression> ']'
+
+
+# Expressions
+
+<expression> ::= <integer-literal>
+			   | <identifier>
+			   | '(' <expression> ')'
+			   | <expression> <binop> <expression>
+			   | <identifier> '[' <expression> ']'
+			   | <call-expression>
+
+# Todo: var1, var2, var3, ..... , varn
+<call-expression> ::= <identifier> '(' <identifier> ',' <identifier> ')' 
+
+# -------------------
+
+
+# Statements
+
+<expression-statement> ::= <expression>+
+
+<selection-statement> ::= 'if' <expression> 'then' '{' <statement> '}' 'else' '{' <statement> '}'
+                       
+<iteration-statement> ::= 'foreach' <expression> 'in' <expression> 'do' '{' <statement> '}'
+
+<declaration-statement> ::= 'val' <identifier> ':' <type-specifier> '=' <expression> 
+				          | 'val' <identifier> ':' <type-specifier> 'filled' 'by' <expression>
+<assignment-statement> ::= <identifier-expression> <assignment-operator> <expression> <delimiter-operator>
+
+
+<definition-array-statement> ::= 'type' <type-specifier> ':' 'array' <type-identifier> 'of' <type-specifier>
+
+<definition-set-statement> ::= 'type' <type-specifier> '=' '[' <integer-literal> '..' <integer-literal> ']'
+
+<statement> ::= <expression-statement> <delimiter-operator>
+              | <selection-statement>
+              | <iteration-statement> 
+			  | <call-statement> <delimiter-operator>
+			  | <assignment-statement> <delimiter-operator>
+			  | <declaration-statement> <delimiter-operator>
+			  | <declaration-array-statement> <delimiter-operator>
+		      | <definition-set-statement> <delimiter-operator>
+
+# ------------------------
