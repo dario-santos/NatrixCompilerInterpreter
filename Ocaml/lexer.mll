@@ -9,73 +9,83 @@
     tbl
 
   type token =
+    | VAL | VAR
     | IF | THEN | ELSE
-    | FUNCTION
-    | VAL
-    | TYPE
-    | ARRAY
     | FOREACH | IN | DO
+    | FUNCTION
+    | INT
+    | INTEGER of int
     | ID of string
     | OP of char
     | BOP of string
-    | INT of int
-    | LP | RP
+    | LPR | RPR
+    | LBC | RBC
+    | LBK | RBK
+    | ASSIGN
+    | TYPE_ASSIGN
+    | DELIMITER
   
   let keyword_table =
     create_hashtable 16
     [
       ("val", VAL);
+      ("var", VAR);
+      ("INT", INT);
       ("if", IF);
       ("then", THEN);
       ("else", ELSE);
       ("foreach", FOREACH);
       ("in", IN);
       ("do", DO);
-      ("function", FUNCTION);
-      ("type", TYPE);
-      ("array", ARRAY)
+      ("function", FUNCTION)
     ]
 }
 
 let digit      = ['0'-'9']
 let letter     = ['a'-'z' 'A'-'Z']
-let id         = ('_' | letter)(letter|digit)*
-let whitespace = [' ' '\t']
+let integer    = digit+
+let id         = ('_'|letter)(letter|digit)*
 let newline    = ['\n']
+let whitespace = [' ' '\t']
 let binop      = ['+' '-' '*' '/']
-let parentises = [ '(' ')' '[' ']' '{' '}']
-let assign     = [ '=' ':']
+let delimiter  = [';']
 
 rule analisador = parse
-  | newline         { printf "\n"}
-  | whitespace      { printf " "}
-  | '='             { printf "="}
-  | ':'             { printf ":"}
-  | ';'             { printf ";"}
-  | binop as op     { printf "%c" op}
+  | "//"            { singlecomment lexbuf}
+  | "(*"            { multicomment lexbuf }
+  | newline         { printf "\n"; analisador lexbuf}
+  | whitespace      { printf " "; analisador lexbuf}
+  | '='             { printf "="; ASSIGN}
+  | ':'             { printf ":"; TYPE_ASSIGN}
+  | delimiter       { printf ";";  DELIMITER}
+  | binop as op     { printf "%c" op;  OP(op)}
   | "<" | ">" | "<=" | ">=" | "==" | "!=" | "!" | "||" | "&&" as op
-                    { printf "%s" op}
-  | parentises as p { printf "%c" p}
-  | digit+ as inum  { printf "%s" inum}
-  | id as word      { printf "%s" word}                        
-  | eof             { raise End_of_file }
-  | _ as c          { raise End_of_file }
-  
-{
-  let rec parse lexbuf =
-    let token = analisador lexbuf in
-    parse lexbuf
-  
-  let main () =
-    let cin =
-      if Array.length Sys.argv > 1 
-      then open_in Sys.argv.(1)
-      else stdin
-    in
-    let lexbuf = Lexing.from_channel cin in
-    try parse lexbuf
-    with End_of_file -> ()
-  let _ = Printexc.print main ()
-}
+                    { printf "%s" op;  BOP(op)}
+  | '('             { printf "("; LPR }
+  | ')'             { printf ")"; RPR }
+  | '['             { printf "["; LBK }
+  | ']'             { printf "]"; RBK }
+  | '{'             { printf "{"; LBC }
+  | '}'             { printf "}"; RBC }
+  | digit+ as snum  { let num = int_of_string snum in INTEGER(num)}
+  | id as word      
+  { try
+    let token = Hashtbl.find keyword_table word in
+    printf "%s" word; 
+    token
+    with Not_found ->
+     printf "%s" word; 
+     ID word
+    }
+  | eof        { raise End_of_file }
+  | _          { raise End_of_file }
 
+and singlecomment = parse
+  | '\n'  { analisador lexbuf}
+  | eof   { raise End_of_file}
+  | _     { singlecomment lexbuf}
 
+and multicomment = parse
+  | "*)"  { analisador lexbuf}
+  | eof   { raise End_of_file}
+  | _     { multicomment lexbuf}

@@ -4,7 +4,7 @@
 
 <digit> ::= ['0'-'9']
 <char>  ::= ['a-zA-Z']
-<int>   ::= <digit>*
+<int>   ::= <digit>+
 <id>    ::= ('_' | <char>)(<char> | <digit>)* 
 <newline> ::= '\n'
 <whitespace> ::= '\t' | ' '
