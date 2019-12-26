@@ -37,34 +37,29 @@
     ]
 }
 
-let letter = ['a'-'z' 'A'-'Z']
-let digit = ['0'-'9']
-let id = letter (letter | digit)*
-let integer = digit+
-let space = [' ' '\t' '\n']
+let digit      = ['0'-'9']
+let letter     = ['a'-'z' 'A'-'Z']
+let id         = ('_' | letter)(letter|digit)*
+let whitespace = [' ' '\t']
+let newline    = ['\n']
+let binop      = ['+' '-' '*' '/']
+let parentises = [ '(' ')' '[' ']' '{' '}']
+let assign     = [ '=' ':']
 
 rule analisador = parse
-  | '+' | '-' | '*' | '/' as op { printf "operator: %c\n" op; OP op }
-  | ">" | "<" | ">=" | "<=" | "==" | "!=" | "&&" | "||" as bop {printf "Boolean operator: %s\n" bop; BOP bop } 
-  | '(' { printf "Left parentises: (\n"; LP }
-  | ')' { printf "Rigth parentises: )\n"; RP}
-  | integer as inum
-    { let num = int_of_string inum in
-        printf "integer: %s (%d)\n" inum num;
-        INT num
-    }
-  | id as word
-    { try
-      let token = Hashtbl.find keyword_table word in
-      printf "keyword: %s\n" word;
-      token
-      with Not_found -> 
-        printf "identifier: %s\n" word;
-        ID word
-    }
-  | space+                      { analisador lexbuf }
-  | eof                         { raise End_of_file }
-  | _ as c                      { raise (Lexing_error c) }
+  | newline         { printf "\n"}
+  | whitespace      { printf " "}
+  | '='             { printf "="}
+  | ':'             { printf ":"}
+  | ';'             { printf ";"}
+  | binop as op     { printf "%c" op}
+  | "<" | ">" | "<=" | ">=" | "==" | "!=" | "!" | "||" | "&&" as op
+                    { printf "%s" op}
+  | parentises as p { printf "%c" p}
+  | digit+ as inum  { printf "%s" inum}
+  | id as word      { printf "%s" word}                        
+  | eof             { raise End_of_file }
+  | _ as c          { raise End_of_file }
   
 {
   let rec parse lexbuf =
