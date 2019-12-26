@@ -1,77 +1,44 @@
 # Definição da Gramática
 
-<digit> ::= [0-9]
+# Lexer
 
-<letter> ::= [a-zA-Z]
+<digit> ::= ['0'-'9']
+<char>  ::= ['a-zA-Z']
+<int>   ::= <digit>+
+<id>    ::= ('_' | <char>)(<char> | <digit>)* 
+<newline> ::= '\n'
+<whitespace> ::= '\t' | ' '
+<binop> ::= '+' | '-' | '/' | '*'
+<booleanbop> ::= '>' | '>=' | '==' | '!=' | '<' | '<='
 
-<whitespace> ::= ' '
+# Parser
 
-<delimiter-operator> ::= ';'
+<program> ::= <statements> 
 
-<assignment-operator> ::= ':='
+<statements> ::= (<statement> | <function_def>)*
 
-<identifier> ::= <letter> (<letter> | <digit>)*
+<type> ::= <int> | <id>
 
-<integer-literal> ::= <digit> <digit>*
+<statement> ::= <statement>*
+              | 'if' '(' <boolean_expression> ')' 'then' 
+			    	'{' <statement> '}'
+				'else'
+					'{' <statement> '}'
+			  | 'foreach' <id> 'in' <int> '..' <int> 'do' '{' <statement> '}'
+			  | 'print' '(' <expression> ')' ';'
+			  | <id> ':=' <expression> ';'
+			  | <id> '[' <expression> ']' ':=' <expression> ';'
+			  | 'var' <id> ':' <int> '=' <expression> ';'
 
-<binop>	::=	'+' | '-' | '/' | '*' | '<' | '<=' | '>' | '>=' | '&' | '|' | '!=' | '='
+<expression> ::= <lparen> <expression> <rparen>
+               | <expression> <binop> <expression>
+               | <expression> <lbracket> <expression> <rbracket>
+			   | <int>
+			   | <id>
 
-<array-definition> ::= 'type' <type-specifier> ':' 'array' <type-identifier> 'of' <type-identifier> ('filled' 'by' <integer-literal> <delimiter-operator> | <delimiter-operator>)
+<boolean_expression> ::= '('<expression> <booleanop> <expression> ')'
+                       |  <expression> <booleanop> <expression>
+					   | '!' <boolean_expression>
 
-<set-definition> ::= 'type' <type-specifier> '=' '[' <integer-literal> '..' <integer-literal> ']' <delimiter-operator>
-                    
-<type-definition> ::= <set-definition>
-                    | <array-definition>
-
-<type-specifier> ::= <identifier>
-
-<type-identifier> ::= 'int'
-                    | <type-specifier>
-
-<identifier-expression> ::= <identifier>
-					      | <identifier> '[' <expression> ']'
-
-
-# Expressions
-
-<expression> ::= <integer-literal>
-			   | <identifier>
-			   | '(' <expression> ')'
-			   | <expression> <binop> <expression>
-			   | <identifier> '[' <expression> ']'
-			   | <call-expression>
-
-# Todo: var1, var2, var3, ..... , varn
-<call-expression> ::= <identifier> '(' <identifier> ',' <identifier> ')' 
-
-# -------------------
-
-
-# Statements
-
-<expression-statement> ::= <expression>+
-
-<selection-statement> ::= 'if' <expression> 'then' '{' <statement> '}' 'else' '{' <statement> '}'
-                       
-<iteration-statement> ::= 'foreach' <expression> 'in' <expression> 'do' '{' <statement> '}'
-
-<declaration-statement> ::= 'val' <identifier> ':' <type-identifier> '=' <expression> 
-				          | 'val' <identifier> ':' <type-identifier> 'filled' 'by' <expression>
-						  
-<assignment-statement> ::= <identifier-expression> <assignment-operator> <expression> <delimiter-operator>
-
-
-<definition-array-statement> ::= 'type' <type-specifier> ':' 'array' <type-identifier> 'of' <type-specifier>
-
-<definition-set-statement> ::= 'type' <type-specifier> '=' '[' <integer-literal> '..' <integer-literal> ']'
-
-<statement> ::= <expression-statement> <delimiter-operator>
-              | <selection-statement>
-              | <iteration-statement> 
-			  | <call-statement> <delimiter-operator>
-			  | <assignment-statement> <delimiter-operator>
-			  | <declaration-statement> <delimiter-operator>
-			  | <declaration-array-statement> <delimiter-operator>
-		      | <definition-set-statement> <delimiter-operator>
-
-# ------------------------
+<argument_list> ::= (<id> ':' <type>)*
+<function_def> ::= 'function' <id> '(' <argument_list> ')' '{' <statement> '}'

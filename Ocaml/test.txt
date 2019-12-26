@@ -1,0 +1,20 @@
+// Isto e um comentario
+val a : int = 2;
+val b : int = 3;
+
+(*-----------------------
+
+ Isto
+ TAMBEM
+ DESAPARECE
+
+------------------------*)
+
+if(a < b) then 
+{ 
+    print(a);
+} 
+else 
+{ 
+    printf(b); 
+}
