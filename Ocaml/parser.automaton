@@ -1,0 +1,213 @@
+State 0:
+prog' -> . prog [ # ]
+-- On PRINT shift to state 1
+-- On stmts shift to state 18
+-- On stmt shift to state 21
+-- On prog shift to state 22
+
+State 1:
+stmt -> PRINT . expr [ PRINT EOF ]
+-- On MINUS shift to state 2
+-- On LPR shift to state 3
+-- On ID shift to state 4
+-- On CST shift to state 5
+-- On expr shift to state 17
+
+State 2:
+expr -> MINUS . expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On MINUS shift to state 2
+-- On LPR shift to state 3
+-- On ID shift to state 4
+-- On CST shift to state 5
+-- On expr shift to state 16
+
+State 3:
+expr -> LPR . expr RPR [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On MINUS shift to state 2
+-- On LPR shift to state 3
+-- On ID shift to state 4
+-- On CST shift to state 5
+-- On expr shift to state 6
+
+State 4:
+expr -> ID . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES reduce production expr -> ID 
+-- On RPR reduce production expr -> ID 
+-- On PRINT reduce production expr -> ID 
+-- On PLUS reduce production expr -> ID 
+-- On MINUS reduce production expr -> ID 
+-- On EOF reduce production expr -> ID 
+-- On DIV reduce production expr -> ID 
+
+State 5:
+expr -> CST . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES reduce production expr -> CST 
+-- On RPR reduce production expr -> CST 
+-- On PRINT reduce production expr -> CST 
+-- On PLUS reduce production expr -> CST 
+-- On MINUS reduce production expr -> CST 
+-- On EOF reduce production expr -> CST 
+-- On DIV reduce production expr -> CST 
+
+State 6:
+expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
+expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
+expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
+expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
+expr -> LPR expr . RPR [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES shift to state 7
+-- On RPR shift to state 9
+-- On PLUS shift to state 10
+-- On MINUS shift to state 14
+-- On DIV shift to state 12
+
+State 7:
+expr -> expr TIMES . expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On MINUS shift to state 2
+-- On LPR shift to state 3
+-- On ID shift to state 4
+-- On CST shift to state 5
+-- On expr shift to state 8
+
+State 8:
+expr -> expr . PLUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . MINUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . TIMES expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr TIMES expr . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . DIV expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES reduce production expr -> expr TIMES expr 
+-- On RPR reduce production expr -> expr TIMES expr 
+-- On PRINT reduce production expr -> expr TIMES expr 
+-- On PLUS reduce production expr -> expr TIMES expr 
+-- On MINUS reduce production expr -> expr TIMES expr 
+-- On EOF reduce production expr -> expr TIMES expr 
+-- On DIV reduce production expr -> expr TIMES expr 
+
+State 9:
+expr -> LPR expr RPR . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES reduce production expr -> LPR expr RPR 
+-- On RPR reduce production expr -> LPR expr RPR 
+-- On PRINT reduce production expr -> LPR expr RPR 
+-- On PLUS reduce production expr -> LPR expr RPR 
+-- On MINUS reduce production expr -> LPR expr RPR 
+-- On EOF reduce production expr -> LPR expr RPR 
+-- On DIV reduce production expr -> LPR expr RPR 
+
+State 10:
+expr -> expr PLUS . expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On MINUS shift to state 2
+-- On LPR shift to state 3
+-- On ID shift to state 4
+-- On CST shift to state 5
+-- On expr shift to state 11
+
+State 11:
+expr -> expr . PLUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr PLUS expr . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . MINUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . TIMES expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . DIV expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES shift to state 7
+-- On DIV shift to state 12
+-- On RPR reduce production expr -> expr PLUS expr 
+-- On PRINT reduce production expr -> expr PLUS expr 
+-- On PLUS reduce production expr -> expr PLUS expr 
+-- On MINUS reduce production expr -> expr PLUS expr 
+-- On EOF reduce production expr -> expr PLUS expr 
+
+State 12:
+expr -> expr DIV . expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On MINUS shift to state 2
+-- On LPR shift to state 3
+-- On ID shift to state 4
+-- On CST shift to state 5
+-- On expr shift to state 13
+
+State 13:
+expr -> expr . PLUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . MINUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . TIMES expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . DIV expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr DIV expr . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES reduce production expr -> expr DIV expr 
+-- On RPR reduce production expr -> expr DIV expr 
+-- On PRINT reduce production expr -> expr DIV expr 
+-- On PLUS reduce production expr -> expr DIV expr 
+-- On MINUS reduce production expr -> expr DIV expr 
+-- On EOF reduce production expr -> expr DIV expr 
+-- On DIV reduce production expr -> expr DIV expr 
+
+State 14:
+expr -> expr MINUS . expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On MINUS shift to state 2
+-- On LPR shift to state 3
+-- On ID shift to state 4
+-- On CST shift to state 5
+-- On expr shift to state 15
+
+State 15:
+expr -> expr . PLUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . MINUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr MINUS expr . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . TIMES expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . DIV expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES shift to state 7
+-- On DIV shift to state 12
+-- On RPR reduce production expr -> expr MINUS expr 
+-- On PRINT reduce production expr -> expr MINUS expr 
+-- On PLUS reduce production expr -> expr MINUS expr 
+-- On MINUS reduce production expr -> expr MINUS expr 
+-- On EOF reduce production expr -> expr MINUS expr 
+
+State 16:
+expr -> expr . PLUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . MINUS expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . TIMES expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> expr . DIV expr [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+expr -> MINUS expr . [ TIMES RPR PRINT PLUS MINUS EOF DIV ]
+-- On TIMES reduce production expr -> MINUS expr 
+-- On RPR reduce production expr -> MINUS expr 
+-- On PRINT reduce production expr -> MINUS expr 
+-- On PLUS reduce production expr -> MINUS expr 
+-- On MINUS reduce production expr -> MINUS expr 
+-- On EOF reduce production expr -> MINUS expr 
+-- On DIV reduce production expr -> MINUS expr 
+
+State 17:
+expr -> expr . PLUS expr [ TIMES PRINT PLUS MINUS EOF DIV ]
+expr -> expr . MINUS expr [ TIMES PRINT PLUS MINUS EOF DIV ]
+expr -> expr . TIMES expr [ TIMES PRINT PLUS MINUS EOF DIV ]
+expr -> expr . DIV expr [ TIMES PRINT PLUS MINUS EOF DIV ]
+stmt -> PRINT expr . [ PRINT EOF ]
+-- On TIMES shift to state 7
+-- On PLUS shift to state 10
+-- On MINUS shift to state 14
+-- On DIV shift to state 12
+-- On PRINT reduce production stmt -> PRINT expr 
+-- On EOF reduce production stmt -> PRINT expr 
+
+State 18:
+prog -> stmts . EOF [ # ]
+stmts -> stmts . stmt [ PRINT EOF ]
+-- On PRINT shift to state 1
+-- On EOF shift to state 19
+-- On stmt shift to state 20
+
+State 19:
+prog -> stmts EOF . [ # ]
+-- On # reduce production prog -> stmts EOF 
+
+State 20:
+stmts -> stmts stmt . [ PRINT EOF ]
+-- On PRINT reduce production stmts -> stmts stmt 
+-- On EOF reduce production stmts -> stmts stmt 
+
+State 21:
+stmts -> stmt . [ PRINT EOF ]
+-- On PRINT reduce production stmts -> stmt 
+-- On EOF reduce production stmts -> stmt 
+
+State 22:
+prog' -> prog . [ # ]
+-- On # accept prog
+

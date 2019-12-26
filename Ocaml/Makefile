@@ -1,6 +1,6 @@
-CMO=lexer.cmo main.cmo
-GENERATED = lexer.ml
-BIN=natrix
+CMO=lexer.cmo parser.cmo main.cmo
+GENERATED = lexer.ml parser.ml parser.mli
+BIN=natrixx
 FLAGS=
 
 all: $(BIN)
@@ -19,6 +19,12 @@ $(BIN):$(CMO)
 
 .mll.ml:
 	ocamllex $<
+
+.mly.ml:
+	menhir -v $<
+
+.mly.mli:
+	ocamlyacc -v $<
 
 clean:
 	rm -f *.cm[io] *.o *~ $(BIN) $(GENERATED) parser.output

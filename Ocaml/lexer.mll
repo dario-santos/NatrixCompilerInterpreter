@@ -1,5 +1,6 @@
 {
   open Printf
+  open Parser
   
   exception Lexing_error of char
 
@@ -7,23 +8,6 @@
     let tbl = Hashtbl.create size in
     List.iter (fun (key, data) -> Hashtbl.add tbl key data) init;
     tbl
-
-  type token =
-    | VAL | VAR
-    | IF | THEN | ELSE
-    | FOREACH | IN | DO
-    | FUNCTION
-    | INT
-    | INTEGER of int
-    | ID of string
-    | OP of char
-    | BOP of string
-    | LPR | RPR
-    | LBC | RBC
-    | LBK | RBK
-    | ASSIGN
-    | TYPE_ASSIGN
-    | DELIMITER
   
   let keyword_table =
     create_hashtable 16
@@ -57,17 +41,28 @@ rule analisador = parse
   | whitespace      { printf " "; analisador lexbuf}
   | '='             { printf "="; ASSIGN}
   | ':'             { printf ":"; TYPE_ASSIGN}
-  | delimiter       { printf ";";  DELIMITER}
-  | binop as op     { printf "%c" op;  OP(op)}
-  | "<" | ">" | "<=" | ">=" | "==" | "!=" | "!" | "||" | "&&" as op
-                    { printf "%s" op;  BOP(op)}
+  | ';'             { printf ";"; DELIMITER}
   | '('             { printf "("; LPR }
   | ')'             { printf ")"; RPR }
   | '['             { printf "["; LBK }
   | ']'             { printf "]"; RBK }
   | '{'             { printf "{"; LBC }
   | '}'             { printf "}"; RBC }
-  | digit+ as snum  { let num = int_of_string snum in INTEGER(num)}
+  | '+'             { printf "+"; PLUS }
+  | '-'             { printf "-"; MINUS }
+  | '*'             { printf "*"; TIMES }
+  | '/'             { printf "/"; DIV }
+  | "<"             { printf "<"; LT }
+  | ">"             { printf ">"; GT }
+  | "<="            { printf "<="; LET }
+  | ">="            { printf ">="; GET }
+  | "=="            { printf "=="; EQ }
+  | "!="            { printf "!="; NEQ }
+  | "!"             { printf "!";  NOT }
+  | "&&"            { printf "&&"; AND }
+  | "||"            { printf "||"; OR }
+  
+  | digit+ as snum  { let num = int_of_string snum in CST(num)}
   | id as word      
   { try
     let token = Hashtbl.find keyword_table word in

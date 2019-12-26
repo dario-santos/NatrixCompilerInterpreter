@@ -1,6 +1,17 @@
-lexer.cmo :
-lexer.cmx :
+ast.cmi :
+lexer.cmo : \
+    parser.cmi
+lexer.cmx : \
+    parser.cmx
 main.cmo : \
     lexer.cmo
 main.cmx : \
     lexer.cmx
+parser.cmo : \
+    ast.cmi \
+    parser.cmi
+parser.cmx : \
+    ast.cmi \
+    parser.cmi
+parser.cmi : \
+    ast.cmi
