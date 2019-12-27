@@ -5,13 +5,13 @@ A compiler for the Natrix language, the final project of the Language Processing
 run the makefile that is in the Ocaml folder and do:
 
 ```S
-./natrix ./file_to_test
+./natrix file_to_test.nx
 ```
 
 or
 
 ```S
-./natrix < file_to_test
+./natrix < file_to_test.nx
 ```
 
 ## Documentation
