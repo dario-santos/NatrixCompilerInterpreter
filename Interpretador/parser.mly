@@ -4,8 +4,10 @@
 
 %token <int>       CST
 %token <Ast.binop> CMP
-%token <string>    IDENT
+%token <Ast.ident> IDENT
 %token IF ELSE RETURN PRINT VAL INT
+%token FUNCTION
+%token MAXINT MININT
 %token PLUS MINUS TIMES DIV
 %token LPR "(" 
 %token RPR ")"
@@ -28,7 +30,7 @@
 %nonassoc NOT
 %nonassoc CMP
 %left PLUS MINUS
-%left TIMES DIV MOD
+%left TIMES DIV
 %nonassoc LBK
 
 /* Ponto de entrada da gramática */
@@ -40,26 +42,26 @@
 %%
 
 prog:
-| p = stmts EOF { List.rev p }
+|b = nonempty_list(stmt) EOF { Sblock b }
 ;
 
-stmts:
-| i = stmt           { [i] }
-| l = stmts i = stmt { i :: l }
+suite:
+| l = nonempty_list(stmt) { Sblock l }
 ;
-
 
 stmt:
 | PRINT "(" e = expr ")" ";"                  { Sprint(e) }
-| IF "(" e = expr ")" "{" s1 = stmt "}" ELSE "{" s2 = stmt "}" { Sif(e, s1, s2)}
+| IF "(" e = expr ")" "{" s1 = suite "}" ELSE "{" s2 = suite "}" { Sif(e, s1, s2)}
 | VAL id = IDENT ":" INT "=" e = expr ";"     {Sdeclare(id, e)}
 | RETURN e = expr ";"                         {Sreturn e}
 | id = IDENT ":""=" e = expr ";"              {Sassign(id, e)}
 ;
 
 expr:
-| c = CST                           { Cst c }
-| id = IDENT                        { Var id }
+| c = CST                           { Ecst c }
+| MAXINT                            { Emaxint }
+| MININT                            { Eminint }
+| id = IDENT                        { Eident id }
 | e1 = expr "[" e2 = expr "]"       { Eget (e1, e2)}
 | NOT e1 = expr                     { Eunop (Unot, e1)}
 | e1 = expr o = binop e2 = expr     { Ebinop (o, e1, e2) }
@@ -74,4 +76,8 @@ expr:
 | c=CMP { c    }
 | AND   { Band }
 | OR    { Bor  }
+;
+
+ident:
+  id = IDENT { id }
 ;

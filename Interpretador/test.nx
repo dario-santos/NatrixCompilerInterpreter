@@ -3,19 +3,21 @@ Este programa compara dois numeros
 e retorna o mostra o maior 
 *)
 
-val a : int = 8;
-val b : int = 10;
+val a : int = 20;
+val b : int = 30;
 val max : int = 0;
 
 // Comparacao entre o 'a' e o 'b'
-
+// max tem que ser diferente de 'a' e de 'b'
 if(a > b)
-{ 
+{
     max := a;
-} 
+    print(maxint);
+}
 else 
 { 
-    max := b; 
+    max := b;
+    print(minint);
 }
 
 print(max); // Mostra o maior ao utilizador
