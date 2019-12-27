@@ -1,19 +1,30 @@
-type program = stmts list
+type unop =
+  | Uneg 
+  | Unot
 
-and stmts =
-  | If of boolean_expr * stmts * stmts
-  | Assign of string * expr
-  | Print of expr
+and binop =
+  | Badd | Bsub | Bmul | Bdiv | Bmod
+  | Beq | Bneq | Blt | Ble | Bgt | Bge
+  | Band | Bor 
 
 and expr =
   | Cst of int
   | Var of string
-  | Binop of binop * expr * expr
+  | Ebinop of binop * expr * expr
+  | Eunop of unop * expr
+  | Ecall of string * expr list
+  | Elist of expr list
+  | Eget of expr * expr (* e1[e2] *)
 
-and boolean_expr = 
-  | Boolop of boolop * expr * expr
+and stmt =
+  | Sif of expr * stmt * stmt
+  | Sreturn of expr
+  | Sassign of string * expr
+  | Sdeclare of string * expr
+  | Sprint of expr
+  | Sblock of stmt list
+  | Sfor of string * expr * stmt
+  | Seval of expr
+  | Sset of expr * expr * expr (* e1[e2] = e3 *)
 
-and binop = Add | Sub | Mul | Div
-
-and boolop = Lt | Gt | Let | Get | Eq | Neq
-
+type program = stmt list

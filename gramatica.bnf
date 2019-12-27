@@ -20,7 +20,7 @@
 <type> ::= int | <id>
 
 <statement> ::= <statement>*
-              | 'if' '(' <boolean_expression> ')' 'then' 
+              | 'if' '(' <boolean_expression> ')'
 			    	'{' <statement> '}'
 				'else'
 					'{' <statement> '}'

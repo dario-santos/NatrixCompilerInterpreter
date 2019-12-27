@@ -3,7 +3,7 @@
   open Parser
   open Printf
   
-  exception Lexing_error of char
+  exception Lexing_error of string
 
   let create_hashtable size init =
     let tbl = Hashtbl.create size in
@@ -11,14 +11,14 @@
     tbl
   
   let keyword_table =
-    create_hashtable 16
+    create_hashtable 32
     [
       ("val", VAL);
       ("int", INT);
       ("if", IF);
-      ("then", THEN);
       ("else", ELSE);
-      ("print", PRINT)
+      ("print", PRINT);
+      ("return", RETURN)
     ]
 
   let newline lexbuf =
@@ -40,8 +40,6 @@ rule analisador = parse
   | newline         { newline lexbuf; printf "\n"; analisador lexbuf}
   | whitespace      { printf " "; analisador lexbuf}
   | '='             { printf "="; ASSIGN}
-  | ':'             { printf ":"; TYPE_ASSIGN}
-  | ';'             { printf ";"; DELIMITER}
   | '('             { printf "("; LPR }
   | ')'             { printf ")"; RPR }
   | '['             { printf "["; LBK }
@@ -52,13 +50,24 @@ rule analisador = parse
   | '-'             { printf "-"; MINUS }
   | '*'             { printf "*"; TIMES }
   | '/'             { printf "/"; DIV }
-  | "<"             { printf "<"; LT }
-  | ">"             { printf ">"; GT }
-  | "<="            { printf "<="; LET }
-  | ">="            { printf ">="; GET }
-  | "=="            { printf "=="; EQ }
-  | "!="            { printf "!="; NEQ }
-  | digit+ as snum  { printf "%s" snum; let num = int_of_string snum in CST(num)}
+  | "<"             { printf "<"; CMP Blt }
+  | "<="            { printf "<=";CMP Ble }
+  | ">"             { printf ">"; CMP Bgt }
+  | ">="            { printf ">=";CMP Bge }
+  | "=="            { printf "==";CMP Beq }
+  | "!="            { printf "!=";CMP Bneq }
+  | "||"            { printf "||"; OR}
+  | "&&"            { printf "||"; AND}
+  | "!"            { printf "!"; NOT}
+  
+  | ':'             { printf ":"; COLON}
+  | ';'             { printf ";"; DELIMITER}
+  | integer as snum 
+    { 
+      try
+        printf "%s" snum; 
+        CST (int_of_string snum)
+      with _ -> raise (Lexing_error ("constante demasiado grande: " ^ snum)) }
   | id as word      
   { try
     let token = Hashtbl.find keyword_table word in
@@ -66,17 +75,17 @@ rule analisador = parse
       token
     with Not_found ->
       printf "%s" word; 
-      ID word
+      IDENT word
     }
   | eof       { raise End_of_file }
-  | _ as c    { raise (Lexing_error c) }
+  | _ as c    { raise (Lexing_error (Char.escaped c)) }
 
 and singlecomment = parse
   | '\n'      { newline lexbuf; analisador lexbuf}
-  | eof       { raise (Lexing_error ' ')}
+  | eof       { raise (Lexing_error " ")}
   | _         { singlecomment lexbuf}
 
 and multicomment = parse
   | "*)"      { analisador lexbuf}
-  | eof       { raise (Lexing_error ' ')}
+  | eof       { raise (Lexing_error " ")}
   | _         { multicomment lexbuf}

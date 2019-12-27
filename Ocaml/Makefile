@@ -4,7 +4,7 @@ BIN=natrix
 FLAGS=
 
 all: $(BIN)
-	./$(BIN) ./test.txt
+	./$(BIN) ./test.nx
 
 $(BIN):$(CMO)
 	ocamlc $(FLAGS) -o $(BIN) $(CMO)
@@ -27,7 +27,7 @@ $(BIN):$(CMO)
 	ocamlyacc -v $<
 
 clean:
-	rm -f *.cm[io] *.o *~ $(BIN) $(GENERATED) parser.output
+	rm -f *.cm[io] *.o *~ $(GENERATED) parser.output
 
 .depend depend:$(GENERATED)
 	rm -f .depend

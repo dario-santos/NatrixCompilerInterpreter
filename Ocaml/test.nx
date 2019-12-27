@@ -1,0 +1,21 @@
+(* 
+Este programa compara dois numeros 
+e retorna o mostra o maior 
+*)
+
+val a : int = 8;
+val b : int = 10;
+val max : int = 0;
+
+// Comparacao entre o 'a' e o 'b'
+
+if(a > b)
+{ 
+    max := a;
+} 
+else 
+{ 
+    max := b; 
+}
+
+print(max); // Mostra o maior ao utilizador

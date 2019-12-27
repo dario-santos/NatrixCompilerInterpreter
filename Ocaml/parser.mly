@@ -2,29 +2,34 @@
   open Ast
 %}
 
-%token <int> CST
-%token <string> ID
-%token INT
-%token IF THEN ELSE
-%token PRINT
-%token VAL
+%token <int>       CST
+%token <Ast.binop> CMP
+%token <string>    IDENT
+%token IF ELSE RETURN PRINT VAL INT
 %token PLUS MINUS TIMES DIV
-%token LT GT LET GET EQ NEQ
 %token LPR "(" 
 %token RPR ")"
 %token LBC "{"
 %token RBC "}"
 %token LBK "["
 %token RBK "]"
+%token AND "&&"
+%token OR "||"
+%token NOT "!"
 %token ASSIGN "="
-%token TYPE_ASSIGN ":"
+%token COLON ":"
 %token DELIMITER ";"
 %token EOF
 
 /* Definição das prioridades e associatividades dos tokens */
 
+%left OR
+%left AND
+%nonassoc NOT
+%nonassoc CMP
 %left PLUS MINUS
-%left TIMES DIV
+%left TIMES DIV MOD
+%nonassoc LBK
 
 /* Ponto de entrada da gramática */
 %start prog
@@ -45,38 +50,28 @@ stmts:
 
 
 stmt:
-| PRINT "(" e = expr ")" ";"            { Print(e) }
-| IF "(" be = boolean_expr ")" "{" s1 = stmt "}" ELSE "{" s2 = stmt "}" { If(be, s1, s2)}
-| VAL id = ID ":" INT "=" e = expr ";"   {Assign(id, e)}
+| PRINT "(" e = expr ")" ";"                  { Sprint(e) }
+| IF "(" e = expr ")" "{" s1 = stmt "}" ELSE "{" s2 = stmt "}" { Sif(e, s1, s2)}
+| VAL id = IDENT ":" INT "=" e = expr ";"     {Sdeclare(id, e)}
+| RETURN e = expr ";"                         {Sreturn e}
+| id = IDENT ":""=" e = expr ";"              {Sassign(id, e)}
 ;
 
 expr:
-| "(" e = expr ")"               { e }
-| e1 = expr o = op e2 = expr     { Binop (o, e1, e2) } 
-| id = ID                        { Var id }
-| c = CST                        { Cst c }
+| c = CST                           { Cst c }
+| id = IDENT                        { Var id }
+| e1 = expr "[" e2 = expr "]"       { Eget (e1, e2)}
+| NOT e1 = expr                     { Eunop (Unot, e1)}
+| e1 = expr o = binop e2 = expr     { Ebinop (o, e1, e2) }
+| "(" e = expr ")"                  { e }
 ;
 
-boolean_expr:
-| "(" e = boolean_expr ")"       { e }
-| e1 = expr o = bop e2 = expr    { Boolop (o, e1, e2) }
+%inline binop:
+| PLUS  { Badd }
+| MINUS { Bsub }
+| TIMES { Bmul }
+| DIV   { Bdiv }
+| c=CMP { c    }
+| AND   { Band }
+| OR    { Bor  }
 ;
-
-%inline bop:
-| LT    {Lt}
-| GT    {Gt}
-| LET   {Let}
-| GET   {Get}
-| EQ    {Eq}
-| NEQ   {Neq}
-;
-
-%inline op:
-| PLUS  { Add }
-| MINUS { Sub }
-| TIMES { Mul }
-| DIV   { Div }
-;
-
-
-

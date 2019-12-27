@@ -31,7 +31,7 @@ let () =
     | Lexer.Lexing_error c ->
 	    (* Erro léxico. Recupera-se a posição absoluta e converte-se para número de linha *)
 	    localisation (Lexing.lexeme_start_p lexbuf);
-	    eprintf "Erro durante a análise léxica: %c@." c;
+	    eprintf "Erro durante a análise léxica: %s@." c;
 	    exit 1
     | Parser.Error ->
 	    (* Erro sintáctio. Recupera-se a posição e converte-se para número de linha *)

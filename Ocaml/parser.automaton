@@ -1,521 +1,663 @@
 State 0:
 prog' -> . prog [ # ]
 -- On VAL shift to state 1
--- On PRINT shift to state 21
--- On IF shift to state 26
--- On stmts shift to state 54
--- On stmt shift to state 57
--- On prog shift to state 58
+-- On RETURN shift to state 32
+-- On PRINT shift to state 35
+-- On IF shift to state 40
+-- On IDENT shift to state 45
+-- On stmts shift to state 56
+-- On stmt shift to state 59
+-- On prog shift to state 60
 
 State 1:
-stmt -> VAL . ID TYPE_ASSIGN INT ASSIGN expr DELIMITER [ VAL RBC PRINT IF EOF ]
--- On ID shift to state 2
+stmt -> VAL . IDENT COLON INT ASSIGN expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On IDENT shift to state 2
 
 State 2:
-stmt -> VAL ID . TYPE_ASSIGN INT ASSIGN expr DELIMITER [ VAL RBC PRINT IF EOF ]
--- On TYPE_ASSIGN shift to state 3
+stmt -> VAL IDENT . COLON INT ASSIGN expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On COLON shift to state 3
 
 State 3:
-stmt -> VAL ID TYPE_ASSIGN . INT ASSIGN expr DELIMITER [ VAL RBC PRINT IF EOF ]
+stmt -> VAL IDENT COLON . INT ASSIGN expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
 -- On INT shift to state 4
 
 State 4:
-stmt -> VAL ID TYPE_ASSIGN INT . ASSIGN expr DELIMITER [ VAL RBC PRINT IF EOF ]
+stmt -> VAL IDENT COLON INT . ASSIGN expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
 -- On ASSIGN shift to state 5
 
 State 5:
-stmt -> VAL ID TYPE_ASSIGN INT ASSIGN . expr DELIMITER [ VAL RBC PRINT IF EOF ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 19
+stmt -> VAL IDENT COLON INT ASSIGN . expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 30
 
 State 6:
-expr -> LPR . expr RPR [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 9
+expr -> NOT . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 29
 
 State 7:
-expr -> ID . [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On TIMES reduce production expr -> ID 
--- On RPR reduce production expr -> ID 
--- On PLUS reduce production expr -> ID 
--- On NEQ reduce production expr -> ID 
--- On MINUS reduce production expr -> ID 
--- On LT reduce production expr -> ID 
--- On LET reduce production expr -> ID 
--- On GT reduce production expr -> ID 
--- On GET reduce production expr -> ID 
--- On EQ reduce production expr -> ID 
--- On DIV reduce production expr -> ID 
--- On DELIMITER reduce production expr -> ID 
+expr -> LPR . expr RPR [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 10
 
 State 8:
-expr -> CST . [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On TIMES reduce production expr -> CST 
--- On RPR reduce production expr -> CST 
--- On PLUS reduce production expr -> CST 
--- On NEQ reduce production expr -> CST 
--- On MINUS reduce production expr -> CST 
--- On LT reduce production expr -> CST 
--- On LET reduce production expr -> CST 
--- On GT reduce production expr -> CST 
--- On GET reduce production expr -> CST 
--- On EQ reduce production expr -> CST 
--- On DIV reduce production expr -> CST 
--- On DELIMITER reduce production expr -> CST 
+expr -> IDENT . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES reduce production expr -> IDENT 
+-- On RPR reduce production expr -> IDENT 
+-- On RBK reduce production expr -> IDENT 
+-- On PLUS reduce production expr -> IDENT 
+-- On OR reduce production expr -> IDENT 
+-- On MINUS reduce production expr -> IDENT 
+-- On LBK reduce production expr -> IDENT 
+-- On DIV reduce production expr -> IDENT 
+-- On DELIMITER reduce production expr -> IDENT 
+-- On CMP reduce production expr -> IDENT 
+-- On AND reduce production expr -> IDENT 
 
 State 9:
-expr -> LPR expr . RPR [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
--- On TIMES shift to state 10
--- On RPR shift to state 12
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
+expr -> CST . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES reduce production expr -> CST 
+-- On RPR reduce production expr -> CST 
+-- On RBK reduce production expr -> CST 
+-- On PLUS reduce production expr -> CST 
+-- On OR reduce production expr -> CST 
+-- On MINUS reduce production expr -> CST 
+-- On LBK reduce production expr -> CST 
+-- On DIV reduce production expr -> CST 
+-- On DELIMITER reduce production expr -> CST 
+-- On CMP reduce production expr -> CST 
+-- On AND reduce production expr -> CST 
 
 State 10:
-expr -> expr TIMES . expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 11
+expr -> expr . LBK expr RBK [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . AND expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . OR expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> LPR expr . RPR [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES shift to state 11
+-- On RPR shift to state 28
+-- On PLUS shift to state 16
+-- On OR shift to state 20
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On CMP shift to state 24
+-- On AND shift to state 26
 
 State 11:
-expr -> expr . PLUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr TIMES expr . [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . DIV expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On TIMES reduce production expr -> expr TIMES expr 
--- On RPR reduce production expr -> expr TIMES expr 
--- On PLUS reduce production expr -> expr TIMES expr 
--- On NEQ reduce production expr -> expr TIMES expr 
--- On MINUS reduce production expr -> expr TIMES expr 
--- On LT reduce production expr -> expr TIMES expr 
--- On LET reduce production expr -> expr TIMES expr 
--- On GT reduce production expr -> expr TIMES expr 
--- On GET reduce production expr -> expr TIMES expr 
--- On EQ reduce production expr -> expr TIMES expr 
--- On DIV reduce production expr -> expr TIMES expr 
--- On DELIMITER reduce production expr -> expr TIMES expr 
+expr -> expr TIMES . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 12
 
 State 12:
-expr -> LPR expr RPR . [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On TIMES reduce production expr -> LPR expr RPR 
--- On RPR reduce production expr -> LPR expr RPR 
--- On PLUS reduce production expr -> LPR expr RPR 
--- On NEQ reduce production expr -> LPR expr RPR 
--- On MINUS reduce production expr -> LPR expr RPR 
--- On LT reduce production expr -> LPR expr RPR 
--- On LET reduce production expr -> LPR expr RPR 
--- On GT reduce production expr -> LPR expr RPR 
--- On GET reduce production expr -> LPR expr RPR 
--- On EQ reduce production expr -> LPR expr RPR 
--- On DIV reduce production expr -> LPR expr RPR 
--- On DELIMITER reduce production expr -> LPR expr RPR 
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr TIMES expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On LBK shift to state 13
+-- On TIMES reduce production expr -> expr TIMES expr 
+-- On RPR reduce production expr -> expr TIMES expr 
+-- On RBK reduce production expr -> expr TIMES expr 
+-- On PLUS reduce production expr -> expr TIMES expr 
+-- On OR reduce production expr -> expr TIMES expr 
+-- On MINUS reduce production expr -> expr TIMES expr 
+-- On DIV reduce production expr -> expr TIMES expr 
+-- On DELIMITER reduce production expr -> expr TIMES expr 
+-- On CMP reduce production expr -> expr TIMES expr 
+-- On AND reduce production expr -> expr TIMES expr 
 
 State 13:
-expr -> expr PLUS . expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
+expr -> expr LBK . expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
 -- On expr shift to state 14
 
 State 14:
-expr -> expr . PLUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr PLUS expr . [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . DIV expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On TIMES shift to state 10
--- On DIV shift to state 15
--- On RPR reduce production expr -> expr PLUS expr 
--- On PLUS reduce production expr -> expr PLUS expr 
--- On NEQ reduce production expr -> expr PLUS expr 
--- On MINUS reduce production expr -> expr PLUS expr 
--- On LT reduce production expr -> expr PLUS expr 
--- On LET reduce production expr -> expr PLUS expr 
--- On GT reduce production expr -> expr PLUS expr 
--- On GET reduce production expr -> expr PLUS expr 
--- On EQ reduce production expr -> expr PLUS expr 
--- On DELIMITER reduce production expr -> expr PLUS expr 
+expr -> expr . LBK expr RBK [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr LBK expr . RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . MINUS expr [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . TIMES expr [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . DIV expr [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . CMP expr [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . AND expr [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . OR expr [ TIMES RBK PLUS OR MINUS LBK DIV CMP AND ]
+-- On TIMES shift to state 11
+-- On RBK shift to state 15
+-- On PLUS shift to state 16
+-- On OR shift to state 20
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On CMP shift to state 24
+-- On AND shift to state 26
 
 State 15:
-expr -> expr DIV . expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 16
+expr -> expr LBK expr RBK . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES reduce production expr -> expr LBK expr RBK 
+-- On RPR reduce production expr -> expr LBK expr RBK 
+-- On RBK reduce production expr -> expr LBK expr RBK 
+-- On PLUS reduce production expr -> expr LBK expr RBK 
+-- On OR reduce production expr -> expr LBK expr RBK 
+-- On MINUS reduce production expr -> expr LBK expr RBK 
+-- On LBK reduce production expr -> expr LBK expr RBK 
+-- On DIV reduce production expr -> expr LBK expr RBK 
+-- On DELIMITER reduce production expr -> expr LBK expr RBK 
+-- On CMP reduce production expr -> expr LBK expr RBK 
+-- On AND reduce production expr -> expr LBK expr RBK 
 
 State 16:
-expr -> expr . PLUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . DIV expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr DIV expr . [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On TIMES reduce production expr -> expr DIV expr 
--- On RPR reduce production expr -> expr DIV expr 
--- On PLUS reduce production expr -> expr DIV expr 
--- On NEQ reduce production expr -> expr DIV expr 
--- On MINUS reduce production expr -> expr DIV expr 
--- On LT reduce production expr -> expr DIV expr 
--- On LET reduce production expr -> expr DIV expr 
--- On GT reduce production expr -> expr DIV expr 
--- On GET reduce production expr -> expr DIV expr 
--- On EQ reduce production expr -> expr DIV expr 
--- On DIV reduce production expr -> expr DIV expr 
--- On DELIMITER reduce production expr -> expr DIV expr 
+expr -> expr PLUS . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 17
 
 State 17:
-expr -> expr MINUS . expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 18
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr PLUS expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES shift to state 11
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On RPR reduce production expr -> expr PLUS expr 
+-- On RBK reduce production expr -> expr PLUS expr 
+-- On PLUS reduce production expr -> expr PLUS expr 
+-- On OR reduce production expr -> expr PLUS expr 
+-- On MINUS reduce production expr -> expr PLUS expr 
+-- On DELIMITER reduce production expr -> expr PLUS expr 
+-- On CMP reduce production expr -> expr PLUS expr 
+-- On AND reduce production expr -> expr PLUS expr 
 
 State 18:
-expr -> expr . PLUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr MINUS expr . [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
-expr -> expr . DIV expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV DELIMITER ]
--- On TIMES shift to state 10
--- On DIV shift to state 15
--- On RPR reduce production expr -> expr MINUS expr 
--- On PLUS reduce production expr -> expr MINUS expr 
--- On NEQ reduce production expr -> expr MINUS expr 
--- On MINUS reduce production expr -> expr MINUS expr 
--- On LT reduce production expr -> expr MINUS expr 
--- On LET reduce production expr -> expr MINUS expr 
--- On GT reduce production expr -> expr MINUS expr 
--- On GET reduce production expr -> expr MINUS expr 
--- On EQ reduce production expr -> expr MINUS expr 
--- On DELIMITER reduce production expr -> expr MINUS expr 
+expr -> expr DIV . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 19
 
 State 19:
-expr -> expr . PLUS expr [ TIMES PLUS MINUS DIV DELIMITER ]
-expr -> expr . MINUS expr [ TIMES PLUS MINUS DIV DELIMITER ]
-expr -> expr . TIMES expr [ TIMES PLUS MINUS DIV DELIMITER ]
-expr -> expr . DIV expr [ TIMES PLUS MINUS DIV DELIMITER ]
-stmt -> VAL ID TYPE_ASSIGN INT ASSIGN expr . DELIMITER [ VAL RBC PRINT IF EOF ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
--- On DELIMITER shift to state 20
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr DIV expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On LBK shift to state 13
+-- On TIMES reduce production expr -> expr DIV expr 
+-- On RPR reduce production expr -> expr DIV expr 
+-- On RBK reduce production expr -> expr DIV expr 
+-- On PLUS reduce production expr -> expr DIV expr 
+-- On OR reduce production expr -> expr DIV expr 
+-- On MINUS reduce production expr -> expr DIV expr 
+-- On DIV reduce production expr -> expr DIV expr 
+-- On DELIMITER reduce production expr -> expr DIV expr 
+-- On CMP reduce production expr -> expr DIV expr 
+-- On AND reduce production expr -> expr DIV expr 
 
 State 20:
-stmt -> VAL ID TYPE_ASSIGN INT ASSIGN expr DELIMITER . [ VAL RBC PRINT IF EOF ]
--- On VAL reduce production stmt -> VAL ID TYPE_ASSIGN INT ASSIGN expr DELIMITER 
--- On RBC reduce production stmt -> VAL ID TYPE_ASSIGN INT ASSIGN expr DELIMITER 
--- On PRINT reduce production stmt -> VAL ID TYPE_ASSIGN INT ASSIGN expr DELIMITER 
--- On IF reduce production stmt -> VAL ID TYPE_ASSIGN INT ASSIGN expr DELIMITER 
--- On EOF reduce production stmt -> VAL ID TYPE_ASSIGN INT ASSIGN expr DELIMITER 
+expr -> expr OR . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 21
 
 State 21:
-stmt -> PRINT . LPR expr RPR DELIMITER [ VAL RBC PRINT IF EOF ]
--- On LPR shift to state 22
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr OR expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES shift to state 11
+-- On PLUS shift to state 16
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On CMP shift to state 24
+-- On AND shift to state 26
+-- On RPR reduce production expr -> expr OR expr 
+-- On RBK reduce production expr -> expr OR expr 
+-- On OR reduce production expr -> expr OR expr 
+-- On DELIMITER reduce production expr -> expr OR expr 
 
 State 22:
-stmt -> PRINT LPR . expr RPR DELIMITER [ VAL RBC PRINT IF EOF ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
+expr -> expr MINUS . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
 -- On expr shift to state 23
 
 State 23:
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
-stmt -> PRINT LPR expr . RPR DELIMITER [ VAL RBC PRINT IF EOF ]
--- On TIMES shift to state 10
--- On RPR shift to state 24
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr MINUS expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES shift to state 11
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On RPR reduce production expr -> expr MINUS expr 
+-- On RBK reduce production expr -> expr MINUS expr 
+-- On PLUS reduce production expr -> expr MINUS expr 
+-- On OR reduce production expr -> expr MINUS expr 
+-- On MINUS reduce production expr -> expr MINUS expr 
+-- On DELIMITER reduce production expr -> expr MINUS expr 
+-- On CMP reduce production expr -> expr MINUS expr 
+-- On AND reduce production expr -> expr MINUS expr 
 
 State 24:
-stmt -> PRINT LPR expr RPR . DELIMITER [ VAL RBC PRINT IF EOF ]
--- On DELIMITER shift to state 25
+expr -> expr CMP . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 25
 
 State 25:
-stmt -> PRINT LPR expr RPR DELIMITER . [ VAL RBC PRINT IF EOF ]
--- On VAL reduce production stmt -> PRINT LPR expr RPR DELIMITER 
--- On RBC reduce production stmt -> PRINT LPR expr RPR DELIMITER 
--- On PRINT reduce production stmt -> PRINT LPR expr RPR DELIMITER 
--- On IF reduce production stmt -> PRINT LPR expr RPR DELIMITER 
--- On EOF reduce production stmt -> PRINT LPR expr RPR DELIMITER 
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr CMP expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES shift to state 11
+-- On PLUS shift to state 16
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On RPR reduce production expr -> expr CMP expr 
+-- On RBK reduce production expr -> expr CMP expr 
+-- On OR reduce production expr -> expr CMP expr 
+-- On DELIMITER reduce production expr -> expr CMP expr 
+-- On AND reduce production expr -> expr CMP expr 
 
 State 26:
-stmt -> IF . LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On LPR shift to state 27
+expr -> expr AND . expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 27
 
 State 27:
-stmt -> IF LPR . boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On LPR shift to state 28
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 44
--- On boolean_expr shift to state 45
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr AND expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES shift to state 11
+-- On PLUS shift to state 16
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On CMP shift to state 24
+-- On RPR reduce production expr -> expr AND expr 
+-- On RBK reduce production expr -> expr AND expr 
+-- On OR reduce production expr -> expr AND expr 
+-- On DELIMITER reduce production expr -> expr AND expr 
+-- On AND reduce production expr -> expr AND expr 
 
 State 28:
-boolean_expr -> LPR . boolean_expr RPR [ RPR ]
-expr -> LPR . expr RPR [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV ]
--- On LPR shift to state 28
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 29
--- On boolean_expr shift to state 42
+expr -> LPR expr RPR . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES reduce production expr -> LPR expr RPR 
+-- On RPR reduce production expr -> LPR expr RPR 
+-- On RBK reduce production expr -> LPR expr RPR 
+-- On PLUS reduce production expr -> LPR expr RPR 
+-- On OR reduce production expr -> LPR expr RPR 
+-- On MINUS reduce production expr -> LPR expr RPR 
+-- On LBK reduce production expr -> LPR expr RPR 
+-- On DIV reduce production expr -> LPR expr RPR 
+-- On DELIMITER reduce production expr -> LPR expr RPR 
+-- On CMP reduce production expr -> LPR expr RPR 
+-- On AND reduce production expr -> LPR expr RPR 
 
 State 29:
-boolean_expr -> expr . LT expr [ RPR ]
-boolean_expr -> expr . GT expr [ RPR ]
-boolean_expr -> expr . LET expr [ RPR ]
-boolean_expr -> expr . GET expr [ RPR ]
-boolean_expr -> expr . EQ expr [ RPR ]
-boolean_expr -> expr . NEQ expr [ RPR ]
-expr -> LPR expr . RPR [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS NEQ MINUS LT LET GT GET EQ DIV ]
--- On TIMES shift to state 10
--- On RPR shift to state 12
--- On PLUS shift to state 13
--- On NEQ shift to state 30
--- On MINUS shift to state 17
--- On LT shift to state 32
--- On LET shift to state 34
--- On GT shift to state 36
--- On GET shift to state 38
--- On EQ shift to state 40
--- On DIV shift to state 15
+expr -> expr . LBK expr RBK [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> NOT expr . [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES RPR RBK PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+-- On TIMES shift to state 11
+-- On PLUS shift to state 16
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On CMP shift to state 24
+-- On RPR reduce production expr -> NOT expr 
+-- On RBK reduce production expr -> NOT expr 
+-- On OR reduce production expr -> NOT expr 
+-- On DELIMITER reduce production expr -> NOT expr 
+-- On AND reduce production expr -> NOT expr 
 
 State 30:
-boolean_expr -> expr NEQ . expr [ RPR ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 31
+expr -> expr . LBK expr RBK [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+stmt -> VAL IDENT COLON INT ASSIGN expr . DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On TIMES shift to state 11
+-- On PLUS shift to state 16
+-- On OR shift to state 20
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On DELIMITER shift to state 31
+-- On CMP shift to state 24
+-- On AND shift to state 26
 
 State 31:
-boolean_expr -> expr NEQ expr . [ RPR ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
--- On RPR reduce production boolean_expr -> expr NEQ expr 
+stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER . [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On VAL reduce production stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER 
+-- On RETURN reduce production stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER 
+-- On RBC reduce production stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER 
+-- On PRINT reduce production stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER 
+-- On IF reduce production stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER 
+-- On IDENT reduce production stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER 
+-- On EOF reduce production stmt -> VAL IDENT COLON INT ASSIGN expr DELIMITER 
 
 State 32:
-boolean_expr -> expr LT . expr [ RPR ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
+stmt -> RETURN . expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
 -- On expr shift to state 33
 
 State 33:
-boolean_expr -> expr LT expr . [ RPR ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
--- On RPR reduce production boolean_expr -> expr LT expr 
+expr -> expr . LBK expr RBK [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+stmt -> RETURN expr . DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On TIMES shift to state 11
+-- On PLUS shift to state 16
+-- On OR shift to state 20
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On DELIMITER shift to state 34
+-- On CMP shift to state 24
+-- On AND shift to state 26
 
 State 34:
-boolean_expr -> expr LET . expr [ RPR ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 35
+stmt -> RETURN expr DELIMITER . [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On VAL reduce production stmt -> RETURN expr DELIMITER 
+-- On RETURN reduce production stmt -> RETURN expr DELIMITER 
+-- On RBC reduce production stmt -> RETURN expr DELIMITER 
+-- On PRINT reduce production stmt -> RETURN expr DELIMITER 
+-- On IF reduce production stmt -> RETURN expr DELIMITER 
+-- On IDENT reduce production stmt -> RETURN expr DELIMITER 
+-- On EOF reduce production stmt -> RETURN expr DELIMITER 
 
 State 35:
-boolean_expr -> expr LET expr . [ RPR ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
--- On RPR reduce production boolean_expr -> expr LET expr 
+stmt -> PRINT . LPR expr RPR DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On LPR shift to state 36
 
 State 36:
-boolean_expr -> expr GT . expr [ RPR ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
+stmt -> PRINT LPR . expr RPR DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
 -- On expr shift to state 37
 
 State 37:
-boolean_expr -> expr GT expr . [ RPR ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
--- On RPR reduce production boolean_expr -> expr GT expr 
+expr -> expr . LBK expr RBK [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . AND expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . OR expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+stmt -> PRINT LPR expr . RPR DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On TIMES shift to state 11
+-- On RPR shift to state 38
+-- On PLUS shift to state 16
+-- On OR shift to state 20
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On CMP shift to state 24
+-- On AND shift to state 26
 
 State 38:
-boolean_expr -> expr GET . expr [ RPR ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 39
+stmt -> PRINT LPR expr RPR . DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On DELIMITER shift to state 39
 
 State 39:
-boolean_expr -> expr GET expr . [ RPR ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
--- On RPR reduce production boolean_expr -> expr GET expr 
+stmt -> PRINT LPR expr RPR DELIMITER . [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On VAL reduce production stmt -> PRINT LPR expr RPR DELIMITER 
+-- On RETURN reduce production stmt -> PRINT LPR expr RPR DELIMITER 
+-- On RBC reduce production stmt -> PRINT LPR expr RPR DELIMITER 
+-- On PRINT reduce production stmt -> PRINT LPR expr RPR DELIMITER 
+-- On IF reduce production stmt -> PRINT LPR expr RPR DELIMITER 
+-- On IDENT reduce production stmt -> PRINT LPR expr RPR DELIMITER 
+-- On EOF reduce production stmt -> PRINT LPR expr RPR DELIMITER 
 
 State 40:
-boolean_expr -> expr EQ . expr [ RPR ]
--- On LPR shift to state 6
--- On ID shift to state 7
--- On CST shift to state 8
--- On expr shift to state 41
+stmt -> IF . LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On LPR shift to state 41
 
 State 41:
-boolean_expr -> expr EQ expr . [ RPR ]
-expr -> expr . PLUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . MINUS expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . TIMES expr [ TIMES RPR PLUS MINUS DIV ]
-expr -> expr . DIV expr [ TIMES RPR PLUS MINUS DIV ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On MINUS shift to state 17
--- On DIV shift to state 15
--- On RPR reduce production boolean_expr -> expr EQ expr 
+stmt -> IF LPR . expr RPR LBC stmt RBC ELSE LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 42
 
 State 42:
-boolean_expr -> LPR boolean_expr . RPR [ RPR ]
+expr -> expr . LBK expr RBK [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . PLUS expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . MINUS expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . TIMES expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . DIV expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . CMP expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . AND expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+expr -> expr . OR expr [ TIMES RPR PLUS OR MINUS LBK DIV CMP AND ]
+stmt -> IF LPR expr . RPR LBC stmt RBC ELSE LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On TIMES shift to state 11
 -- On RPR shift to state 43
+-- On PLUS shift to state 16
+-- On OR shift to state 20
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On CMP shift to state 24
+-- On AND shift to state 26
 
 State 43:
-boolean_expr -> LPR boolean_expr RPR . [ RPR ]
--- On RPR reduce production boolean_expr -> LPR boolean_expr RPR 
+stmt -> IF LPR expr RPR . LBC stmt RBC ELSE LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On LBC shift to state 44
 
 State 44:
-boolean_expr -> expr . LT expr [ RPR ]
-boolean_expr -> expr . GT expr [ RPR ]
-boolean_expr -> expr . LET expr [ RPR ]
-boolean_expr -> expr . GET expr [ RPR ]
-boolean_expr -> expr . EQ expr [ RPR ]
-boolean_expr -> expr . NEQ expr [ RPR ]
-expr -> expr . PLUS expr [ TIMES PLUS NEQ MINUS LT LET GT GET EQ DIV ]
-expr -> expr . MINUS expr [ TIMES PLUS NEQ MINUS LT LET GT GET EQ DIV ]
-expr -> expr . TIMES expr [ TIMES PLUS NEQ MINUS LT LET GT GET EQ DIV ]
-expr -> expr . DIV expr [ TIMES PLUS NEQ MINUS LT LET GT GET EQ DIV ]
--- On TIMES shift to state 10
--- On PLUS shift to state 13
--- On NEQ shift to state 30
--- On MINUS shift to state 17
--- On LT shift to state 32
--- On LET shift to state 34
--- On GT shift to state 36
--- On GET shift to state 38
--- On EQ shift to state 40
--- On DIV shift to state 15
+stmt -> IF LPR expr RPR LBC . stmt RBC ELSE LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On VAL shift to state 1
+-- On RETURN shift to state 32
+-- On PRINT shift to state 35
+-- On IF shift to state 40
+-- On IDENT shift to state 45
+-- On stmt shift to state 50
 
 State 45:
-stmt -> IF LPR boolean_expr . RPR LBC stmt RBC ELSE LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On RPR shift to state 46
+stmt -> IDENT . COLON ASSIGN expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On COLON shift to state 46
 
 State 46:
-stmt -> IF LPR boolean_expr RPR . LBC stmt RBC ELSE LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On LBC shift to state 47
+stmt -> IDENT COLON . ASSIGN expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On ASSIGN shift to state 47
 
 State 47:
-stmt -> IF LPR boolean_expr RPR LBC . stmt RBC ELSE LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On VAL shift to state 1
--- On PRINT shift to state 21
--- On IF shift to state 26
--- On stmt shift to state 48
+stmt -> IDENT COLON ASSIGN . expr DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On NOT shift to state 6
+-- On LPR shift to state 7
+-- On IDENT shift to state 8
+-- On CST shift to state 9
+-- On expr shift to state 48
 
 State 48:
-stmt -> IF LPR boolean_expr RPR LBC stmt . RBC ELSE LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On RBC shift to state 49
+expr -> expr . LBK expr RBK [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . PLUS expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . MINUS expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . TIMES expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . DIV expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . CMP expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . AND expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+expr -> expr . OR expr [ TIMES PLUS OR MINUS LBK DIV DELIMITER CMP AND ]
+stmt -> IDENT COLON ASSIGN expr . DELIMITER [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On TIMES shift to state 11
+-- On PLUS shift to state 16
+-- On OR shift to state 20
+-- On MINUS shift to state 22
+-- On LBK shift to state 13
+-- On DIV shift to state 18
+-- On DELIMITER shift to state 49
+-- On CMP shift to state 24
+-- On AND shift to state 26
 
 State 49:
-stmt -> IF LPR boolean_expr RPR LBC stmt RBC . ELSE LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On ELSE shift to state 50
+stmt -> IDENT COLON ASSIGN expr DELIMITER . [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On VAL reduce production stmt -> IDENT COLON ASSIGN expr DELIMITER 
+-- On RETURN reduce production stmt -> IDENT COLON ASSIGN expr DELIMITER 
+-- On RBC reduce production stmt -> IDENT COLON ASSIGN expr DELIMITER 
+-- On PRINT reduce production stmt -> IDENT COLON ASSIGN expr DELIMITER 
+-- On IF reduce production stmt -> IDENT COLON ASSIGN expr DELIMITER 
+-- On IDENT reduce production stmt -> IDENT COLON ASSIGN expr DELIMITER 
+-- On EOF reduce production stmt -> IDENT COLON ASSIGN expr DELIMITER 
 
 State 50:
-stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE . LBC stmt RBC [ VAL RBC PRINT IF EOF ]
--- On LBC shift to state 51
+stmt -> IF LPR expr RPR LBC stmt . RBC ELSE LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On RBC shift to state 51
 
 State 51:
-stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC . stmt RBC [ VAL RBC PRINT IF EOF ]
--- On VAL shift to state 1
--- On PRINT shift to state 21
--- On IF shift to state 26
--- On stmt shift to state 52
+stmt -> IF LPR expr RPR LBC stmt RBC . ELSE LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On ELSE shift to state 52
 
 State 52:
-stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt . RBC [ VAL RBC PRINT IF EOF ]
--- On RBC shift to state 53
+stmt -> IF LPR expr RPR LBC stmt RBC ELSE . LBC stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On LBC shift to state 53
 
 State 53:
-stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC . [ VAL RBC PRINT IF EOF ]
--- On VAL reduce production stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC 
--- On RBC reduce production stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC 
--- On PRINT reduce production stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC 
--- On IF reduce production stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC 
--- On EOF reduce production stmt -> IF LPR boolean_expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC . stmt RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On VAL shift to state 1
+-- On RETURN shift to state 32
+-- On PRINT shift to state 35
+-- On IF shift to state 40
+-- On IDENT shift to state 45
+-- On stmt shift to state 54
 
 State 54:
-prog -> stmts . EOF [ # ]
-stmts -> stmts . stmt [ VAL PRINT IF EOF ]
--- On VAL shift to state 1
--- On PRINT shift to state 21
--- On IF shift to state 26
--- On EOF shift to state 55
--- On stmt shift to state 56
+stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt . RBC [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On RBC shift to state 55
 
 State 55:
+stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC . [ VAL RETURN RBC PRINT IF IDENT EOF ]
+-- On VAL reduce production stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+-- On RETURN reduce production stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+-- On RBC reduce production stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+-- On PRINT reduce production stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+-- On IF reduce production stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+-- On IDENT reduce production stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+-- On EOF reduce production stmt -> IF LPR expr RPR LBC stmt RBC ELSE LBC stmt RBC 
+
+State 56:
+prog -> stmts . EOF [ # ]
+stmts -> stmts . stmt [ VAL RETURN PRINT IF IDENT EOF ]
+-- On VAL shift to state 1
+-- On RETURN shift to state 32
+-- On PRINT shift to state 35
+-- On IF shift to state 40
+-- On IDENT shift to state 45
+-- On EOF shift to state 57
+-- On stmt shift to state 58
+
+State 57:
 prog -> stmts EOF . [ # ]
 -- On # reduce production prog -> stmts EOF 
 
-State 56:
-stmts -> stmts stmt . [ VAL PRINT IF EOF ]
+State 58:
+stmts -> stmts stmt . [ VAL RETURN PRINT IF IDENT EOF ]
 -- On VAL reduce production stmts -> stmts stmt 
+-- On RETURN reduce production stmts -> stmts stmt 
 -- On PRINT reduce production stmts -> stmts stmt 
 -- On IF reduce production stmts -> stmts stmt 
+-- On IDENT reduce production stmts -> stmts stmt 
 -- On EOF reduce production stmts -> stmts stmt 
 
-State 57:
-stmts -> stmt . [ VAL PRINT IF EOF ]
+State 59:
+stmts -> stmt . [ VAL RETURN PRINT IF IDENT EOF ]
 -- On VAL reduce production stmts -> stmt 
+-- On RETURN reduce production stmts -> stmt 
 -- On PRINT reduce production stmts -> stmt 
 -- On IF reduce production stmts -> stmt 
+-- On IDENT reduce production stmts -> stmt 
 -- On EOF reduce production stmts -> stmt 
 
-State 58:
+State 60:
 prog' -> prog . [ # ]
 -- On # accept prog
 
