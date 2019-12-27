@@ -7,26 +7,22 @@ open Lexing
 let localisation pos =
   let l = pos.pos_lnum in
   let c = pos.pos_cnum - pos.pos_bol + 1 in
-  eprintf "Line %d, characters %d-%d:\n" l (c-1) c
+  eprintf "Linha %d, caracteres %d-%d:\n" l (c-1) c
 
-let () =
-  (* Parsing da linha de comando *)
+  let () =
   let file = 
     if Array.length Sys.argv > 1  
-      then open_in Sys.argv.(1)
+      then
+      if (Filename.check_suffix Sys.argv.(1) ".nx") then
+        open_in Sys.argv.(1)
+      else 
+      raise (Arg.Bad "O ficheiro nao tem a extensao .nx")
     else stdin
   in
   let lexbuf = Lexing.from_channel file in
-
   try
-    (* Parsing: A função Parser.prog transforma o buffer d'análise léxica  
-       numa árvore de sintaxe abstracta se nenujk erro  (léxico ou sintáctico) 
-       foi detectado.
-       A função Lexer.token é utilizada por Parser.prog para obter
-       o próximo token. *)
-    let _ = Parser.prog Lexer.analisador lexbuf in
+   let _ = Parser.prog Lexer.analisador lexbuf in
     close_in file;
-
   with
     | Lexer.Lexing_error c ->
 	    (* Erro léxico. Recupera-se a posição absoluta e converte-se para número de linha *)
