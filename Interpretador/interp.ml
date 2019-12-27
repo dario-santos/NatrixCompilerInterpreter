@@ -63,6 +63,10 @@ let binop op v1 v2 = match op, v1, v2 with
   | Bge, _, _ -> if compare_value v1 v2 >= 0 then Vint 1 else Vint 0
   | _ -> error "unsupported operand types"
 
+let functions = (Hashtbl.create 17 : (string, ident list * stmt) Hashtbl.t)
+let sets = (Hashtbl.create 17 : (string, int * int) Hashtbl.t)
+
+
 (* A instrução 'return' de Python é interpretada com recurso a uma excepção *)
 
 exception Return of value
@@ -79,7 +83,7 @@ type ctx = (string, value) Hashtbl.t
 let rec expr ctx = function
   | Ecst n -> Vint n
   | Eminint -> Vint 0
-  | Emaxint -> Vint 999
+  | Emaxint -> Vint max_int
   | Ebinop (Band, e1, e2) ->
       let v1 = expr ctx e1 in
       if is_true v1 == 1 then expr ctx e2 else v1
@@ -95,7 +99,7 @@ let rec expr ctx = function
         | _ -> error "unsupported operand types" end
   | Eunop (Unot, e1) ->
       Vint (is_false (expr ctx e1))
-  | Ecall ("len", [e1]) ->
+  | Ecall ("size", [e1]) ->
       begin match expr ctx e1 with
         | Vlist l -> Vint (Array.length l)
         | _ -> error "this value has no 'len'" end
@@ -122,6 +126,15 @@ and expr_int ctx e =
   | Vint n -> n
   | _ -> error "integer expected"
 
+and value_in_type_limits v t = 
+  match t with
+  | Int -> v >= 0 && v <= max_int 
+  | CTset t1 -> 
+    try 
+      let (i, f) = Hashtbl.find sets t1 in
+      v >= i && v <= f
+    with _ -> error "tipo nao definido"    
+
 (* interpretação de uma instrução - não devolve nada *)
 and stmt ctx = function
   | Sif (e, s1, s2) ->
@@ -131,9 +144,12 @@ and stmt ctx = function
   | Sassign (id, e1) ->
     if not (Hashtbl.mem ctx id) then error "variável não definida" 
     else Hashtbl.replace ctx id (expr ctx e1)
-  | Sdeclare (id, e1) ->
-      if Hashtbl.mem ctx id then error "variável já definida"
-      else Hashtbl.add ctx id (expr ctx e1)
+  | Sdeclare (id, t ,e1) ->
+    ignore(if Hashtbl.mem ctx id then error "variável já definida");
+    let v = expr_int ctx e1 in
+    if value_in_type_limits v t then Hashtbl.add ctx id (expr ctx e1) 
+    else error "variavel fora dos limites"
+
   | Sset (e1, e2, e3) ->
       begin match expr ctx e1 with
       | Vlist l -> l.(expr_int ctx e2) <- expr ctx e3
@@ -143,12 +159,20 @@ and stmt ctx = function
   | Sforeach(x, e1, e2, s) ->
     let v1 = expr_int ctx e1 in
     let v2 = expr_int ctx e2 in
-    stmt ctx (Sdeclare(x, e1));
+    stmt ctx (Sdeclare(x, Int, e1));
     for i = v1 to v2 do
       stmt ctx (Sassign(x, Ecst i));
       stmt ctx s;
     done
   | Seval e -> ignore (expr ctx e)
+  | Ssetdef (id, e1, e2) -> 
+    (* Ver se o tipo ja não foi definido*)
+    (* Ver se ja nao existe uma variavel com este nome*)
+    ignore(if Hashtbl.mem ctx id then error "variável já definida");
+    ignore(if Hashtbl.mem sets id then error "variável já definida");
+    let i = expr_int ctx e1 in
+    let f = expr_int ctx e2 in
+    Hashtbl.add sets id (i, f)
 
 (* interpretação de um bloco, i.e. uma sequência de instruções *)
 and block ctx = function

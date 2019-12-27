@@ -1,6 +1,6 @@
 val x : int = 0;
 
-foreach i in 1 .. 10 
+foreach i in 1..10 
 {
     x := x + i;
 }

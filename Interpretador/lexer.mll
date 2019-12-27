@@ -19,6 +19,7 @@
       ("else", ELSE);
       ("foreach", FOREACH);
       ("in", IN);
+      ("type", TYPE);
       ("print", PRINT);
       ("return", RETURN);
       ("maxint", MAXINT);

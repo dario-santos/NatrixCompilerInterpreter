@@ -1,6 +1,4 @@
-if(0 > 3)
-{
-    print(1);
-}
+type x = [6 .. 10];
 
-print(2);
+val v : x = 7;
+print(v);
