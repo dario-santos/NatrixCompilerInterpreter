@@ -1,23 +1,6 @@
-(* 
-Este programa compara dois numeros 
-e retorna o mostra o maior 
-*)
-
-val a : int = 20;
-val b : int = 30;
-val max : int = 0;
-
-// Comparacao entre o 'a' e o 'b'
-// max tem que ser diferente de 'a' e de 'b'
-if(a > b)
+if(0 > 3)
 {
-    max := a;
-    print(maxint);
-}
-else 
-{ 
-    max := b;
-    print(minint);
+    print(1);
 }
 
-print(max); // Mostra o maior ao utilizador
+print(2);

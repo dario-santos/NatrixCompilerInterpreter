@@ -13,7 +13,7 @@ type value =
 (* Vizualização *)
 let rec print_value = function
   | Vint n -> printf "%d" n
-  | _ -> error "print statements only support integers"
+  | _ -> error "instruções print apenas suportam inteiros"
 
 (* Interpretação booleana
 
@@ -117,7 +117,8 @@ let rec expr ctx = function
       | _ -> error "list expected" end
 
 (* interpretação de um valor e verificação de que se trata de um inteiro *)
-and expr_int ctx e = match expr ctx e with
+and expr_int ctx e = 
+  match expr ctx e with
   | Vint n -> n
   | _ -> error "integer expected"
 
@@ -128,9 +129,10 @@ and stmt ctx = function
   | Sreturn e ->
       raise (Return (expr ctx e))
   | Sassign (id, e1) ->
-      Hashtbl.replace ctx id (expr ctx e1)
+    if not (Hashtbl.mem ctx id) then error "variável não definida" 
+    else Hashtbl.replace ctx id (expr ctx e1)
   | Sdeclare (id, e1) ->
-      if Hashtbl.mem ctx id then error "variable already declared"
+      if Hashtbl.mem ctx id then error "variável já definida"
       else Hashtbl.add ctx id (expr ctx e1)
   | Sset (e1, e2, e3) ->
       begin match expr ctx e1 with
@@ -138,11 +140,14 @@ and stmt ctx = function
       | _ -> error "list expected" end
   | Sprint e -> print_value (expr ctx e); printf "@."
   | Sblock bl -> block ctx bl
-  | Sfor (x, e, s) ->
-      begin match expr ctx e with
-      | Vlist l ->
-        Array.iter (fun v -> Hashtbl.replace ctx x v; stmt ctx s) l
-      | _ -> error "list expected" end
+  | Sforeach(x, e1, e2, s) ->
+    let v1 = expr_int ctx e1 in
+    let v2 = expr_int ctx e2 in
+    stmt ctx (Sdeclare(x, e1));
+    for i = v1 to v2 do
+      stmt ctx (Sassign(x, Ecst i));
+      stmt ctx s;
+    done
   | Seval e -> ignore (expr ctx e)
 
 (* interpretação de um bloco, i.e. uma sequência de instruções *)

@@ -17,6 +17,8 @@
       ("int", INT);
       ("if", IF);
       ("else", ELSE);
+      ("foreach", FOREACH);
+      ("in", IN);
       ("print", PRINT);
       ("return", RETURN);
       ("maxint", MAXINT);
@@ -63,6 +65,7 @@ rule analisador = parse
   | "!"             { [NOT] }
   | ':'             { [COLON] }
   | ';'             { [DELIMITER] }
+  | ".."            { [TO] }
   | integer as snum 
     { 
       try

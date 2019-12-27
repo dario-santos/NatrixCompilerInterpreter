@@ -32,7 +32,7 @@ and stmt =
   | Sdeclare of ident * expr
   | Sprint of expr
   | Sblock of stmt list
-  | Sfor of ident * expr * stmt
+  | Sforeach of ident * expr * expr * stmt
   | Seval of expr
   | Sset of expr * expr * expr (* e1[e2] = e3 *)
 

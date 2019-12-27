@@ -5,8 +5,9 @@
 %token <int>       CST
 %token <Ast.binop> CMP
 %token <Ast.ident> IDENT
-%token IF ELSE RETURN PRINT VAL INT
-%token FUNCTION
+%token IF ELSE PRINT VAL INT
+%token FOREACH IN TO
+%token FUNCTION RETURN
 %token MAXINT MININT
 %token PLUS MINUS TIMES DIV
 %token LPR "(" 
@@ -50,8 +51,12 @@ suite:
 ;
 
 stmt:
-| PRINT "(" e = expr ")" ";"                  { Sprint(e) }
-| IF "(" e = expr ")" "{" s1 = suite "}" ELSE "{" s2 = suite "}" { Sif(e, s1, s2)}
+| PRINT "(" e = expr ")" ";"                  {Sprint(e)}
+| IF "(" e = expr ")" "{" s1 = suite "}"      { Sif(e, s1, Sblock [])}
+| IF "(" e = expr ")" "{" s1 = suite "}" ELSE "{" s2 = suite "}" 
+                                              { Sif(e, s1, s2)}
+| FOREACH id = IDENT IN e1 = expr TO e2 = expr "{" s = suite "}" 
+                                              {Sforeach(id, e1, e2, s)}
 | VAL id = IDENT ":" INT "=" e = expr ";"     {Sdeclare(id, e)}
 | RETURN e = expr ";"                         {Sreturn e}
 | id = IDENT ":""=" e = expr ";"              {Sassign(id, e)}
