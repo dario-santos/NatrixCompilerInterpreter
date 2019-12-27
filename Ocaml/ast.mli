@@ -2,8 +2,7 @@ type program = stmts list
 
 and stmts =
   | If of boolean_expr * stmts * stmts
-  | Foreach of expr * stmts
-  | Assig of string * expr
+  | Assign of string * expr
   | Print of expr
 
 and expr =
@@ -16,5 +15,5 @@ and boolean_expr =
 
 and binop = Add | Sub | Mul | Div
 
-and boolop = Lt | Gt | Let | Get | Eq | Neq | Not
+and boolop = Lt | Gt | Let | Get | Eq | Neq
 

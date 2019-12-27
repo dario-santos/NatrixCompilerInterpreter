@@ -1,6 +1,7 @@
 {
-  open Printf
+  open Lexing
   open Parser
+  open Printf
   
   exception Lexing_error of char
 
@@ -13,16 +14,17 @@
     create_hashtable 16
     [
       ("val", VAL);
-      ("var", VAR);
-      ("INT", INT);
+      ("int", INT);
       ("if", IF);
       ("then", THEN);
       ("else", ELSE);
-      ("foreach", FOREACH);
-      ("in", IN);
-      ("do", DO);
-      ("function", FUNCTION)
+      ("print", PRINT)
     ]
+
+  let newline lexbuf =
+    let pos = lexbuf.lex_curr_p in
+    lexbuf.lex_curr_p <-
+      { pos with pos_lnum = pos.pos_lnum + 1; pos_bol = pos.pos_cnum }
 }
 
 let digit      = ['0'-'9']
@@ -31,13 +33,11 @@ let integer    = digit+
 let id         = ('_'|letter)(letter|digit)*
 let newline    = ['\n']
 let whitespace = [' ' '\t']
-let binop      = ['+' '-' '*' '/']
-let delimiter  = [';']
 
 rule analisador = parse
   | "//"            { singlecomment lexbuf}
   | "(*"            { multicomment lexbuf }
-  | newline         { printf "\n"; analisador lexbuf}
+  | newline         { newline lexbuf; printf "\n"; analisador lexbuf}
   | whitespace      { printf " "; analisador lexbuf}
   | '='             { printf "="; ASSIGN}
   | ':'             { printf ":"; TYPE_ASSIGN}
@@ -58,29 +58,25 @@ rule analisador = parse
   | ">="            { printf ">="; GET }
   | "=="            { printf "=="; EQ }
   | "!="            { printf "!="; NEQ }
-  | "!"             { printf "!";  NOT }
-  | "&&"            { printf "&&"; AND }
-  | "||"            { printf "||"; OR }
-  
-  | digit+ as snum  { let num = int_of_string snum in CST(num)}
+  | digit+ as snum  { printf "%s" snum; let num = int_of_string snum in CST(num)}
   | id as word      
   { try
     let token = Hashtbl.find keyword_table word in
-    printf "%s" word; 
-    token
+      printf "%s" word; 
+      token
     with Not_found ->
-     printf "%s" word; 
-     ID word
+      printf "%s" word; 
+      ID word
     }
-  | eof        { raise End_of_file }
-  | _          { raise End_of_file }
+  | eof       { raise End_of_file }
+  | _ as c    { raise (Lexing_error c) }
 
 and singlecomment = parse
-  | '\n'  { analisador lexbuf}
-  | eof   { raise End_of_file}
-  | _     { singlecomment lexbuf}
+  | '\n'      { newline lexbuf; analisador lexbuf}
+  | eof       { raise (Lexing_error ' ')}
+  | _         { singlecomment lexbuf}
 
 and multicomment = parse
-  | "*)"  { analisador lexbuf}
-  | eof   { raise End_of_file}
-  | _     { multicomment lexbuf}
+  | "*)"      { analisador lexbuf}
+  | eof       { raise (Lexing_error ' ')}
+  | _         { multicomment lexbuf}

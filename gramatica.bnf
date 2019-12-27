@@ -4,7 +4,7 @@
 
 <digit> ::= ['0'-'9']
 <char>  ::= ['a-zA-Z']
-<int>   ::= <digit>+
+<integer>   ::= <digit>+
 <id>    ::= ('_' | <char>)(<char> | <digit>)* 
 <newline> ::= '\n'
 <whitespace> ::= '\t' | ' '
@@ -17,23 +17,23 @@
 
 <statements> ::= (<statement> | <function_def>)*
 
-<type> ::= <int> | <id>
+<type> ::= int | <id>
 
 <statement> ::= <statement>*
               | 'if' '(' <boolean_expression> ')' 'then' 
 			    	'{' <statement> '}'
 				'else'
 					'{' <statement> '}'
-			  | 'foreach' <id> 'in' <int> '..' <int> 'do' '{' <statement> '}'
+			  | 'foreach' <id> 'in' <integer> '..' <integer> 'do' '{' <statement> '}'
 			  | 'print' '(' <expression> ')' ';'
 			  | <id> ':=' <expression> ';'
 			  | <id> '[' <expression> ']' ':=' <expression> ';'
-			  | 'var' <id> ':' <int> '=' <expression> ';'
+			  | 'val' <id> ':' int '=' <expression> ';'
 
 <expression> ::= <lparen> <expression> <rparen>
                | <expression> <binop> <expression>
                | <expression> <lbracket> <expression> <rbracket>
-			   | <int>
+			   | <integer>
 			   | <id>
 
 <boolean_expression> ::= '('<expression> <booleanop> <expression> ')'

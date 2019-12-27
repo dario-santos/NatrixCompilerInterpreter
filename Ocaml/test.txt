@@ -10,11 +10,11 @@ val b : int = 3;
 
 ------------------------*)
 
-if(a < b) then 
+if(a < b)
 { 
     print(a);
 } 
 else 
 { 
-    printf(b); 
+    print(b); 
 }

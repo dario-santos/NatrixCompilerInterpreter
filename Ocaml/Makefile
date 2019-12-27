@@ -1,6 +1,6 @@
 CMO=lexer.cmo parser.cmo main.cmo
 GENERATED = lexer.ml parser.ml parser.mli
-BIN=natrixx
+BIN=natrix
 FLAGS=
 
 all: $(BIN)
