@@ -50,9 +50,13 @@ prog:
 
 
 stmts:
-| FUNCTION f = ident "(" x = separated_list(",", ident) ")" ":"  r = type_def "{" s = suite "}" { Stfunction(f, x, r, s)}
+| FUNCTION f = ident "(" x = separated_list(",", argument_list) ")" ":"  r = type_def "{" s = suite "}" { Stfunction(f, x, r, s)}
 | TYPE id = ident "=" "[" e1 = expr TO e2 = expr "]" ";"                                        { Stsetdef (id, e1, e2) }
 | s = stmt                                                                                      { Stmt s } 
+;
+
+argument_list:
+|  id = ident ":" t = type_def {(id, t)}
 ;
 
 suite:

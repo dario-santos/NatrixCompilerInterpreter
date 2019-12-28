@@ -9,6 +9,10 @@ type value =
   | Vint of int
   | Vlist of value array
 
+let value_to_int = function
+  | Vint n -> n
+  | _ -> error "funcao value_to_int aceita apenas Vint"
+
 exception Return of value
   
 (* Vizualização *)
@@ -49,7 +53,7 @@ let binop op v1 v2 = match op, v1, v2 with
   | Bge, _, _ -> if compare_value v1 v2 >= 0 then Vint 1 else Vint 0
   | _ -> error "operandos não suportados"
 
-let functions = (Hashtbl.create 17 : (string, ident list * costumtype * stmt) Hashtbl.t)
+let functions = (Hashtbl.create 17 : (string, argument list * costumtype * stmt) Hashtbl.t)
 let sets = (Hashtbl.create 17 : (string, int * int) Hashtbl.t)
 
 
@@ -85,17 +89,19 @@ let rec expr ctx = function
   | Ecall (f, el) ->
     begin
       try
-        let args, return, body = Hashtbl.find functions f in
+        let args, _, body = Hashtbl.find functions f in
+        ignore(if List.length el != List.length args then error "chamada incorreta à função, assinatura inválida");
         let comb = List.combine args el in
         let localtbl = (Hashtbl.create 17 : table_ctx) in
         let ctx = ctx@[localtbl] in
-        ignore(List.iter (fun (id, e) -> stmt ctx (Sdeclare(id, Int, e))) comb);
+        ignore(List.iter (fun (arg, e) -> let aid, at = arg in stmt ctx (Sdeclare(aid, at ,e))) comb);
         ignore(stmt ctx body);
         error "funcao sem return"
       with 
         | Not_found -> error "função não implementada"
-        | Invalid_argument _ -> error "chamada incorreta à função, assinatura inválida"
-        | Return r -> r
+        | Return r ->
+          let _,return,_ = Hashtbl.find functions f in
+          if (value_in_type_limits (value_to_int r) return) then r else error "o retorno não condiz com o tipo da função"
     end
   | Elist el ->
       Vlist (Array.of_list (List.map (expr ctx) el))
@@ -130,8 +136,7 @@ and value_in_type_limits v t =
     try 
       let (i, f) = Hashtbl.find sets t1 in
       v >= i && v <= f
-    with _ -> error "tipo nao definido"    
-
+    with _ -> error "tipo nao definido"
 (* interpretação de uma instrução - não devolve nada *)
 and find_id id l = 
   match l with

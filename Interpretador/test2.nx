@@ -1,22 +1,8 @@
 type small_int = [0 .. 10];
    val pipo : int = 4;
-function int_to_small_int(x) : int
+function somar(x : small_int, y : small_int) : small_int
 {
-    val pipo : int = 3;
-
-    foreach i in 0 .. 10
-    {   val pipo : int = 2;
-        if(x == i)
-        {
-            print(pipo);
-
-            val tmp : small_int = x;
-            return tmp;
-        }
-
-    }
-
-    return 0;
+    return x + y;
 }
 
-print(int_to_small_int(10));
+print(somar(5, 2));

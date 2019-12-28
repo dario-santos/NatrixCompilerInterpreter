@@ -36,11 +36,13 @@ and stmt =
   | Seval of expr
   | Sset of expr * expr * expr (* e1[e2] = e3 *)
   
-  and stmts =                                              (* Para não podermos definir funções dentro de instruções *) 
+and stmts =                                              (* Para não podermos definir funções dentro de instruções *) 
   | Stblock of stmts list
-  | Stfunction of ident * ident list * costumtype * stmt
+  | Stfunction of ident * argument list * costumtype * stmt
   | Stsetdef of ident * expr * expr
   | Stmt of stmt
+
+and argument = ident * costumtype
 
 and costumtype = 
   | Int
