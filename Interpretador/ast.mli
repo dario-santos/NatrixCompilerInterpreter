@@ -10,7 +10,7 @@ type unop =
   | Unot
 
 and binop =
-  | Badd | Bsub | Bmul | Bdiv | Bmod
+  | Badd | Bsub | Bmul | Bdiv
   | Beq | Bneq | Blt | Ble | Bgt | Bge
   | Band | Bor 
 
@@ -42,7 +42,6 @@ and costumtype =
   | Int
   | CTset of ident
 
-and def = 
-  | Dfunction of ident * ident list * stmt
+and def = ident * ident list * costumtype * stmt
  
-and program = stmt
+and program = def list * stmt

@@ -1,4 +1,13 @@
-type x = [6 .. 10];
+function maior(x, y) : int 
+{
+    if(x > y)
+    {
+        return x;
+    }
+    
+    return y;
+}
 
-val v : x = 7;
-print(v);
+print(maior(10, 25));
+
+print(maior(55, 89));

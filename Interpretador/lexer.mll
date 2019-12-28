@@ -21,6 +21,7 @@
       ("in", IN);
       ("type", TYPE);
       ("print", PRINT);
+      ("function", FUNCTION);
       ("return", RETURN);
       ("maxint", MAXINT);
       ("minint", MININT)
@@ -67,6 +68,7 @@ rule analisador = parse
   | ':'             { [COLON] }
   | ';'             { [DELIMITER] }
   | ".."            { [TO] }
+  | ','             { [COMMA] }
   | integer as snum 
     { 
       try

@@ -7,7 +7,7 @@
 %token <Ast.ident> IDENT
 %token IF ELSE PRINT VAL INT
 %token FOREACH IN TO
-%token RETURN
+%token FUNCTION RETURN
 %token TYPE
 %token MAXINT MININT
 %token PLUS MINUS TIMES DIV
@@ -23,6 +23,7 @@
 %token ASSIGN "="
 %token COLON ":"
 %token DELIMITER ";"
+%token COMMA ","
 %token EOF
 
 /* Definição das prioridades e associatividades dos tokens */
@@ -44,10 +45,12 @@
 %%
 
 prog:
-| b = nonempty_list(stmt) EOF {Sblock b }
+| dl = list(def) b = nonempty_list(stmt) EOF { dl, Sblock b }
 ;
 
-
+def:
+| FUNCTION f = ident "(" x = separated_list(",", ident) ")" ":"  r = type_def "{" s = suite "}" { f, x, r, s }
+;
 
 suite:
 | l = nonempty_list(stmt) { Sblock l }
@@ -83,6 +86,7 @@ expr:
 | NOT e1 = expr                     { Eunop (Unot, e1)}
 | e1 = expr o = binop e2 = expr     { Ebinop (o, e1, e2) }
 | "(" e = expr ")"                  { e }
+| id = ident "(" l = separated_list("," , expr) ")" {Ecall(id, l)}
 ;
 
 %inline binop:

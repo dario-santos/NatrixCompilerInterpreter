@@ -24,11 +24,12 @@
 			    	'{' <statement> '}'
 				'else'
 					'{' <statement> '}'
-			  | 'foreach' <id> 'in' <integer> '..' <integer> 'do' '{' <statement> '}'
+			  | 'foreach' <id> 'in' <integer> '..' <integer> '{' <statement> '}'
 			  | 'print' '(' <expression> ')' ';'
 			  | <id> ':=' <expression> ';'
 			  | <id> '[' <expression> ']' ':=' <expression> ';'
-			  | 'val' <id> ':' int '=' <expression> ';'
+			  | 'val' <id> ':' <type> '=' <expression> ';'
+			  | 'type' <id> '=' '[' <integer> '..' <integer> ']' ';'
 
 <expression> ::= <lparen> <expression> <rparen>
                | <expression> <binop> <expression>
@@ -41,4 +42,4 @@
 					   | '!' <boolean_expression>
 
 <argument_list> ::= (<id> ':' <type>)*
-<function_def> ::= 'function' <id> '(' <argument_list> ')' '{' <statement> '}'
+<function_def> ::= 'function' <id> '(' <argument_list> ')' ':' <type> '{' <statement> 'return' <integer> ';' '}'
