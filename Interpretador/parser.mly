@@ -73,7 +73,7 @@ simple_stmt:
 | RETURN e = expr ";"                              { Sreturn e }
 | VAL id = ident ":" t = type_def "=" e = expr ";" { Sdeclare(id, t ,e) }
 | TYPE id = ident "=" "[" set = expr "]" ";"       { Sset (id, set) }
-| TYPE id = ident ":" ARRAY size = expr OF t = type_def ";"   { Sarray (id, size, t) }
+| TYPE id = ident ":" ARRAY size = expr OF t = expr ";"   { Sarray (id, size, t) }
 | VAL id = ident ":" t = ident FILLED BY e = expr ";" { Sdeclarearray(id, t ,e) }
 | id = ident ":""=" e = expr ";"                   { Sassign(id, e) }
 | id = ident "["e2 = expr"]" ":""=" e3 = expr ";"  { Saset (id, e2, e3) }

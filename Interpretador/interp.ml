@@ -7,10 +7,10 @@ let error s = raise (Error s)
 
 (* Tipos de dados*)
 type value =
-  | Vint of int
-  | Vset of int * int
-  | Varray of value * value
-  | Vlist of value array * value
+  | Vint of int                  (* valor       *)
+  | Vset of int * int            (* inicio, fim *)
+  | Varray of value * value      (* range, tipo *)
+  | Vlist of value array * value (* lista, range*)
 
 (* Extraír o valor do Vint *)
 let vint_to_int = function
@@ -29,7 +29,7 @@ exception Return of value
   
 (* print *)
 let rec print_value = function
-  | Vint n -> printf "%d" n
+  | Vint n -> if n < 0 then error "a função print não suporta números negativos" else printf "%d" n
   | Vset (i,f) -> printf "[%d, %d]" i f
   | _ -> error "instruções print apenas suportam inteiros"
 
@@ -100,9 +100,12 @@ let rec expr ctx = function
         | _ -> error "unsupported operand types" end
   | Eunop (Unot, e1) ->
       Vint (is_false (expr ctx e1))
-  | Ecall ("sizeof", [e1]) ->
-      let i,f = expr_set ctx e1 in
-      Vint ((f - i) + 1)
+  | Ecall ("size", [e1]) ->
+    begin match expr ctx e1 with
+      | Vlist(_,r) -> let i,f = vset_to_tuplo r in Vint ((f - i) + 1) 
+      | Vset(i,f) -> Vint ((f - i) + 1)
+      | _ -> error "a função size apenas suporta conjuntos"
+    end
   | Ecall (f, el) ->
     begin
       try
@@ -251,10 +254,10 @@ and stmt ctx = function
       let range = 
         match expr ctx sz with
         | Vint n -> Vset(0, n)
-        | Vset (i,f) -> Vset(i,f)
+        | Vset (i, f) -> Vset(i, f)
         | _ -> error "tipo de dados não suportado"
       in
-      let tp = get_type t ctx in
+      let tp = expr ctx t in
       Hashtbl.add local_tbl id (range, tp)
   | Sset (id, set) ->
       let local_tbl = List.hd (List.rev ctx) in

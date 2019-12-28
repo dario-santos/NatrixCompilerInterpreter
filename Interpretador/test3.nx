@@ -1,14 +1,8 @@
-type bit = [16 .. 32];
-type bool = [0 .. 1];
+type ar : array 0 .. 20 of minint .. maxint;
 
-type stack : array bit of bool;
-val x : stack filled by 0;
+val x : ar filled by 10;
 
-
-
-foreach i in bit
-{
-    x[i] := 0;
-    print(i);
-    print(x[i]);
+foreach i in 1 .. 19
+{ 
+    print(size(x));
 }

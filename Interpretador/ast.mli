@@ -31,7 +31,7 @@ and stmt =
   | Sassign of ident * expr
   | Sdeclare of ident * costumtype * expr
   | Sset of ident * expr
-  | Sarray of ident * expr * costumtype
+  | Sarray of ident * expr * expr
   | Sdeclarearray of ident * ident * expr
   | Sprint of expr
   | Sblock of stmt list
