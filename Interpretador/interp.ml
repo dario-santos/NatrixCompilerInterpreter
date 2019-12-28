@@ -121,9 +121,10 @@ let rec expr ctxs = function
       else 
         let tbls = find_id id ctxs in
         let local_tbl = List.hd (List.rev tbls) in
-          fst(Hashtbl.find local_tbl id)
+        fst(Hashtbl.find local_tbl id)
           (* É sempre retornado o valor *)
           (* No caso da definição dos conjuntos e arrays o range *)
+          (* Isto causa erros indevidos *)
   | Eget (id, e2) ->
     if (List.length (find_id id ctxs)) == 0 then error "variável não declarada"
     else 
