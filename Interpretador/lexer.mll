@@ -20,6 +20,10 @@
       ("foreach", FOREACH);
       ("in", IN);
       ("type", TYPE);
+      ("array", ARRAY);
+      ("of", OF);
+      ("filled", FILLED);
+      ("by", BY);
       ("print", PRINT);
       ("function", FUNCTION);
       ("return", RETURN);

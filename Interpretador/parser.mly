@@ -9,6 +9,7 @@
 %token FOREACH IN TO
 %token FUNCTION RETURN
 %token TYPE
+%token ARRAY OF FILLED BY
 %token MAXINT MININT
 %token PLUS MINUS TIMES DIV
 %token LPR "(" 
@@ -35,7 +36,7 @@
 %left PLUS MINUS
 %left TIMES DIV
 %nonassoc LBK
-
+%nonassoc TO
 /* Ponto de entrada da gramática */
 %start prog
 
@@ -48,11 +49,9 @@ prog:
 | b = list(stmts) EOF { Stblock b }
 ;
 
-
 stmts:
 | FUNCTION f = ident "(" x = separated_list(",", argument_list) ")" ":"  r = type_def "{" s = suite "}" { Stfunction(f, x, r, s)}
-| TYPE id = ident "=" "[" e1 = expr TO e2 = expr "]" ";"                                        { Stsetdef (id, e1, e2) }
-| s = stmt                                                                                      { Stmt s } 
+| s = stmt                                                                       { Stmt s } 
 ;
 
 argument_list:
@@ -67,20 +66,23 @@ stmt:
 | s = simple_stmt                                                 { s } 
 | IF "(" e = expr ")" "{" s1 = suite "}"                          { Sif(e, s1, Sblock [])}
 | IF "(" e = expr ")" "{" s1 = suite "}" ELSE "{" s2 = suite "}"  { Sif(e, s1, s2)}
-| FOREACH id = ident IN e1 = expr TO e2 = expr "{" s = suite "}"  { Sforeach(id, e1, e2, s)}
+| FOREACH id = ident IN set = expr "{" s = suite "}"              { Sforeach(id, set, s)}
 ;
 
 simple_stmt:
 | RETURN e = expr ";"                              { Sreturn e }
 | VAL id = ident ":" t = type_def "=" e = expr ";" { Sdeclare(id, t ,e) }
+| TYPE id = ident "=" "[" set = expr "]" ";"       { Sset (id, set) }
+| TYPE id = ident ":" ARRAY size = expr OF t = type_def ";"   { Sarray (id, size, t) }
+| VAL id = ident ":" t = ident FILLED BY e = expr ";" { Sdeclarearray(id, t ,e) }
 | id = ident ":""=" e = expr ";"                   { Sassign(id, e) }
-| e1 = expr "["e2 = expr"]" ":""=" e3 = expr ";"   { Sset (e1, e2, e3) }
+| id = ident "["e2 = expr"]" ":""=" e3 = expr ";"  { Saset (id, e2, e3) }
 | PRINT "(" e = expr ")" ";"                       { Sprint e }
 ;
 
 type_def:
 | INT           { Int }
-| id = ident    { CTset id }
+| id = ident    { CTid id }
 ;
 
 expr:
@@ -88,11 +90,12 @@ expr:
 | MAXINT                            { Emaxint }
 | MININT                            { Eminint }
 | id = ident                        { Eident id }
-| e1 = expr "[" e2 = expr "]"       { Eget (e1, e2)}
+| e1 = expr TO e2 = expr            { Eset(e1, e2)}
+| id = ident "[" e2 = expr "]"      { Eget (id, e2)}
 | NOT e1 = expr                     { Eunop (Unot, e1)}
 | e1 = expr o = binop e2 = expr     { Ebinop (o, e1, e2) }
-| "(" e = expr ")"                  { e }
 | id = ident "(" l = separated_list("," , expr) ")" {Ecall(id, l)}
+| "(" e = expr ")"                  { e }
 ;
 
 %inline binop:

@@ -18,34 +18,36 @@ and expr =
   | Ecst of int
   | Eminint
   | Emaxint
+  | Eset of expr * expr
   | Eident of ident
   | Ebinop of binop * expr * expr
   | Eunop of unop * expr
   | Ecall of ident * expr list
-  | Elist of expr list
-  | Eget of expr * expr (* e1[e2] *)
+  | Eget of ident * expr (* e1[e2] *)
 
 and stmt =
   | Sif of expr * stmt * stmt
   | Sreturn of expr
   | Sassign of ident * expr
   | Sdeclare of ident * costumtype * expr
+  | Sset of ident * expr
+  | Sarray of ident * expr * costumtype
+  | Sdeclarearray of ident * ident * expr
   | Sprint of expr
   | Sblock of stmt list
-  | Sforeach of ident * expr * expr * stmt
+  | Sforeach of ident * expr * stmt
   | Seval of expr
-  | Sset of expr * expr * expr (* e1[e2] = e3 *)
+  | Saset of ident * expr * expr (* id[e2] := e3 *)
   
 and stmts =                                              (* Para não podermos definir funções dentro de instruções *) 
   | Stblock of stmts list
   | Stfunction of ident * argument list * costumtype * stmt
-  | Stsetdef of ident * expr * expr
   | Stmt of stmt
 
 and argument = ident * costumtype
 
 and costumtype = 
   | Int
-  | CTset of ident
- 
+  | CTid of ident
+  
 and program = stmts

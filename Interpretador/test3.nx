@@ -1,0 +1,8 @@
+type bool = [0 .. 1];
+type e = [0 .. 10];
+
+type a : array e of bool;
+
+val x : a filled by 2;
+
+print(x[0]);

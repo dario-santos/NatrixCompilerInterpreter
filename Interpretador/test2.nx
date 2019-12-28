@@ -1,8 +1,20 @@
-type small_int = [0 .. 10];
-   val pipo : int = 4;
-function somar(x : small_int, y : small_int) : small_int
+type bool = [0 .. 1];
+type stack = [0 .. 10];
+
+val myStack : stack = 0;
+val is_full : bool = 0;
+
+foreach i in 0 .. 100
 {
-    return x + y;
+    // Aqui vai dar erro no Sassign
+    myStack := myStack + 1;
 }
 
-print(somar(5, 2));
+if(is_full)
+{
+    print(100);
+}
+else 
+{
+    print(0);
+}
