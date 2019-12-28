@@ -1,8 +1,23 @@
 type ar : array 0 .. 20 of minint .. maxint;
 
 val x : ar filled by 10;
+val y : ar filled by 0;
 
-foreach i in 1 .. 19
-{ 
-    print(size(x));
+if(x == y)
+{
+    print(0);
 }
+
+foreach i in 0 .. 20
+{
+    y[i] := 10;
+}
+
+if(x == y)
+{
+    print(1);
+}
+
+print(2);
+
+// Output esperado: 1 2

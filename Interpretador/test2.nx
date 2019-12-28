@@ -1,20 +1,9 @@
 type bool = [0 .. 1];
-type stack = [0 .. 10];
+type stack : array 0 .. 10 of bool;
 
-val myStack : stack = 0;
-val is_full : bool = 0;
+val my_stack : stack filled by 0;
 
-foreach i in 0 .. 100
+foreach i in stack
 {
-    // Aqui vai dar erro no Sassign
-    myStack := myStack + 1;
-}
-
-if(is_full)
-{
-    print(100);
-}
-else 
-{
-    print(0);
+    print(i);
 }

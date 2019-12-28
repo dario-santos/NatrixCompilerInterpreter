@@ -5,8 +5,7 @@
 
 type ident = string
 
-type unop =
-  | Uneg 
+type unop = 
   | Unot
 
 and binop =
@@ -23,7 +22,7 @@ and expr =
   | Ebinop of binop * expr * expr
   | Eunop of unop * expr
   | Ecall of ident * expr list
-  | Eget of ident * expr (* e1[e2] *)
+  | Eget of ident * expr (* id[e2] *)
 
 and stmt =
   | Sif of expr * stmt * stmt
