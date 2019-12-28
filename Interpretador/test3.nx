@@ -1,8 +1,14 @@
+type bit = [16 .. 32];
 type bool = [0 .. 1];
-type e = [0 .. 10];
 
-type a : array e of bool;
+type stack : array bit of bool;
+val x : stack filled by 0;
 
-val x : a filled by 2;
 
-print(x[0]);
+
+foreach i in bit
+{
+    x[i] := 0;
+    print(i);
+    print(x[i]);
+}

@@ -10,7 +10,7 @@ type value =
   | Vint of int
   | Vset of int * int
   | Varray of value * value
-  | Vlist of value array
+  | Vlist of value array * value
 
 (* Extraír o valor do Vint *)
 let vint_to_int = function
@@ -50,12 +50,11 @@ let rec compare_list a1 n1 a2 n2 i =
 
 let rec compare_value v1 v2 = 
   match v1, v2 with
-  | Vlist a1, Vlist a2 -> compare_list a1 (Array.length a1) a2 (Array.length a2) 0
+  | Vlist (a1,_), Vlist (a2,_) -> compare_list a1 (Array.length a1) a2 (Array.length a2) 0
   | _ -> compare v1 v2
 
 let binop op v1 v2 = match op, v1, v2 with
   | Badd, Vint n1, Vint n2 -> Vint (n1 + n2)  
-  | Badd, Vlist l1, Vlist l2 -> Vlist (Array.append l1 l2)
   | Bsub, Vint n1, Vint n2 -> Vint (n1 - n2)
   | Bmul, Vint n1, Vint n2 -> Vint (n1 * n2)
   | Bdiv, Vint _, Vint 0 -> error "divisão por zero"
@@ -133,9 +132,10 @@ let rec expr ctx = function
       let tbls = find_id id ctx in
       let local_tbl = List.hd (List.rev tbls) in
     begin match fst(Hashtbl.find local_tbl id) with
-      | Vlist l ->
-          let i = expr_int ctx e2 in
-          (try l.(i) with Invalid_argument _ -> error "index out of bounds")
+      | Vlist (l, range) ->
+          let i,_ = vset_to_tuplo range in
+          let index = expr_int ctx e2 in
+          (try l.(index - i) with Invalid_argument _ -> error "index out of bounds")
       | _ -> error "list expected" 
     end
 
@@ -228,9 +228,16 @@ and stmt ctx = function
         let tbls = find_id ida ctx in
         let local_tbl_type = List.hd (List.rev tbls) in
         let range, array_type = Hashtbl.find local_tbl_type ida in (* Varray (tamanho * tipo)*)
-        let i, f = vset_to_tuplo range in
-        let a = Array.make f (Vint v) in
-        Hashtbl.add local_tbl id ((Vlist a), array_type)
+        let i, f = 
+          match range with
+          | Vint n -> 0, n
+          | Vset (i,f) -> i, f
+          | _ -> error "tipo de dados não suportado"
+        in
+        if value_in_type_limits v array_type then
+          let a = Array.make ((f - i) + 1) (Vint v) in
+          Hashtbl.add local_tbl id ((Vlist (a, Vset(i, f))), array_type)
+        else error "Sdeclarearray: valor fora dos limites do tipo"
       with _ -> error "tipo array não definido"
     end
       (* a, tipo, 3 *)
@@ -241,9 +248,14 @@ and stmt ctx = function
       let local_tbl = List.hd (List.rev ctx) in
       ignore(if Hashtbl.mem local_tbl id then error "o identificador deve ser único"); (*Se já existir uma variável no scope *)
       ignore(if Hashtbl.mem functions id then error "o identificador deve ser único"); (*Se já existir uma função então termina *)
-      let i, f = expr_set ctx sz in
+      let range = 
+        match expr ctx sz with
+        | Vint n -> Vset(0, n)
+        | Vset (i,f) -> Vset(i,f)
+        | _ -> error "tipo de dados não suportado"
+      in
       let tp = get_type t ctx in
-      Hashtbl.add local_tbl id (Vset(i, f), tp)
+      Hashtbl.add local_tbl id (range, tp)
   | Sset (id, set) ->
       let local_tbl = List.hd (List.rev ctx) in
       ignore(if Hashtbl.mem local_tbl id then error "o identificador deve ser único"); (*Se já existir uma variável no scope *)
@@ -251,7 +263,24 @@ and stmt ctx = function
       ignore(if Hashtbl.mem arrays id then error "a função deve ter um id único");
       let s = expr ctx set in
       Hashtbl.add local_tbl id (s, Vset(0, max_int))
-  | Saset (id, e1, e2) -> error "Sset não implementado"
+  | Saset (id, e1, e2) ->
+  (* Procurar o id *)
+  (* Ver se o valor do e2 está nas confurmidades *)
+  if (List.length (find_id id ctx)) == 0 then error "Sset: variável não declarada"
+  else 
+      let tbls = find_id id ctx in
+      let local_tbl = List.hd (List.rev tbls) in
+      let arr, t = Hashtbl.find local_tbl id in      (* Vlist of value array    *)
+      let index = expr_int ctx e1 in                 (* Ir buscar o index       *)
+      let new_value = expr_int ctx e2 in
+        begin match arr with
+          | Vlist (l,range) ->
+            if value_in_type_limits new_value t then
+              let i,_ = vset_to_tuplo range in
+              l.(index - i) <- Vint(new_value)
+            else error "Sassign: valor fora dos limites do tipo"
+          | _       -> error "list expected" 
+        end
   | Sprint e          -> print_value (expr ctx e); printf "@."
   | Sblock bl         -> interpret_block_stmt ctx bl
   | Sforeach(x, e, bl) ->
