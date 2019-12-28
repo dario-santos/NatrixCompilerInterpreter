@@ -1,13 +1,6 @@
-function maior(x, y) : int 
+if(0)
 {
-    if(x > y)
-    {
-        return x;
-    }
-    
-    return y;
+    print(0);
 }
 
-print(maior(10, 25));
-
-print(maior(55, 89));
+print(5);

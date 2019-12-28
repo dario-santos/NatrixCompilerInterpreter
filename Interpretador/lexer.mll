@@ -36,7 +36,7 @@
 let digit      = ['0'-'9']
 let letter     = ['a'-'z' 'A'-'Z']
 let integer    = digit+
-let id         = ('_'|letter)(letter|digit)*
+let id         = ('_'|letter)('_'|letter|digit)*
 let newline    = ['\n']
 let whitespace = [' ' '\t']
 

@@ -9,6 +9,8 @@ type value =
   | Vint of int
   | Vlist of value array
 
+exception Return of value
+  
 (* Vizualização *)
 let rec print_value = function
   | Vint n -> printf "%d" n
@@ -48,12 +50,8 @@ let binop op v1 v2 = match op, v1, v2 with
   | _ -> error "operandos não suportados"
 
 let functions = (Hashtbl.create 17 : (string, ident list * costumtype * stmt) Hashtbl.t)
-let vartipes = (Hashtbl.create 17 : (ident, costumtype) Hashtbl.t)
 let sets = (Hashtbl.create 17 : (string, int * int) Hashtbl.t)
 
-(* A instrução 'return' de Python é interpretada com recurso a uma excepção *)
-
-exception Return of value
 
 (* Les variáveis locais
    (parâmetros de funções e variáveis introduzidas por atribuições) são
@@ -61,8 +59,8 @@ exception Return of value
    seguintes com o nome 'ctx'
 *)
 
-type ctx = (string, value) Hashtbl.t
-let globalvars = (Hashtbl.create 17 : ctx)
+type table_ctx = (string, value * costumtype) Hashtbl.t
+let globalvars = (Hashtbl.create 17 : table_ctx)
 
 (* Interpretação de uma expressão (devolve um valor) *)
 let rec expr ctx = function
@@ -89,24 +87,24 @@ let rec expr ctx = function
       try
         let args, return, body = Hashtbl.find functions f in
         let comb = List.combine args el in
-        let localtbl = (Hashtbl.create 17 : ctx) in
-        ignore(List.iter (fun (id, e) -> stmt localtbl (Sdeclare(id, Int, e))) comb);
-        ignore(stmt localtbl body);
+        let localtbl = (Hashtbl.create 17 : table_ctx) in
+        let ctx = ctx@[localtbl] in
+        ignore(List.iter (fun (id, e) -> stmt ctx (Sdeclare(id, Int, e))) comb);
+        ignore(stmt ctx body);
         error "funcao sem return"
       with 
         | Not_found -> error "função não implementada"
         | Invalid_argument _ -> error "chamada incorreta à função, assinatura inválida"
-        | Return r -> r 
+        | Return r -> r
     end
   | Elist el ->
       Vlist (Array.of_list (List.map (expr ctx) el))
   | Eident id ->
-    begin try (* É local?*)
-        Hashtbl.find ctx id
-      with Not_found -> (*É global ?*)
-        if not (Hashtbl.mem globalvars id) then error "variável não declarada";
-        Hashtbl.find globalvars id
-    end 
+      if (List.length ctx) == 0 then error "variável não declarada"
+      else 
+        let tbls = find_id id ctx in
+        let local_tbl = List.hd (List.rev tbls) in
+          fst(Hashtbl.find local_tbl id)
   | Eget (e1, e2) ->
       begin match expr ctx e1 with
       | Vlist l ->
@@ -120,7 +118,7 @@ and expr_int ctx e =
   | Vint n -> n
   | _ -> error "integer expected"
 
-and extract_value v= 
+and extract_value v = 
   match v with
   | Vint n -> n
   | _ -> error "experavasse um inteiro"
@@ -135,65 +133,71 @@ and value_in_type_limits v t =
     with _ -> error "tipo nao definido"    
 
 (* interpretação de uma instrução - não devolve nada *)
+and find_id id l = 
+  match l with
+  | ct::tl -> if Hashtbl.mem ct id then [ct] @ (find_id id tl) else (find_id id tl) 
+  | _ -> []
 
 and stmt ctx = function
-  | Sif (e, s1, s2) ->
+  | Sif (e, s1, s2)   ->
       if is_true (expr ctx e) == 1 
-      then stmt (Hashtbl.create 17 : ctx) s1 
-      else stmt (Hashtbl.create 17 : ctx) s2
-  | Sreturn e ->
-      raise (Return (expr ctx e))
-  | Sassign (id, e1) ->
-    begin try (*Ver se é local*)
-      ignore(Hashtbl.find ctx id);
-      let t = Hashtbl.find vartipes id in (*Todo: Atualizar os tipos das variaveis *)
+      then stmt (ctx @ [(Hashtbl.create 17 : table_ctx)]) s1 
+      else stmt (ctx @ [(Hashtbl.create 17 : table_ctx)]) s2
+  | Sreturn e         -> raise (Return (expr ctx e))
+  | Sassign (id, e1)  ->
+      let tbls = find_id id ctx in
+      ignore(if List.length tbls == 0 then error "variável não declarada");
+      let first_tbl = List.hd (List.rev ctx) in
+      let _,t = Hashtbl.find first_tbl id in
       let v = expr ctx e1 in
-      if value_in_type_limits (extract_value v) t then Hashtbl.replace ctx id v
+      if value_in_type_limits (extract_value v) t then Hashtbl.replace (List.hd ctx) id (v, t)
       else error "variavel fora dos limites"
-    with Not_found -> (*Ver se é global*)
-      ignore(Hashtbl.find globalvars id);
-      let t = Hashtbl.find vartipes id in
-      let v = expr globalvars e1 in
-      if value_in_type_limits (extract_value v) t then Hashtbl.replace globalvars id v
-      else error "variavel fora dos limites" 
-    end
   | Sdeclare (id, t ,e1) ->
-    ignore(if Hashtbl.mem ctx id then error "variável já definida"); (*Se já existir uma variável local então termina *)
+    let local_tbl = List.hd (List.rev ctx) in
+    ignore(if Hashtbl.mem local_tbl id then error "o identificador deve ser único"); (*Se já existir uma variável no scope *)
+    ignore(if Hashtbl.mem sets id then error "o identificador deve ser único"); (*Se já existir um conjunto então termina *)
+    ignore(if Hashtbl.mem functions id then error "o identificador deve ser único"); (*Se já existir uma função então termina *)
     let v = expr ctx e1 in
-    if value_in_type_limits (extract_value v) t then 
-      let () = Hashtbl.add vartipes id t in
-      Hashtbl.add ctx id v
+    if value_in_type_limits (extract_value v) t then
+      Hashtbl.add local_tbl id (v, t)
     else error "variavel fora dos limites"
   | Sset (e1, e2, e3) ->
       begin match expr ctx e1 with
       | Vlist l -> l.(expr_int ctx e2) <- expr ctx e3
       | _ -> error "list expected" end
-  | Sprint e -> print_value (expr ctx e); printf "@."
-  | Sblock bl -> block ctx bl
+  | Sprint e          -> print_value (expr ctx e); printf "@."
+  | Sblock bl         -> interpret_block_stmt ctx bl
   | Sforeach(x, e1, e2, s) ->
     let v1 = expr_int ctx e1 in
     let v2 = expr_int ctx e2 in
     for i = v1 to v2 do
-      let localtbl = (Hashtbl.create 17 : ctx) in (* Cada iteração tem um contexto próprio *)
-      stmt localtbl (Sdeclare(x, Int, Ecst i));   (* Atualizar a variável do for*)
-      stmt localtbl s; 
+      let localtbl = (Hashtbl.create 17 : table_ctx) in   (* Cada iteração tem um contexto próprio *)
+      stmt (ctx@[localtbl]) (Sdeclare(x, Int, Ecst i));   (* Atualizar a variável do for*)
+      stmt (ctx@[localtbl]) s; 
     done
-  | Seval e -> ignore (expr ctx e)
-  | Ssetdef (id, e1, e2) -> 
-    ignore(if Hashtbl.mem ctx id then error "variável já definida");
-    ignore(if Hashtbl.mem sets id then error "variável já definida");
-    let i = expr_int ctx e1 in
-    let f = expr_int ctx e2 in
-    ignore(if i > f then error "valor inicial do conjunto é maior do que o final");
-    Hashtbl.add sets id (i, f)
+  | Seval e           -> ignore (expr ctx e)
+  
+and stmts ctx = function  
+  | Stfunction (f, args, return, body) ->
+      ignore(if List.length(find_id f ctx) > 0 then error "a função deve ter um id único");
+      ignore(if Hashtbl.mem functions f then error "a função deve ter um id único");
+      Hashtbl.add functions f (args, return, body)
+  | Stblock bl -> interpret_block_stmts ctx bl
+  | Stmt s -> stmt ctx s
+  | Stsetdef (id, e1, e2) ->
+      ignore(if List.length(find_id id ctx) > 0 then  error "o conjunto deve ter um id único");
+      let i = expr_int ctx e1 in
+      let f = expr_int ctx e2 in
+      ignore(if i > f then error "valor inicial do conjunto é maior do que o final");
+      Hashtbl.add sets id (i, f)
 
-(* interpretação de um bloco, i.e. uma sequência de instruções *)
-and block ctx = function
+and interpret_block_stmt ctx = function
   | [] -> ()
-  | s :: sl -> stmt ctx s; block ctx sl
+  | s :: sl -> stmt ctx s; interpret_block_stmt ctx sl
+
+and interpret_block_stmts ctx = function
+  | [] -> ()
+  | s :: sl -> stmts ctx s; interpret_block_stmts ctx sl
 
 (* interpretação de um ficheiro *)
-let file (fl, s) =
-  List.iter
-    (fun (f,args,return, body) -> Hashtbl.add functions f (args, return, body)) fl;
-  stmt globalvars s
+let file s = stmts [(Hashtbl.create 17 : table_ctx)] s

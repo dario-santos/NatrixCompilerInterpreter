@@ -45,15 +45,18 @@
 %%
 
 prog:
-| dl = list(def) b = nonempty_list(stmt) EOF { dl, Sblock b }
+| b = list(stmts) EOF { Stblock b }
 ;
 
-def:
-| FUNCTION f = ident "(" x = separated_list(",", ident) ")" ":"  r = type_def "{" s = suite "}" { f, x, r, s }
+
+stmts:
+| FUNCTION f = ident "(" x = separated_list(",", ident) ")" ":"  r = type_def "{" s = suite "}" { Stfunction(f, x, r, s)}
+| TYPE id = ident "=" "[" e1 = expr TO e2 = expr "]" ";"                                        { Stsetdef (id, e1, e2) }
+| s = stmt                                                                                      { Stmt s } 
 ;
 
 suite:
-| l = nonempty_list(stmt) { Sblock l }
+| l = list(stmt) { Sblock l }
 ;
 
 stmt:
@@ -69,7 +72,6 @@ simple_stmt:
 | id = ident ":""=" e = expr ";"                   { Sassign(id, e) }
 | e1 = expr "["e2 = expr"]" ":""=" e3 = expr ";"   { Sset (e1, e2, e3) }
 | PRINT "(" e = expr ")" ";"                       { Sprint e }
-| TYPE id = ident "=" "[" e1 = expr TO e2 = expr "]" ";" { Ssetdef (id, e1, e2) }
 ;
 
 type_def:

@@ -35,13 +35,15 @@ and stmt =
   | Sforeach of ident * expr * expr * stmt
   | Seval of expr
   | Sset of expr * expr * expr (* e1[e2] = e3 *)
-  | Ssetdef of ident * expr * expr
-
+  
+  and stmts =                                              (* Para não podermos definir funções dentro de instruções *) 
+  | Stblock of stmts list
+  | Stfunction of ident * ident list * costumtype * stmt
+  | Stsetdef of ident * expr * expr
+  | Stmt of stmt
 
 and costumtype = 
   | Int
   | CTset of ident
-
-and def = ident * ident list * costumtype * stmt
  
-and program = def list * stmt
+and program = stmts
