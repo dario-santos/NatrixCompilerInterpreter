@@ -3,6 +3,7 @@
 open Format
 open Lexing
 open Parser
+open Ast
 
 let usage = "usage: natrix [options] file.nx"
 

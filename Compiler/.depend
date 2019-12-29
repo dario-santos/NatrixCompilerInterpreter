@@ -1,34 +1,15 @@
 ast.cmi :
-compile.cmo : \
-    x86_64.cmi \
-    ast.cmi
-compile.cmx : \
-    x86_64.cmx \
-    ast.cmi
-lexer.cmo : \
-    parser.cmi \
-    ast.cmi
-lexer.cmx : \
-    parser.cmx \
-    ast.cmi
-main.cmo : \
-    parser.cmi \
-    lexer.cmo \
-    compile.cmo
-main.cmx : \
-    parser.cmx \
-    lexer.cmx \
-    compile.cmx
-parser.cmo : \
-    ast.cmi \
-    parser.cmi
-parser.cmx : \
-    ast.cmi \
-    parser.cmi
-parser.cmi : \
-    ast.cmi
-x86_64.cmo : \
-    x86_64.cmi
-x86_64.cmx : \
-    x86_64.cmi
+compile.cmo : x86_64.cmi ast.cmi
+compile.cmx : x86_64.cmx ast.cmi
+lexer.cmo : parser.cmi ast.cmi
+lexer.cmx : parser.cmx ast.cmi
+main.cmo : parser.cmi lexer.cmo compile.cmo ast.cmi
+main.cmx : parser.cmx lexer.cmx compile.cmx ast.cmi
+parser.cmo : ast.cmi parser.cmi
+parser.cmx : ast.cmi parser.cmi
+parser.cmi : ast.cmi
+printer.cmo : ast.cmi
+printer.cmx : ast.cmi
+x86_64.cmo : x86_64.cmi
+x86_64.cmx : x86_64.cmi
 x86_64.cmi :

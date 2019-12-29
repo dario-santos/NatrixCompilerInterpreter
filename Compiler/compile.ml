@@ -18,17 +18,15 @@ let error s = raise (Error s)
 
 (* Tipos de dados*)
 type value_type = int * int (* inicio, fim *)
-  
+
 
 (* Tamanho da frame, em byte (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 
-(* As variáveis globais são arquivadas numa tabela de dispersão *)
-(*let (genv : (string, unit) Hashtbl.t) = Hashtbl.create 17*)
-
 (* table_ctx representa um scope *)
 type table_ctx = (string, unit) Hashtbl.t
 
+exception HashError of table_ctx
 
 (* Utilizamos uma tabela associativa cujas chaves são as variáveis locais
    (cadeias de caracteres) e onde o valor associado é a posição
@@ -48,7 +46,7 @@ let rec compile_expr ctx = function
         pushq (reg rax)
     | Eident id ->
       begin try
-        let t = Hashtbl.find ctx id in
+        Hashtbl.find ctx id;
         movq (lab id) (reg rax) ++
         pushq (reg rax)
         with Not_found -> error "NOT FOUND"
@@ -84,41 +82,39 @@ let rec compile_expr ctx = function
     *)
     |_ -> error "expr not implemented"
 
-let rec compile_stmt ctx = function
+and compile_stmt ctx = function
   | Sdeclare (id, t ,e) ->
     ignore(if Hashtbl.mem ctx id then error "Sdeclare: o identificador deve ser único"); (*Se já existir uma variável no scope *)
     let code =
       compile_expr ctx e ++
       popq rax ++
       movq (reg rax) (lab id)
-      in
-      Hashtbl.add ctx id ();
+    in
+    Hashtbl.add ctx id ();
     code
   | Sprint e ->  
       compile_expr ctx e ++
       popq rdi ++
       call "print_int"
   | _ -> error "COMPILE STMT"
-
+  
+and interpret_block_stmt ctx = function
+  | [] -> nop
+  | s :: sl -> (compile_stmt ctx s) ++ (interpret_block_stmt ctx sl)
+  
+and interpret_block_stmts ctx = function
+  | [] -> nop
+  | s::sl -> (compile_stmts ctx s) ++ (interpret_block_stmts ctx sl)
+  
 and compile_stmts ctx = function  
   | Stfunction (f, args, return, body) -> error "compile_stmts Stfunction not implemented"
   | Stblock bl -> interpret_block_stmts ctx bl
   | Stmt s     -> compile_stmt ctx s
-
-and interpret_block_stmt ctx = function
-  | [] -> nop
-  | s :: sl -> (compile_stmt ctx s) ++ (interpret_block_stmt ctx sl)
-
-and interpret_block_stmts ctx = function
-  | [] -> nop
-  | s::sl -> (compile_stmts ctx s) ++ (interpret_block_stmts ctx sl)
-
-
-(* Compilação do programa p e grava o código no ficheiro ofile *)
+  
+  (* Compilação do programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
   let ctx = (Hashtbl.create 17 : table_ctx) in
-  let code = [compile_stmts ctx p] in
-  let code = List.fold_right (++) code nop in
+  let code = compile_stmts ctx p in
   let p =
     { text =
         globl "main" ++ label "main" ++
