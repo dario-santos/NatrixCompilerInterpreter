@@ -7,7 +7,6 @@ if(x == y)
 {
     print(0);
 }
-
 foreach i in 0 .. 20
 {
     y[i] := 10;
@@ -19,5 +18,3 @@ if(x == y)
 }
 
 print(2);
-
-// Output esperado: 1 2

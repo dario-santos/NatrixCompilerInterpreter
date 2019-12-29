@@ -1,12 +1,15 @@
-CMO=lexer.cmo parser.cmo interp.cmo main.cmo
+CMO=lexer.cmo parser.cmo x86_64.cmo compile.cmo main.cmo
 GENERATED = lexer.ml parser.ml parser.mli
+BIN=natrix
 FLAGS=
 
-all: natrix
-	./natrix test.nx
+all: $(BIN)
+	./$(BIN) test.nx
+	gcc -g -no-pie test.s
+	./a.out
 
-natrix: $(CMO)
-	ocamlc $(FLAGS) -o $@ nums.cma $(CMO)
+$(BIN):$(CMO)
+	ocamlc $(FLAGS) -o $(BIN) $(CMO)
 
 .SUFFIXES: .mli .ml .cmi .cmo .mll .mly
 
@@ -23,14 +26,19 @@ natrix: $(CMO)
 	menhir -v $<
 
 .mly.mli:
-	menhir -v $<
+	ocamlyacc -v $<
 
 clean:
-	rm -f *.cm[io] *.o *.annot *~ natrix $(GENERATED)
-	rm -f parser.output parser.automaton
+	rm -f *.cm[io] *.o *~ $(BIN) $(GENERATED) parser.output
+	rm parser.automaton
+	rm parser.conflicts
+	rm a.out
 
 .depend depend:$(GENERATED)
 	rm -f .depend
 	ocamldep *.ml *.mli > .depend
 
 include .depend
+
+
+

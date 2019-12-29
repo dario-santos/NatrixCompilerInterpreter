@@ -1,9 +1,10 @@
-type bool = [0 .. 1];
-type stack : array 0 .. 10 of bool;
+val x : int = 3;
 
-val my_stack : stack filled by 0;
-
-foreach i in stack
+if(x == 3)
 {
-    print(i);
+    print(1);
+}
+else
+{
+    print(0);
 }

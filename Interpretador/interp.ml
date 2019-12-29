@@ -9,7 +9,7 @@ let error s = raise (Error s)
 type value =
   | Vint of int                  (* valor       *)
   | Vset of int * int            (* inicio, fim *)
-  | Varray of value * value      (* range, tipo *)
+  | Varray of int * int          (* inicio, fim *)
   | Vlist of value array * value (* lista, range*)
 
 (* Extraír o valor do Vint *)
@@ -121,7 +121,12 @@ let rec expr ctxs = function
       else 
         let tbls = find_id id ctxs in
         let local_tbl = List.hd (List.rev tbls) in
-        fst(Hashtbl.find local_tbl id)
+        let v = fst(Hashtbl.find local_tbl id) in
+        begin match v with
+          | Vset (i,f) -> Vset(i,f)
+          | Vint n -> Vint n
+          | _ -> error "O tipo array não pode ser utilizado desta forma"
+        end
           (* É sempre retornado o valor *)
           (* No caso da definição dos conjuntos e arrays o range *)
           (* Isto causa erros indevidos *)
@@ -224,10 +229,9 @@ and stmt ctx = function
       else
         let scopes = find_id ida ctx in
         let local_scope = List.hd (List.rev scopes) in
-        let range, t = Hashtbl.find local_scope ida in (* Varray (tamanho * tipo)*)
+        let range, t = Hashtbl.find local_scope ida in (*range * tipo)*)
         let i, f = match range with
-                   | Vint n      -> 0, n
-                   | Vset (i, f) -> i, f
+                   | Varray (i,f)-> i, f
                    | _ -> error "Sdeclarearray: tipo de dados não suportado"
         in
         if value_in_type_limits v t then
@@ -242,8 +246,8 @@ and stmt ctx = function
       ignore(if Hashtbl.mem functions id then error "o identificador deve ser único"); (*Se já existir uma função então termina *)
       let range = 
         match expr ctx sz with
-        | Vint n -> Vset(0, n)
-        | Vset (i, f) -> Vset(i, f)
+        | Vint n -> Varray(0, n)
+        | Vset (i, f) -> Varray(i, f)
         | _ -> error "tipo de dados não suportado"
       in
       let tp = expr ctx t in
@@ -255,14 +259,12 @@ and stmt ctx = function
       let s = expr ctx set in
       Hashtbl.add local_tbl id (s, Vset(0, max_int))
   | Saset (id, e1, e2) ->
-  (* Procurar o id *)
-  (* Ver se o valor do e2 está nas confurmidades *)
-  if (List.length (find_id id ctx)) == 0 then error "Sset: variável não declarada"
-  else 
+    if (List.length (find_id id ctx)) == 0 then error "Sset: variável não declarada"
+    else 
       let tbls = find_id id ctx in
       let local_tbl = List.hd (List.rev tbls) in
-      let arr, t = Hashtbl.find local_tbl id in      (* Vlist of value array    *)
-      let index = expr_int ctx e1 in                 (* Ir buscar o index       *)
+      let arr, t = Hashtbl.find local_tbl id in      
+      let index = expr_int ctx e1 in
       let new_value = expr_int ctx e2 in
         begin match arr with
           | Vlist (l,range) ->
@@ -277,9 +279,9 @@ and stmt ctx = function
   | Sforeach(x, e, bl) ->
     let i, f = expr_set ctx e in
     for i = i to f do
-      let localtbl = (Hashtbl.create 17 : table_ctx) in   (* Cada iteração tem um contexto próprio *)
-      stmt (ctx@[localtbl]) (Sdeclare(x, Int, Ecst i));   (* Atualizar a variável do for*)
-      stmt (ctx@[localtbl]) bl; 
+      let localtbl = ctx@[(Hashtbl.create 17 : table_ctx)] in   (* Cada iteração tem um contexto próprio *)
+      stmt localtbl (Sdeclare(x, Int, Ecst i));                 (* Atualizar a variável do for*)
+      stmt localtbl bl; 
     done
   | Seval e           -> ignore (expr ctx e)
   
