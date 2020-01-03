@@ -51,8 +51,6 @@ and interpret_block_stmts = function
 (* interpretação de um ficheiro *)
 let print_file s = print_stmts s
 
-
-
 (**)
 
 

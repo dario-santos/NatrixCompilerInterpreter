@@ -7,6 +7,10 @@ main:
 	pushq %rax
 	popq %rax
 	movq %rax, x
+	movq x, %rax
+	pushq %rax
+	popq %rdi
+	call print_int
 	addq $0, %rsp
 	movq $0, %rax
 	ret

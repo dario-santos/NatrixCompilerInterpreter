@@ -5,10 +5,13 @@
   - tudo o que não foi implementado
   - Utilizar variáveis 64 bits em vez de 32 bit, exemplo maxint
 *)
-
+  
+(* Produção de código para a linguagem natrix*)
+      
 open Format
 open X86_64
 open Ast
+      
 
 (* Excepção por levantar quando uma variável é mal utilizada *)
 exception VarUndef of string
@@ -19,53 +22,43 @@ let error s = raise (Error s)
 (* Tipos de dados*)
 type value_type = int * int (* inicio, fim *)
 
-
 (* Tamanho da frame, em byte (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 
-(* table_ctx representa um scope *)
-type table_ctx = (string, unit) Hashtbl.t
+exception HashError of ((string, unit) Hashtbl.t)
 
-exception HashError of table_ctx
-
-(* Utilizamos uma tabela associativa cujas chaves são as variáveis locais
-   (cadeias de caracteres) e onde o valor associado é a posição
-   relativamente  a %rbp (em bytes) *)
 module StrMap = Map.Make(String)
-
+      
 (* Compilação de uma expressão *)
+      
 let rec compile_expr ctx = function
-    | Ecst i ->
-        movq (imm i) (reg rax) ++
-        pushq (reg rax)
-    | Eminint -> 
-        movq (imm 0) (reg rax) ++
-        pushq (reg rax)
-    | Emaxint ->
-        movq (imm 2147483647) (reg rax) ++
-        pushq (reg rax)
-    | Eident id ->
-      begin try
-        Hashtbl.find ctx id;
-        movq (lab id) (reg rax) ++
-        pushq (reg rax)
-        with Not_found -> error "NOT FOUND"
-      end
+  | Ecst i ->
+    movq (imm i)  (reg rax) ++
+    pushq (reg rax)
+  | Eminint -> 
+    movq (imm 0) (reg rax) ++
+    pushq (reg rax)
+  | Emaxint ->
+    movq (imm 2147483647) (reg rax) ++
+    pushq (reg rax)
+  | Eident x ->
+      if not (Hashtbl.mem ctx x) then raise (VarUndef x);
+      movq (lab x) !%rax ++
+      pushq !%rax
     | Ebinop (Bdiv, e1, e2)-> (* um caso particular para a divisão *)
         compile_expr ctx e1 ++
-        compile_expr ctx e2 ++ (* TODO: Verificar se e2 é zero *)
-        movq (imm 0) !%rdx ++
+        compile_expr ctx e2 ++
+        movq (imm 0) (reg rdx) ++
         popq rbx ++
         popq rax ++
-        idivq !%rbx ++
-        pushq !%rax
+        idivq (reg rbx) ++
+        pushq (reg rax)
     | Ebinop (o, e1, e2)->
         let op = match o with
           | Badd -> addq
           | Bsub -> subq
           | Bmul -> imulq
-          | Bdiv -> assert false
-          |_ -> error "not implemented"
+          | _ -> assert false
         in
         compile_expr ctx e1 ++
         compile_expr ctx e2 ++
@@ -73,14 +66,14 @@ let rec compile_expr ctx = function
         popq rax ++
         op !%rbx !%rax ++
         pushq !%rax
-    (*| Letin (x, e1, e2) ->
+    | _ -> error "Not implemented"
+    
+    (*Letin (x, e1, e2) ->
         if !frame_size = next then frame_size := 8 + !frame_size;
         comprec env next e1 ++
         popq rax ++
         movq !%rax (ind ~ofs:(-next) rbp) ++
-        comprec (StrMap.add x next env) (next + 8) e2
-    *)
-    |_ -> error "expr not implemented"
+        comprec (StrMap.add x next env) (next + 8) e2*)
 
 and compile_stmt ctx = function
   | Sdeclare (id, t ,e) ->
@@ -97,24 +90,25 @@ and compile_stmt ctx = function
       popq rdi ++
       call "print_int"
   | _ -> error "COMPILE STMT"
-  
+        
 and interpret_block_stmt ctx = function
-  | [] -> nop
-  | s :: sl -> (compile_stmt ctx s) ++ (interpret_block_stmt ctx sl)
-  
+  | [] -> [nop]
+  | s :: sl -> (interpret_block_stmt ctx sl) @ [compile_stmt ctx s]
+        
 and interpret_block_stmts ctx = function
-  | [] -> nop
-  | s::sl -> (compile_stmts ctx s) ++ (interpret_block_stmts ctx sl)
-  
+  | [] -> [nop]
+  | s::sl -> (interpret_block_stmts ctx sl) @ [compile_stmts ctx s]
+        
 and compile_stmts ctx = function  
   | Stfunction (f, args, return, body) -> error "compile_stmts Stfunction not implemented"
-  | Stblock bl -> interpret_block_stmts ctx bl
+  | Stblock bl -> 
+    let block = List.rev(interpret_block_stmts ctx bl) in
+    List.fold_right (++) block nop
   | Stmt s     -> compile_stmt ctx s
-  
-  (* Compilação do programa p e grava o código no ficheiro ofile *)
+
+(* Compilação do programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
-  let ctx = (Hashtbl.create 17 : table_ctx) in
-  let code = compile_stmts ctx p in
+  let code = compile_stmts (Hashtbl.create 17 : (string, unit)) p in
   let p =
     { text =
         globl "main" ++ label "main" ++
@@ -131,7 +125,7 @@ let compile_program p ofile =
         call "printf" ++
         ret;
       data =
-        Hashtbl.fold (fun x _ l -> label x ++ dquad [1] ++ l) ctx
+        Hashtbl.fold (fun x _ l -> label x ++ dquad [1] ++ l) genv
           (label ".Sprint_int" ++ string "%d\n")
     }
   in
