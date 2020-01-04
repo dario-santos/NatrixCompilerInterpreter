@@ -1,3 +1,4 @@
-val x : int = 4;
-
-print(x);
+foreach i in 20 .. 22 
+{
+    print(i / 2);
+}

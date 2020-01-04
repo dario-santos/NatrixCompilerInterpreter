@@ -33,6 +33,7 @@ and print_stmt = function
   | Sprint e        -> printf "Sprint("; print_expr e; printf ")"
   | Sblock bl       -> interpret_block_stmt  bl
   | Seval e         -> printf "Seval("; print_expr e; printf ")"
+  | Sforeach(x, e, bl) -> printf "Sforeach(%s, " x; print_expr e; printf ",\n"; print_stmt bl; printf ")"
   | _ -> raise Not_found
   
 and print_stmts = function  
@@ -116,7 +117,7 @@ let () =
 
     (* Pára-se aqui se só queremos o parsing *)
     if !parse_only then exit 0;
-    if !print_ast then print_file p;
+    if !print_ast then print_file p; 
 
     (* Compilação da árvore de sintaxe abstracta p. O código máquina
        resultante desta transformação deve ficar escrito no ficheiro alvo ofile. *)
@@ -144,5 +145,3 @@ let () =
 	eprintf
 	  "Erro de compilação:  %s @." s;
   exit 1
-  | Compile.HashError ctx -> eprintf "erro_hash: "; Hashtbl.iter (fun x _ -> eprintf "%s \n" x) ctx; eprintf " @."; exit 1
-  (* Debug *)

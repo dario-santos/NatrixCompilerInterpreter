@@ -25,19 +25,19 @@ type value_type = int * int (* inicio, fim *)
 (* Tamanho da frame, em byte (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 
-exception HashError of ((string, unit) Hashtbl.t)
+type table_ctx = (string, value_type) Hashtbl.t
 
-module StrMap = Map.Make(String)
-      
-(* Compilação de uma expressão *)
-      
+(* Compilação de uma expressão *)     
 let rec compile_expr ctx = function
   | Ecst i ->
     movq (imm i)  (reg rax) ++
     pushq (reg rax)
+  | Eset (e1, e2) ->
+    compile_expr ctx e1 ++ (* inicio *)
+    compile_expr ctx e2    (* fim *)
   | Eminint -> 
     movq (imm 0) (reg rax) ++
-    pushq (reg rax)
+    pushq (reg rax) 
   | Emaxint ->
     movq (imm 2147483647) (reg rax) ++
     pushq (reg rax)
@@ -45,27 +45,27 @@ let rec compile_expr ctx = function
       if not (Hashtbl.mem ctx x) then raise (VarUndef x);
       movq (lab x) !%rax ++
       pushq !%rax
-    | Ebinop (Bdiv, e1, e2)-> (* um caso particular para a divisão *)
-        compile_expr ctx e1 ++
-        compile_expr ctx e2 ++
-        movq (imm 0) (reg rdx) ++
-        popq rbx ++
-        popq rax ++
-        idivq (reg rbx) ++
-        pushq (reg rax)
-    | Ebinop (o, e1, e2)->
-        let op = match o with
-          | Badd -> addq
-          | Bsub -> subq
-          | Bmul -> imulq
-          | _ -> assert false
-        in
-        compile_expr ctx e1 ++
-        compile_expr ctx e2 ++
-        popq rbx ++
-        popq rax ++
-        op !%rbx !%rax ++
-        pushq !%rax
+  | Ebinop (Bdiv, e1, e2)-> (* um caso particular para a divisão *)
+    compile_expr ctx e1 ++
+    compile_expr ctx e2 ++
+    movq (imm 0) (reg rdx) ++
+    popq rbx ++
+    popq rax ++
+    idivq (reg rbx) ++
+    pushq (reg rax)
+  | Ebinop (o, e1, e2)->
+    let op = match o with
+      | Badd -> addq
+      | Bsub -> subq
+      | Bmul -> imulq
+      | _ -> assert false
+    in
+    compile_expr ctx e1 ++
+    compile_expr ctx e2 ++
+    popq rbx ++
+    popq rax ++
+    op !%rbx !%rax ++
+    pushq !%rax
     | _ -> error "Not implemented"
     
     (*Letin (x, e1, e2) ->
@@ -77,18 +77,43 @@ let rec compile_expr ctx = function
 
 and compile_stmt ctx = function
   | Sdeclare (id, t ,e) ->
-    ignore(if Hashtbl.mem ctx id then error "Sdeclare: o identificador deve ser único"); (*Se já existir uma variável no scope *)
+    if Hashtbl.mem ctx id then error "Sdeclare: o identificador deve ser único"; (*Se já existir uma variável no scope *)
     let code =
       compile_expr ctx e ++
       popq rax ++
       movq (reg rax) (lab id)
     in
-    Hashtbl.add ctx id ();
+    Hashtbl.add ctx id (0, max_int);
     code
+  | Sassign (id, e1)  ->
+    if not (Hashtbl.mem ctx id) then error "Sassign: variável não declarada";
+    compile_expr ctx e1 ++
+    popq rax ++
+    movq (reg rax) (lab id)  
   | Sprint e ->  
+    compile_expr ctx e ++
+    popq rdi ++
+    call "print_int"
+  | Sblock bl -> 
+    let block = List.rev(interpret_block_stmt ctx bl) in
+    List.fold_right (++) block nop
+  | Sforeach(x, e, bl) ->
+    let code = compile_stmt ctx (Sdeclare(x, Int, Ecst 0)) in                 (* Declarar a variável do for*)      
+    let loop_initialize = 
+      code ++
       compile_expr ctx e ++
-      popq rdi ++
-      call "print_int"
+      popq rax ++
+      movq (reg rax) (reg r15) ++
+      popq rax ++
+      movq (reg rax) (lab x) ++
+      label "l"
+    in
+    let body = compile_stmt ctx bl in
+      loop_initialize ++ 
+      body ++
+      incq (lab x) ++
+      cmpq (reg r15) (lab x) ++
+      jle "l"
   | _ -> error "COMPILE STMT"
         
 and interpret_block_stmt ctx = function
@@ -108,7 +133,8 @@ and compile_stmts ctx = function
 
 (* Compilação do programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =
-  let code = compile_stmts (Hashtbl.create 17 : (string, unit)) p in
+  let ctx = (Hashtbl.create 17 : table_ctx) in
+  let code = compile_stmts ctx p in
   let p =
     { text =
         globl "main" ++ label "main" ++
@@ -125,7 +151,7 @@ let compile_program p ofile =
         call "printf" ++
         ret;
       data =
-        Hashtbl.fold (fun x _ l -> label x ++ dquad [1] ++ l) genv
+        Hashtbl.fold (fun x _ l -> label x ++ dquad [1] ++ l) ctx
           (label ".Sprint_int" ++ string "%d\n")
     }
   in
