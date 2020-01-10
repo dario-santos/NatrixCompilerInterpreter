@@ -1,30 +1,13 @@
 	.text
 	.globl	main
 main:
-	subq $24, %rsp
-	leaq 16(%rsp), %rbp
-	movq $0, %rax
-	pushq %rax
-	movq $5, %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	movq %rbx, 0(%rbp)
-	movq %rax, -8(%rbp)
-	movq $5, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -16(%rbp)
-	cmpq $0, -16(%rbp)
-	jge inicio_true_1
-	jmp print_error
-inicio_true_1:
-	cmpq $2147483647, -16(%rbp)
-	jle fim_true_1
-	jmp print_error
-fim_true_1:
+	subq $0, %rsp
+	leaq -8(%rsp), %rbp
+	jmp somar
+	popq %rdi
+	call print_int
 end:
-	addq $24, %rsp
+	addq $0, %rsp
 	movq $0, %rax
 	ret
 print_int:
@@ -33,14 +16,25 @@ print_int:
 	movq $0, %rax
 	call printf
 	ret
-print_error:
+print_error_t:
 	movq %rdi, %rsi
-	leaq .Sprint_error, %rdi
+	leaq .Sprint_error_t, %rdi
 	movq $0, %rax
 	call printf
 	jmp end
+print_error_f:
+	movq %rdi, %rsi
+	leaq .Sprint_error_f, %rdi
+	movq $0, %rax
+	call printf
+	jmp end
+somar:
+	call print_error_f
+	ret
 	.data
 .Sprint_int:
 	.string "%d\n"
-.Sprint_error:
+.Sprint_error_t:
 	.string "Erro de tipagem\n"
+.Sprint_error_f:
+	.string "Funcao sem retorno\n"

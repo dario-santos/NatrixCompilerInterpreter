@@ -32,7 +32,7 @@ let rec print_value = function
   | Vint n -> if n < 0 then error "a função print não suporta números negativos" else printf "%d" n
   | _ -> error "instruções print apenas suportam inteiros"
 
-(* Falso : Vint 0*)
+(* Falso : Vint 0 *)
 (* Verdade : Vint v != 0 *)
 let is_false = function
   | Vint n -> if n == 0 then 1 else 0

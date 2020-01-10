@@ -1,4 +1,12 @@
-type t = [0 .. 5];
+function somar() : int 
+{
 
-val x : t = 5;
+}
 
+print(somar());
+
+
+// Todo: 
+// type t = [0 .. 5];
+// foreach i in 0 .. t { ... }
+// Não devia ser possível utilizar o t na definição de um conjunto

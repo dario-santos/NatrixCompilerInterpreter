@@ -23,7 +23,8 @@ let number_of_tipagens = ref 0
 (* Hashtbl para as funções, a outra para os diferentes contextos *)
                  (*id, (tipo, ofs) *)
 type table_ctx = (string, (Ast.costumtype * int)) Hashtbl.t
-let (function_ctx : (string, X86_64.text) Hashtbl.t) = Hashtbl.create 17
+let (function_ctx : (string, argument list * costumtype) Hashtbl.t) = Hashtbl.create 17
+let functions_code = ref nop
 
 let rec find_id ctxs id = 
     match ctxs with
@@ -38,30 +39,31 @@ let is_in_type_boundaries ctxs id_ofs t =
     cmpq (imm minint) (ind ~ofs:(-id_ofs) rbp) ++
     jge ("inicio_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error"++
+    jmp "print_error_t"++
     label ("inicio_true_" ^ current_tipagem_test) ++
     cmpq (imm maxint) (ind ~ofs:(-id_ofs) rbp) ++
     jle ("fim_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error"++
-    label ("fim_true_" ^ current_tipagem_test)
-    
+    jmp "print_error_t"++
+    label ("fim_true_" ^ current_tipagem_test)  
   | CTid t -> 
     if List.length (find_id ctxs (t ^ "_fim")) = 0 then error "get_type_boundaries: Tipo nao definido";
-    let ctx = List.hd (List.rev (find_id ctxs t)) in
+    let ctx = List.hd (List.rev (find_id ctxs (t ^ "_fim"))) in
     let inicio_ofs = - snd(Hashtbl.find ctx (t ^ "_inicio")) in  
     let fim_ofs = - snd(Hashtbl.find ctx (t ^ "_fim")) in
     number_of_tipagens := !number_of_tipagens + 1;
     let current_tipagem_test = string_of_int(!number_of_tipagens) in
-    cmpq (ind ~ofs:(inicio_ofs) rbp) (ind ~ofs:(-id_ofs) rbp) ++
+    movq (ind ~ofs:(inicio_ofs) rbp) (reg rax) ++
+    cmpq (reg rax) (ind ~ofs:(-id_ofs) rbp) ++
     jge ("inicio_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error"++
+    jmp "print_error_t"++
     label ("inicio_true_" ^ current_tipagem_test) ++
-    cmpq (ind ~ofs:(fim_ofs) rbp) (ind ~ofs:(-id_ofs) rbp) ++
+    movq (ind ~ofs:(fim_ofs) rbp) (reg rax) ++
+    cmpq (reg rax) (ind ~ofs:(-id_ofs) rbp) ++
     jle ("fim_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error"++
+    jmp "print_error_t"++
     label ("fim_true_" ^ current_tipagem_test)
     
 let rec compile_expr ctxs = function
@@ -153,26 +155,22 @@ let rec compile_expr ctxs = function
     pushq (reg rax) ++
     label ("bool_end_" ^ current_bool_test)
   | Eunop (Unot, e1) ->
-    number_of_bool_tests := !number_of_bool_tests + 1;
-    let current_bool_test = string_of_int(!number_of_bool_tests) in
-    compile_expr ctxs e1 ++
-    popq rax ++
-    cmpq (imm 0) (reg rax) ++
-    je ("bool_true_" ^ current_bool_test) ++
-    movq (imm 0) (reg rax) ++
-    pushq (reg rax) ++
-    jmp ("bool_end_" ^ current_bool_test) ++
-    label ("bool_true_" ^ current_bool_test) ++
-    movq (imm 1) (reg rax) ++
-    pushq (reg rax) ++
-    label ("bool_end_" ^ current_bool_test)
+      number_of_bool_tests := !number_of_bool_tests + 1;
+      let current_bool_test = string_of_int(!number_of_bool_tests) in
+      compile_expr ctxs e1 ++
+      popq rax ++
+      cmpq (imm 0) (reg rax) ++
+      je ("bool_true_" ^ current_bool_test) ++
+      movq (imm 0) (reg rax) ++
+      pushq (reg rax) ++
+      jmp ("bool_end_" ^ current_bool_test) ++
+      label ("bool_true_" ^ current_bool_test) ++
+      movq (imm 1) (reg rax) ++
+      pushq (reg rax) ++
+      label ("bool_end_" ^ current_bool_test)
   | Ecall (f, el) ->
-    begin
-      try
-        ignore(Hashtbl.find function_ctx f);
-        call f
-      with Not_found -> error "função não implementada"
-    end
+    if not (Hashtbl.mem function_ctx f) then error "Funcao nao implementada";
+    jmp f
   | _ -> error "Not implemented"
     
 and compile_stmt ctxs = function
@@ -192,27 +190,27 @@ and compile_stmt ctxs = function
     let ctx = List.hd (List.rev ctxs) in
     if Hashtbl.mem ctx (id ^ "_fim") then error "Sdeclare: o identificador deve ser único";
     if Hashtbl.mem ctx id then error "Sdeclare: o identificador deve ser único";
-    let next = !frame_size in
+    let ofs = - !frame_size in
     frame_size := 8 + !frame_size;
     let code =
       compile_expr ctxs e ++
       popq rax ++
-      movq (reg rax) (ind ~ofs:(-next) rbp) ++
-      is_in_type_boundaries ctxs next t
+      movq (reg rax) (ind ~ofs rbp) ++
+      is_in_type_boundaries ctxs (-ofs) t
     in
-    Hashtbl.add ctx id (t, next);
+    Hashtbl.add ctx id (t, (-ofs));
     code
   | Sassign (id, e1)  ->
       if (List.length (find_id ctxs id)) == 0 then error "Sassign: variável não declarada";
       let ctx = List.hd (List.rev (find_id ctxs id)) in
-      let ofs = - snd(Hashtbl.find ctx id) in 
+      let t, ofs = Hashtbl.find ctx id in
+      let ofs = -ofs in 
       (* Ir buscar o tipo *)
       (* Código de tipagem run-time *)
-      
       compile_expr ctxs e1 ++
       popq rax ++
-      movq (reg rax) (ind ~ofs rbp)
-    
+      movq (reg rax) (ind ~ofs rbp) ++
+      is_in_type_boundaries ctxs (-ofs) t
   | Sset (id, set) ->
     let ctx = List.hd (List.rev ctxs) in
     if Hashtbl.mem ctx (id ^ "_fim") then error "Sset: o identificador deve ser único";
@@ -280,11 +278,13 @@ and compile_stmts ctxs = function
       (* return -> tipo de retorno *)
       (* body -> corpo *)
       if Hashtbl.mem function_ctx f then error "Stfunction funcao ja declarada";
-      let code = 
+      functions_code := !functions_code ++
+          label f ++
           compile_stmt ctxs body ++
-          ret
-      in
-      Hashtbl.add function_ctx f code;
+          (* SE CHEGAR AQUI ENTÃO ERRO *)
+          call "print_error_f" ++
+          ret;
+      Hashtbl.add function_ctx f (args, return);
       nop
   | Stblock bl -> 
       let block = List.rev(interpret_block_stmts ctxs bl) in
@@ -295,6 +295,7 @@ and compile_stmts ctxs = function
 let compile_program p ofile =
   let ctxs = [(Hashtbl.create 17 : table_ctx)] in
   let code = compile_stmts ctxs p in
+  functions_code := !functions_code; 
   let p =
     { text =
         globl "main" ++ label "main" ++
@@ -311,16 +312,23 @@ let compile_program p ofile =
         movq (imm 0) (reg rax) ++
         call "printf" ++
         ret ++
-        label "print_error" ++
+        label "print_error_t" ++
         movq !%rdi !%rsi ++
-        leaq (lab ".Sprint_error") rdi ++
+        leaq (lab ".Sprint_error_t") rdi ++
         movq (imm 0) !%rax ++
         call "printf" ++
-        jmp "end";
+        jmp "end" ++
+        label "print_error_f" ++
+        movq !%rdi !%rsi ++
+        leaq (lab ".Sprint_error_f") rdi ++
+        movq (imm 0) !%rax ++
+        call "printf" ++
+        jmp "end" ++
+        !functions_code;
       data = 
         label ".Sprint_int" ++ string "%d\n" ++
-        label ".Sprint_error" ++ string "Erro de tipagem\n"
-        
+        label ".Sprint_error_t" ++ string "Erro de tipagem\n" ++
+        label ".Sprint_error_f" ++ string "Funcao sem retorno\n"
     }
   in
   let f = open_out ofile in
