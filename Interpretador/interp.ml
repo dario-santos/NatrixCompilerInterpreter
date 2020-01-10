@@ -283,7 +283,7 @@ and stmt ctx = function
       stmt localtbl (Sdeclare(x, Int, Ecst i));                 (* Atualizar a variável do for*)
       stmt localtbl bl; 
     done
-  | Seval e           -> ignore (expr ctx e)
+  | Seval e           -> ignore(expr ctx e)
   
 and stmts ctx = function  
   | Stfunction (f, args, return, body) ->

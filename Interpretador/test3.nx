@@ -1,20 +1,25 @@
-type ar : array 0 .. 20 of minint .. maxint;
+type y=[0..20];
+type v:array y of minint..maxint;
+val vetor:v filled by 0;
+val tmp:int=0;
 
-val x : ar filled by 10;
-val y : ar filled by 0;
-
-if(x == y)
+foreach i in y
 {
-    print(0);
-}
-foreach i in 0 .. 20
-{
-    y[i] := 10;
+    vetor[i]:=i;
 }
 
-if(x == y)
+foreach i in y
 {
-    print(1);
-}
+    if(tmp==0){
 
-print(2);
+        print(i);
+        tmp:=1;
+    }
+    else
+    {
+        tmp:=0;
+    }
+
+
+
+}

@@ -1,4 +1,12 @@
-foreach i in 20 .. 22 
+function teste() : int
 {
-    print(i / 2);
+    print(2);
 }
+
+
+//outer for: 0
+//inner for: 4 5 6
+//outer for: 1
+//inner for: 4 5 6
+//outer for: 2
+//inner for: 4 5 6
