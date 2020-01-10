@@ -1,6 +1,6 @@
 ast.cmi :
-compile.cmo :
-compile.cmx :
+compile.cmo : x86_64.cmi ast.cmi
+compile.cmx : x86_64.cmx ast.cmi
 lexer.cmo : parser.cmi ast.cmi
 lexer.cmx : parser.cmx ast.cmi
 main.cmo : parser.cmi lexer.cmo compile.cmo ast.cmi

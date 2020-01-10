@@ -57,6 +57,8 @@ let binop op v1 v2 = match op, v1, v2 with
   | Bsub, Vint n1, Vint n2 -> Vint (n1 - n2)
   | Bmul, Vint n1, Vint n2 -> Vint (n1 * n2)
   | Bdiv, Vint _, Vint 0 -> error "A divisão por zero não é suportada"
+  | Bmod, Vint _, Vint 0 -> error "A divisão por zero não é suportada"
+  | Bmod, Vint n1, Vint n2 -> Vint (n1 mod n2)
   | Bdiv, Vint n1, Vint n2 -> Vint (n1 / n2)
   | Beq, _, _ -> if compare_value v1 v2 = 0  then Vint 1 else Vint 0
   | Bneq, _, _-> if compare_value v1 v2 <> 0 then Vint 1 else Vint 0
@@ -88,7 +90,7 @@ let rec expr ctxs = function
   | Ebinop (Bor, e1, e2) ->
       let v1 = expr ctxs e1 in
       if is_false v1 == 1 then expr ctxs e2 else v1
-  | Ebinop (Badd | Bsub | Bmul | Bdiv |
+  | Ebinop (Badd | Bsub | Bmul | Bdiv | Bmod |
             Beq | Bneq | Blt | Ble | Bgt | Bge as op, e1, e2) ->
       binop op (expr ctxs e1) (expr ctxs e2)
   | Eunop (Unot, e1) ->

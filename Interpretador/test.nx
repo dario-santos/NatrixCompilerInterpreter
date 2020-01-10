@@ -1,0 +1,21 @@
+type bool = [0 .. 1];
+
+function is_par() : bool
+{
+    foreach i in 0 .. 100
+    {
+        if(i % 2 == 0)
+        {
+            print(i);
+        }
+
+    }
+    return 1;
+}
+
+if(is_par()) {}
+
+// Todo:
+// type t = [0 .. 5];
+// foreach i in 0 .. t { ... }
+// Não devia ser possível utilizar o t na definição de um conjunto

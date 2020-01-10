@@ -1,11 +1,8 @@
-function somar(x : int) : int
-{
-    return 2;
-}
-
-print(somar(1));
+print(size(2 .. 20));
 
 // Todo:
 // type t = [0 .. 5];
 // foreach i in 0 .. t { ... }
 // Não devia ser possível utilizar o t na definição de um conjunto
+//
+// Tipagem

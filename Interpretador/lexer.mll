@@ -60,6 +60,7 @@ rule analisador = parse
   | '-'             { [MINUS] }
   | '*'             { [TIMES] }
   | '/'             { [DIV] }
+  | '%'             { [MOD] }
   | "<"             { [CMP Blt] }
   | "<="            { [CMP Ble] }
   | ">"             { [CMP Bgt] }

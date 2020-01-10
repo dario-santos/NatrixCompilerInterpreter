@@ -9,7 +9,7 @@ type unop =
   | Unot
 
 and binop =
-  | Badd | Bsub | Bmul | Bdiv
+  | Badd | Bsub | Bmul | Bdiv | Bmod
   | Beq | Bneq | Blt | Ble | Bgt | Bge
   | Band | Bor 
 

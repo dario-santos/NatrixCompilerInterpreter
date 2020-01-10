@@ -26,7 +26,7 @@ $(BIN):$(CMO)
 	menhir -v $<
 
 .mly.mli:
-	ocamlyacc -v $<
+	menhir -v $<
 
 clean:
 	rm -f *.cm[io] *.o *~ $(BIN) $(GENERATED) parser.output

@@ -33,6 +33,41 @@ let rec find_id ctxs id =
     | hd::tl -> if Hashtbl.mem hd id then [hd] @ (find_id tl id) else (find_id tl id) 
     | _ -> []
 
+let is_rbx_in_type_boundaries ctxs t = 
+  match t with
+  | Int ->
+    number_of_tipagens := !number_of_tipagens + 1;
+    let current_tipagem_test = string_of_int(!number_of_tipagens) in
+    cmpq (imm minint) (reg rbx) ++
+    jge ("inicio_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error_t"++
+    label ("inicio_true_" ^ current_tipagem_test) ++
+    cmpq (imm maxint) (reg rbx) ++
+    jle ("fim_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error_t"++
+    label ("fim_true_" ^ current_tipagem_test) 
+  | CTid t -> 
+    if List.length (find_id ctxs (t ^ "_fim")) = 0 then error "get_type_boundaries: Tipo nao definido";
+    let ctx = List.hd (List.rev (find_id ctxs (t ^ "_fim"))) in
+    let inicio_ofs = - snd(Hashtbl.find ctx (t ^ "_inicio")) in  
+    let fim_ofs = - snd(Hashtbl.find ctx (t ^ "_fim")) in
+    number_of_tipagens := !number_of_tipagens + 1;
+    let current_tipagem_test = string_of_int(!number_of_tipagens) in
+    movq (ind ~ofs:(inicio_ofs) rbp) (reg rax) ++
+    cmpq (reg rax) (reg rbx) ++
+    jge ("inicio_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error_t"++
+    label ("inicio_true_" ^ current_tipagem_test) ++
+    movq (ind ~ofs:(fim_ofs) rbp) (reg rax) ++
+    cmpq (reg rax) (reg rbx) ++
+    jle ("fim_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error_t"++
+    label ("fim_true_" ^ current_tipagem_test)
+
 let is_in_type_boundaries ctxs id_ofs t = 
   match t with
   | Int ->
@@ -47,7 +82,7 @@ let is_in_type_boundaries ctxs id_ofs t =
     jle ("fim_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
     jmp "print_error_t"++
-    label ("fim_true_" ^ current_tipagem_test)  
+    label ("fim_true_" ^ current_tipagem_test) 
   | CTid t -> 
     if List.length (find_id ctxs (t ^ "_fim")) = 0 then error "get_type_boundaries: Tipo nao definido";
     let ctx = List.hd (List.rev (find_id ctxs (t ^ "_fim"))) in
@@ -96,15 +131,28 @@ let rec compile_expr ctxs = function
       let ctx = List.hd( List.rev (find_id ctxs id)) in
       let ofs = - snd(Hashtbl.find ctx id) in
       movq (ind ~ofs rbp) (reg rax) ++
-      pushq (reg rax)
+      pushq (reg rax) 
   | Ebinop (Bdiv, e1, e2) -> (* um caso particular para a divisão *)
       compile_expr ctxs e1 ++
       compile_expr ctxs e2 ++
       movq (imm 0) (reg rdx) ++
       popq rbx ++
       popq rax ++
+      cmpq (imm 0) (reg rbx) ++
+      je "print_error_z" ++
       idivq (reg rbx) ++
       pushq (reg rax)
+  | Ebinop (Bmod, e1, e2) ->
+      compile_expr ctxs e1 ++
+      compile_expr ctxs e2 ++
+      movq (imm 0) (reg rdx) ++
+      popq rbx ++
+      popq rax ++
+      cmpq (imm 0) (reg rbx) ++
+      je "print_error_z" ++
+      idivq (reg rbx) ++
+      pushq (reg rdx)
+
   | Ebinop (Badd | Bsub | Bmul as o , e1, e2) ->
     let op = match o with
       | Badd -> addq
@@ -170,23 +218,42 @@ let rec compile_expr ctxs = function
       movq (imm 1) (reg rax) ++
       pushq (reg rax) ++
       label ("bool_end_" ^ current_bool_test)
+  | Ecall ("size", [e1]) -> 
+    (*
+      1 - verificar que é um conjunto
+      2 - ir buscar o inicio e o fim
+      3 - fim - inicio
+      4 - print do resultado
+    *)
+    compile_expr ctxs e1 ++
+    popq rax ++ (* Fim *)
+    popq rbx ++ (* Inicio *)
+    subq (reg rbx) (reg rax) ++
+    pushq (reg rax) 
   | Ecall (f, el) ->
     if not (Hashtbl.mem function_ctx f) then error "Funcao nao implementada";
-    let ctx = fst(Hashtbl.find function_ctx f) in
+    let ctx, return = Hashtbl.find function_ctx f in
     let code = ref nop in
+    let arguments = Hashtbl.fold (fun _ v acc -> v :: acc) ctx [] in
+    if (List.length arguments) != (List.length el) then error "Assinatura invalida";
     for i = 0 to (List.length el) - 1 do
-    (* hd -> e *)
     (*
-          1- ir buscar o valor da expressão
-          2- atribuir esse valor ao argumento
+        1- ir buscar o valor da expressão
+        2- atribuir esse valor ao argumento
     *)
-    code := !code ++
-      compile_expr ctxs (List.nth el i) ++
-      popq rax ++
-      movq (reg rax) (ind ~ofs:(0) rbp);
-    done; 
-    
-    !code ++ call f
+      let t, ofs = (List.nth arguments i) in
+      code := !code ++
+        compile_expr ctxs (List.nth el i) ++
+        popq rax ++
+        movq (reg rax) (ind ~ofs:(-ofs) rbp) ++ (* Falta associar o ofs ao argumento certo*)
+        is_rbx_in_type_boundaries ctxs t;
+    done;
+    (* Tratar do retorno e tipagem *)
+    !code ++ 
+    call f ++
+    movq (reg rax) (reg rbx) ++
+    is_rbx_in_type_boundaries ctxs return ++
+    pushq (reg rax)
   | _ -> error "Not implemented"
     
 and compile_stmt ctxs = function
@@ -205,7 +272,7 @@ and compile_stmt ctxs = function
   | Sreturn (e1) -> 
     compile_expr ctxs e1 ++
     popq rax ++
-    ret 
+    ret
   | Sdeclare (id, t ,e) ->
     let ctx = List.hd (List.rev ctxs) in
     if Hashtbl.mem ctx (id ^ "_fim") then error "Sdeclare: o identificador deve ser único";
@@ -246,12 +313,12 @@ and compile_stmt ctxs = function
       Hashtbl.add ctx (id ^ "_fim") (Int, (next + 8));
       code
   | Sprint e ->
-    compile_expr ctxs e ++
-    popq rdi ++
-    call "print_int"
+      compile_expr ctxs e ++
+      popq rdi ++
+      call "print_int"
   | Sblock bl -> 
-    let block = List.rev(interpret_block_stmt ctxs bl) in
-    List.fold_right (++) block nop
+      let block = List.rev(interpret_block_stmt ctxs bl) in
+      List.fold_right (++) block nop
   | Sforeach(x, e, bl) ->
       let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
       let code = compile_stmt ctxs (Sdeclare(x, Int, Ecst 0)) in
@@ -312,15 +379,15 @@ and compile_stmts ctxs = function
           code ++ translate_arguments tl
         | _ -> nop
       in
-        let arguments_code = translate_arguments args in
-        functions_code := !functions_code ++
-          label f ++
-          compile_stmt (ctxs@[ctx]) body ++
-          (* Se chegou aqui é porque não houve returns *)
-          call "print_error_f" ++
-          ret;
-        Hashtbl.add function_ctx f (ctx, return);
-        arguments_code
+      let arguments_code = translate_arguments args in
+      functions_code := !functions_code ++
+        label f ++
+        compile_stmt (ctxs@[ctx]) body ++
+        (* Se chegou aqui é porque não houve returns *)
+        call "print_error_f" ++
+        ret;
+      Hashtbl.add function_ctx f (ctx, return);
+      arguments_code
 
   | Stblock bl -> 
       let block = List.rev(interpret_block_stmts ctxs bl) in
@@ -351,7 +418,13 @@ let compile_program p ofile =
         label "print_error_t" ++
         movq !%rdi !%rsi ++
         leaq (lab ".Sprint_error_t") rdi ++
-        movq (imm 0) !%rax ++
+        movq (imm 0) (reg rax) ++
+        call "printf" ++
+        jmp "end" ++
+        label "print_error_z" ++
+        movq !%rdi !%rsi ++
+        leaq (lab ".Sprint_error_z") rdi ++
+        movq (imm 0) (reg rax) ++
         call "printf" ++
         jmp "end" ++
         label "print_error_f" ++
@@ -363,6 +436,7 @@ let compile_program p ofile =
         !functions_code;
       data = 
         label ".Sprint_int" ++ string "%d\n" ++
+        label ".Sprint_error_z" ++ string "Erro: Divisao por zero.\n" ++
         label ".Sprint_error_t" ++ string "Erro de tipagem\n" ++
         label ".Sprint_error_f" ++ string "Funcao sem retorno\n"
     }

@@ -16,7 +16,7 @@
 %token TYPE
 %token ARRAY OF FILLED BY
 %token MAXINT MININT
-%token PLUS MINUS TIMES DIV
+%token PLUS MINUS TIMES DIV MOD
 %token LPR "(" 
 %token RPR ")"
 %token LBC "{"
@@ -39,7 +39,7 @@
 %nonassoc NOT
 %nonassoc CMP
 %left PLUS MINUS
-%left TIMES DIV
+%left TIMES DIV MOD
 %nonassoc TO
 
 /* Ponto de entrada da gramática */
@@ -112,6 +112,7 @@ expr:
 | c=CMP { c    }
 | AND   { Band }
 | OR    { Bor  }
+| MOD   { Bmod }
 ;
 
 ident:

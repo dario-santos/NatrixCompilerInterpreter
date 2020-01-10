@@ -15,6 +15,7 @@ type token =
   | OR
   | OF
   | NOT
+  | MOD
   | MINUS
   | MININT
   | MAXINT
