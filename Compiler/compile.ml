@@ -1,42 +1,69 @@
 (* Produção de código para a linguagem Natrix *)
-
-(*
-  Todo: 
-  - tudo o que não foi implementado
-  - Utilizar variáveis 64 bits em vez de 32 bit, exemplo maxint
-*)
-  
-(* Produção de código para a linguagem natrix*)
       
 open Format
 open X86_64
 open Ast
       
-
-(* Excepção por levantar quando uma variável é mal utilizada *)
 exception VarUndef of string
 exception Error of string
-
 let error s = raise (Error s)
 
-(* Tipos de dados*)
-type value_type = int * int (* inicio, fim *)
+let minint = 0
+let maxint = 2147483647
 
 (* Tamanho da frame, em byte (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
 
+(* Variáveis para garantir que cada for/if/etc. tem labels com nomes diferentes *)
 let number_of_for = ref 0
 let number_of_bool_tests = ref 0
 let number_of_ifs = ref 0
+let number_of_tipagens = ref 0
 
-type table_ctx = (string, (value_type * int)) Hashtbl.t
+(* Hashtbl para as funções, a outra para os diferentes contextos *)
+                 (*id, (tipo, ofs) *)
+type table_ctx = (string, (Ast.costumtype * int)) Hashtbl.t
 let (function_ctx : (string, X86_64.text) Hashtbl.t) = Hashtbl.create 17
 
-let rec find_id id l = 
-    match l with
-    | ct::tl -> if Hashtbl.mem ct id then [ct] @ (find_id id tl) else (find_id id tl) 
+let rec find_id ctxs id = 
+    match ctxs with
+    | hd::tl -> if Hashtbl.mem hd id then [hd] @ (find_id tl id) else (find_id tl id) 
     | _ -> []
 
+let is_in_type_boundaries ctxs id_ofs t = 
+  match t with
+  | Int ->
+    number_of_tipagens := !number_of_tipagens + 1;
+    let current_tipagem_test = string_of_int(!number_of_tipagens) in
+    cmpq (imm minint) (ind ~ofs:(-id_ofs) rbp) ++
+    jge ("inicio_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error"++
+    label ("inicio_true_" ^ current_tipagem_test) ++
+    cmpq (imm maxint) (ind ~ofs:(-id_ofs) rbp) ++
+    jle ("fim_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error"++
+    label ("fim_true_" ^ current_tipagem_test)
+    
+  | CTid t -> 
+    if List.length (find_id ctxs (t ^ "_fim")) = 0 then error "get_type_boundaries: Tipo nao definido";
+    let ctx = List.hd (List.rev (find_id ctxs t)) in
+    let inicio_ofs = - snd(Hashtbl.find ctx (t ^ "_inicio")) in  
+    let fim_ofs = - snd(Hashtbl.find ctx (t ^ "_fim")) in
+    number_of_tipagens := !number_of_tipagens + 1;
+    let current_tipagem_test = string_of_int(!number_of_tipagens) in
+    cmpq (ind ~ofs:(inicio_ofs) rbp) (ind ~ofs:(-id_ofs) rbp) ++
+    jge ("inicio_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error"++
+    label ("inicio_true_" ^ current_tipagem_test) ++
+    cmpq (ind ~ofs:(fim_ofs) rbp) (ind ~ofs:(-id_ofs) rbp) ++
+    jle ("fim_true_" ^ current_tipagem_test) ++
+      (* TODO: LANÇAR ERRO AQUI *)
+    jmp "print_error"++
+    label ("fim_true_" ^ current_tipagem_test)
+    
 let rec compile_expr ctxs = function
   | Ecst i ->
       movq (imm i) (reg rax) ++
@@ -45,15 +72,15 @@ let rec compile_expr ctxs = function
       compile_expr ctxs e1 ++ (* inicio *)
       compile_expr ctxs e2    (* fim *)
   | Eminint -> 
-      movq (imm 0) (reg rax) ++
+      movq (imm minint) (reg rax) ++
       pushq (reg rax) 
   | Emaxint ->
-      movq (imm 2147483647) (reg rax) ++
+      movq (imm maxint) (reg rax) ++
       pushq (reg rax)
   | Eident id -> 
-    if (List.length(find_id (id ^ "_fim") ctxs)) != 0
+    if (List.length(find_id ctxs (id ^ "_fim"))) != 0
     then
-      let ctx = List.hd( List.rev (find_id (id ^ "_fim") ctxs)) in
+      let ctx = List.hd( List.rev (find_id ctxs (id ^ "_fim"))) in
       let inicio_ofs = - snd(Hashtbl.find ctx (id ^ "_inicio")) in
       let fim_ofs = - snd(Hashtbl.find ctx (id ^ "_fim")) in
       movq (ind ~ofs:inicio_ofs rbp) (reg rax) ++
@@ -61,8 +88,8 @@ let rec compile_expr ctxs = function
       movq (ind ~ofs:fim_ofs rbp) (reg rax) ++
       pushq (reg rax)
     else
-      let _ = if (List.length(find_id id ctxs)) == 0 then raise (VarUndef id) in
-      let ctx = List.hd( List.rev (find_id id ctxs)) in
+      let _ = if (List.length(find_id ctxs id)) == 0 then raise (VarUndef id) in
+      let ctx = List.hd( List.rev (find_id ctxs id)) in
       let ofs = - snd(Hashtbl.find ctx id) in
       movq (ind ~ofs rbp) (reg rax) ++
       pushq (reg rax)
@@ -170,18 +197,22 @@ and compile_stmt ctxs = function
     let code =
       compile_expr ctxs e ++
       popq rax ++
-      movq (reg rax) (ind ~ofs:(-next) rbp)
+      movq (reg rax) (ind ~ofs:(-next) rbp) ++
+      is_in_type_boundaries ctxs next t
     in
-    Hashtbl.add ctx id ((0, max_int), (next));
+    Hashtbl.add ctx id (t, next);
     code
   | Sassign (id, e1)  ->
-      if (List.length (find_id id ctxs)) == 0 then error "Sassign: variável não declarada";
-      let ctx = List.hd (List.rev (find_id id ctxs)) in
+      if (List.length (find_id ctxs id)) == 0 then error "Sassign: variável não declarada";
+      let ctx = List.hd (List.rev (find_id ctxs id)) in
       let ofs = - snd(Hashtbl.find ctx id) in 
+      (* Ir buscar o tipo *)
+      (* Código de tipagem run-time *)
+      
       compile_expr ctxs e1 ++
       popq rax ++
       movq (reg rax) (ind ~ofs rbp)
-
+    
   | Sset (id, set) ->
     let ctx = List.hd (List.rev ctxs) in
     if Hashtbl.mem ctx (id ^ "_fim") then error "Sset: o identificador deve ser único";
@@ -195,8 +226,8 @@ and compile_stmt ctxs = function
         movq (reg rbx) (ind ~ofs:(-next) rbp) ++
         movq (reg rax) (ind ~ofs:(-(next + 8)) rbp)
       in
-      Hashtbl.add ctx (id ^ "_inicio") ((0, max_int), (next));
-      Hashtbl.add ctx (id ^ "_fim") ((0, max_int), (next + 8));
+      Hashtbl.add ctx (id ^ "_inicio") (Int, (next));
+      Hashtbl.add ctx (id ^ "_fim") (Int, (next + 8));
       code
   | Sprint e ->
     compile_expr ctxs e ++
@@ -256,8 +287,8 @@ and compile_stmts ctxs = function
       Hashtbl.add function_ctx f code;
       nop
   | Stblock bl -> 
-    let block = List.rev(interpret_block_stmts ctxs bl) in
-    List.fold_right (++) block nop
+      let block = List.rev(interpret_block_stmts ctxs bl) in
+      List.fold_right (++) block nop
   | Stmt s     -> compile_stmt ctxs s
 
 (* Compilação do programa p e grava o código no ficheiro ofile *)
@@ -270,16 +301,26 @@ let compile_program p ofile =
         subq (imm !frame_size) !%rsp ++ (* aloca a frame *)
         leaq (ind ~ofs:(!frame_size - 8) rsp) rbp ++ (* %rbp = ... *)
         code ++
+        label "end" ++
         addq (imm !frame_size) !%rsp ++ (* desaloca a frame *)
-        movq (imm 0) !%rax ++ (* exit *)
+        movq (imm 0) (reg rax) ++ (* exit *)
         ret ++
         label "print_int" ++
-        movq !%rdi !%rsi ++
+        movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_int") rdi ++
+        movq (imm 0) (reg rax) ++
+        call "printf" ++
+        ret ++
+        label "print_error" ++
+        movq !%rdi !%rsi ++
+        leaq (lab ".Sprint_error") rdi ++
         movq (imm 0) !%rax ++
         call "printf" ++
-        ret;
-      data = label ".Sprint_int" ++ string "%d\n"
+        jmp "end";
+      data = 
+        label ".Sprint_int" ++ string "%d\n" ++
+        label ".Sprint_error" ++ string "Erro de tipagem\n"
+        
     }
   in
   let f = open_out ofile in
