@@ -1,13 +1,18 @@
 	.text
 	.globl	main
 main:
-	subq $0, %rsp
-	leaq -8(%rsp), %rbp
-	jmp somar
+	subq $8, %rsp
+	leaq 0(%rsp), %rbp
+	movq $0, 0(%rbp)
+	movq $1, %rax
+	pushq %rax
+	popq %rax
+	movq %rax, 0(%rbp)
+	call somar
 	popq %rdi
 	call print_int
 end:
-	addq $0, %rsp
+	addq $8, %rsp
 	movq $0, %rax
 	ret
 print_int:
@@ -29,6 +34,10 @@ print_error_f:
 	call printf
 	jmp end
 somar:
+	movq $2, %rax
+	pushq %rax
+	popq %rax
+	ret
 	call print_error_f
 	ret
 	.data

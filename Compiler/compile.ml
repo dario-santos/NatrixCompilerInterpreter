@@ -23,7 +23,9 @@ let number_of_tipagens = ref 0
 (* Hashtbl para as funções, a outra para os diferentes contextos *)
                  (*id, (tipo, ofs) *)
 type table_ctx = (string, (Ast.costumtype * int)) Hashtbl.t
-let (function_ctx : (string, argument list * costumtype) Hashtbl.t) = Hashtbl.create 17
+let (function_ctx : (string, table_ctx * costumtype) Hashtbl.t) = Hashtbl.create 17
+(*                   nome    ctx         retorno *)
+
 let functions_code = ref nop
 
 let rec find_id ctxs id = 
@@ -114,8 +116,8 @@ let rec compile_expr ctxs = function
     compile_expr ctxs e2 ++
     popq rbx ++
     popq rax ++
-    op !%rbx !%rax ++
-    pushq !%rax
+    op (reg rbx) (reg rax) ++
+    pushq (reg rax)
   | Ebinop (Band | Bor as o, e1, e2) ->
     let op = 
       match o with 
@@ -170,7 +172,21 @@ let rec compile_expr ctxs = function
       label ("bool_end_" ^ current_bool_test)
   | Ecall (f, el) ->
     if not (Hashtbl.mem function_ctx f) then error "Funcao nao implementada";
-    jmp f
+    let ctx = fst(Hashtbl.find function_ctx f) in
+    let code = ref nop in
+    for i = 0 to (List.length el) - 1 do
+    (* hd -> e *)
+    (*
+          1- ir buscar o valor da expressão
+          2- atribuir esse valor ao argumento
+    *)
+    code := !code ++
+      compile_expr ctxs (List.nth el i) ++
+      popq rax ++
+      movq (reg rax) (ind ~ofs:(0) rbp);
+    done; 
+    
+    !code ++ call f
   | _ -> error "Not implemented"
     
 and compile_stmt ctxs = function
@@ -186,6 +202,10 @@ and compile_stmt ctxs = function
     label ("if_true_" ^ current_if_test) ++
     compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 ++
     label ("if_end_" ^ current_if_test)
+  | Sreturn (e1) -> 
+    compile_expr ctxs e1 ++
+    popq rax ++
+    ret 
   | Sdeclare (id, t ,e) ->
     let ctx = List.hd (List.rev ctxs) in
     if Hashtbl.mem ctx (id ^ "_fim") then error "Sdeclare: o identificador deve ser único";
@@ -204,9 +224,7 @@ and compile_stmt ctxs = function
       if (List.length (find_id ctxs id)) == 0 then error "Sassign: variável não declarada";
       let ctx = List.hd (List.rev (find_id ctxs id)) in
       let t, ofs = Hashtbl.find ctx id in
-      let ofs = -ofs in 
-      (* Ir buscar o tipo *)
-      (* Código de tipagem run-time *)
+      let ofs = -ofs in
       compile_expr ctxs e1 ++
       popq rax ++
       movq (reg rax) (ind ~ofs rbp) ++
@@ -278,14 +296,32 @@ and compile_stmts ctxs = function
       (* return -> tipo de retorno *)
       (* body -> corpo *)
       if Hashtbl.mem function_ctx f then error "Stfunction funcao ja declarada";
-      functions_code := !functions_code ++
+      let ctx = (Hashtbl.create 17 : table_ctx) in
+      (* Argumentos da função *)
+      let rec translate_arguments = function
+        | hd::tl ->
+          let id, t = hd in
+          if id = f then error "Stfunction: os argumentos nao pode ter um nome igual ao da funcao"; 
+          if Hashtbl.mem ctx id  then error "Stfunction: os argumentos nao podem ter nomes iguais"; 
+          let ofs = - !frame_size in
+          let code =
+            frame_size := 8 + !frame_size;
+            movq (imm 0) (ind ~ofs rbp)
+          in
+          Hashtbl.add ctx id (t, (-ofs));
+          code ++ translate_arguments tl
+        | _ -> nop
+      in
+        let arguments_code = translate_arguments args in
+        functions_code := !functions_code ++
           label f ++
-          compile_stmt ctxs body ++
-          (* SE CHEGAR AQUI ENTÃO ERRO *)
+          compile_stmt (ctxs@[ctx]) body ++
+          (* Se chegou aqui é porque não houve returns *)
           call "print_error_f" ++
           ret;
-      Hashtbl.add function_ctx f (args, return);
-      nop
+        Hashtbl.add function_ctx f (ctx, return);
+        arguments_code
+
   | Stblock bl -> 
       let block = List.rev(interpret_block_stmts ctxs bl) in
       List.fold_right (++) block nop
@@ -334,7 +370,6 @@ let compile_program p ofile =
   let f = open_out ofile in
   let fmt = formatter_of_out_channel f in
   X86_64.print_program fmt p;
-   (* "flush" do buffer para garantir que tudo foi para aí escrito
-     antes de o fechar *)
+   (* "flush" do buffer para garantir que tudo foi para aí escrito antes de o fechar *)
   fprintf fmt "@?";
   close_out f
