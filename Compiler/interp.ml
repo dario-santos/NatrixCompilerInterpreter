@@ -31,7 +31,6 @@ let string_of_value = function
   | Vset (i, f) -> "[" ^ string_of_int i ^ " ," ^ string_of_int f ^ "]"
   | _ -> error "A função vint_to_int aceita apenas int"
 
-
 exception Return of value
   
 (* print *)
@@ -304,12 +303,9 @@ and stmt ctx = function
       stmt localtbl (Sdeclare(x, Int, Ecst i));                 (* Atualizar a variável do for*)
       stmt localtbl bl; 
     done
-  | Seval e           -> ignore(expr ctx e)
-  
+
 and stmts ctx = function  
   | Stfunction (f, args, return, body) ->
-      ignore(if List.length(find_id f ctx) > 0 then error "a função deve ter um id único");
-      ignore(if Hashtbl.mem functions f then error "a função deve ter um id único");
       Hashtbl.add functions f (args, return, body)
   | Stblock bl -> interpret_block_stmts ctx bl
   | Stmt s -> stmt ctx s
@@ -322,5 +318,5 @@ and interpret_block_stmts ctx = function
   | [] -> ()
   | s :: sl -> stmts ctx s; interpret_block_stmts ctx sl
 
-(* interpretação de um ficheiro *)
+(* Interpretação de um ficheiro *)
 let file s = stmts [(Hashtbl.create 17 : table_ctx)] s

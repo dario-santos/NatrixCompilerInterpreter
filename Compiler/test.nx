@@ -21,13 +21,4 @@ print(!3);
 
 print(x + 3);
 
-foreach i in (0 .. 10)
-{
-    print(i);
-}
-
-function somar(x : int, y : t) : t
-{
-    return 5;
-}
 

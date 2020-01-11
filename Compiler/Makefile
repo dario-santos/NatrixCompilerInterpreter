@@ -1,4 +1,4 @@
-CMO=lexer.cmo parser.cmo x86_64.cmo compile.cmo typing.cmo main.cmo
+CMO=lexer.cmo parser.cmo x86_64.cmo compile.cmo interp.cmo typing.cmo printer.cmo main.cmo
 GENERATED = lexer.ml parser.ml parser.mli
 BIN=natrix
 FLAGS=
@@ -32,7 +32,8 @@ clean:
 	rm -f *.cm[io] *.o *~ $(BIN) $(GENERATED) parser.output
 	rm parser.automaton
 	rm parser.conflicts
-	rm a.out
+	rm *.s
+	rm 
 
 .depend depend:$(GENERATED)
 	rm -f .depend

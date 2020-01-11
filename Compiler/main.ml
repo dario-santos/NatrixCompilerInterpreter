@@ -7,61 +7,10 @@ open Parser
 open Compile
 open Ast
 
-(**)
-
-let rec print_expr = function
-  | Ecst n                -> printf " Ecst(%d) " n
-  | Eset (e1, e2)         -> printf " Eset("; print_expr e1; print_expr e2; printf ") "
-  | Eminint               -> printf " Eminint(minint) "
-  | Emaxint               -> printf " Emaxint(maxint) "
-  | Ebinop (Band, e1, e2) -> printf " Ebinop(Band,"; print_expr e1; printf ", "; print_expr e2; printf ") "
-  | Ebinop (Bor, e1, e2)  -> printf " Ebinop(Bor,"; print_expr e1; printf ", "; print_expr e2; printf ") "
-  | Ebinop (_, e1, e2)    -> printf " Ebinop(Op,"; print_expr e1; printf ", "; print_expr e2; printf ") "
-  | Eunop (Unot, e1)      -> printf " Eunop(Unot,"; print_expr e1; printf ") "
-  | Ecall ("size", [e1])  -> printf " Ecall(size,"; print_expr e1; printf ") "
-  | Ecall (f, el)         -> printf " Ecall(%s " f; 
-  | Eident id             -> printf " Eident(%s) " id
-  | Eget (id, e2)         -> printf " Eget(%s," id; print_expr e2; printf ") " 
-
-
-(* interpretação de uma instrução - não devolve nada *)
-and print_stmt = function
-  | Sif (e, s1, s2) -> printf "Sif("; print_expr e; printf ", "; print_stmt s1; printf ","; print_stmt s2; printf ")"
-  | Sreturn e       -> printf "Sreturn("; print_expr e; printf ")"
-  | Sassign (id, e1)-> printf "Sassign(%s, " id; print_expr e1; printf ")"
-  | Sdeclare (id, t ,e1) -> printf "Sdeclare(%s, t, " id ; print_expr e1; printf ")"
-  | Sprint e        -> printf "Sprint("; print_expr e; printf ")"
-  | Sblock bl       -> interpret_block_stmt  bl
-  | Seval e         -> printf "Seval("; print_expr e; printf ")"
-  | Sforeach(x, e, bl) -> printf "Sforeach(%s, " x; print_expr e; printf ",\n"; print_stmt bl; printf ")"
-  | _ -> raise Not_found
-  
-and print_argument_list = function
-  | [] -> ()
-  | arg1 :: tl -> let id, t = arg1 in ignore(printf " %s : %t,\n" id, t); print_argument_list tl
-
-and print_stmts = function  
-  | Stfunction (f, args, return, body) -> printf "Stfunction( %s, " f ; print_argument_list args ; 
-  | Stblock bl -> interpret_block_stmts bl
-  | Stmt s -> print_stmt s
-
-and interpret_block_stmt  = function
-  | [] -> printf "\n"
-  | s :: sl -> print_stmt s; printf "\n";interpret_block_stmt sl
-
-and interpret_block_stmts = function
-  | [] -> printf "\n"
-  | s :: sl -> print_stmts s; printf "\n"; interpret_block_stmts sl
-
-(* interpretação de um ficheiro *)
-let print_file s = print_stmts s
-
-(**)
-
-
 (* Opção de compilação, para parar na fase de parsing *)
 let parse_only = ref false
 let print_ast = ref false
+let interpt = ref false
 
 (* Nome dos ficheiros fonte e alvo *)
 let ifile = ref ""
@@ -75,6 +24,8 @@ let options =
    "  Executar somente o parsing";
   "-print-ast", Arg.Set print_ast,
   "  Executar somente o parsing";
+  "-interpt", Arg.Set interpt,
+  "  Utilizar o interpretador";
    "-o", Arg.String (set_file ofile),
    "<file>  Para indicar o nome do ficheiro em saída"]
 
@@ -121,32 +72,32 @@ let () =
 
     (* Pára-se aqui se só queremos o parsing *)
     if !parse_only then exit 0;
-    if !print_ast then print_file p; 
+    if !print_ast then Printer.print_file p; 
 
     (* Compilação da árvore de sintaxe abstracta p. O código máquina
        resultante desta transformação deve ficar escrito no ficheiro alvo ofile. *)
-       Typing.file p;
-    Compile.compile_program p !ofile
+    Typing.file p;
+    if !interpt then begin Interp.file p; exit 0; end;
+      Compile.compile_program p !ofile
   with
-    | Lexer.Lexing_error c ->
-	(* Erro léxico. Recupera-se a posição absoluta e converte-se para número
-           de linha *)
-	localisation (Lexing.lexeme_start_p buf);
-	eprintf "Erro durante a análise léxica: %s@." c;
-	exit 1
-    | Parser.Error ->
-	(* Erro sintáctio. Recupera-se a posição e converte-se para número
-           de linha *)
-	localisation (Lexing.lexeme_start_p buf);
-	eprintf "Erro durante a análise sintáctica@.";
-	exit 1
-    | Compile.VarUndef s->
-	(* Erro de utilização de variáveis durante a compilação *)
-	eprintf
-	  "Erro de compilação: a variável  %s não está definida@." s;
+  | Lexer.Lexing_error c ->
+	    (* Erro léxico. Recupera-se a posição absoluta e converte-se para número de linha *)
+	    localisation (Lexing.lexeme_start_p buf);
+	    eprintf "Erro durante a análise léxica: %s@." c;
+      exit 1
+  | Parser.Error ->
+	    (* Erro sintáctio. Recupera-se a posição e converte-se para número de linha *)
+	    localisation (Lexing.lexeme_start_p buf);
+	    eprintf "Erro durante a análise sintáctica@.";
+      exit 1
+  | Typing.Error s -> 
+      eprintf "\nSemmantic analisys: %s@." s;
+      exit 1
+  | Compile.VarUndef s->
+	    (* Erro de utilização de variáveis durante a compilação *)
+	    eprintf "Erro de compilação: a variável  %s não está definida@." s;
   exit 1
   | Compile.Error s->
-	(* Erro de utilização de variáveis durante a compilação *)
-	eprintf
-	  "Erro de compilação:  %s @." s;
-  exit 1
+	    (* Erro de utilização de variáveis durante a compilação *)
+	    eprintf "Erro de compilação:  %s @." s;
+      exit 1

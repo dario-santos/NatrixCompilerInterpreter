@@ -268,17 +268,23 @@ let get_type_size ctxs s =
 
 let rec compile_stmt ctxs = function
   | Sif (e, s1, s2) ->
+    
     number_of_ifs := !number_of_ifs + 1;
     let current_if_test = string_of_int(!number_of_ifs) in
+    
     compile_expr ctxs e ++
     popq rax ++
     cmpq (imm 0) (reg rax) ++
     jne ("if_true_" ^ current_if_test) ++
+    
     compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s2 ++
     jmp ("if_end_" ^ current_if_test) ++
+    
     label ("if_true_" ^ current_if_test) ++
     compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 ++
+    
     label ("if_end_" ^ current_if_test)
+
   | Sreturn (e1) -> 
     compile_expr ctxs e1 ++
     popq rax ++
