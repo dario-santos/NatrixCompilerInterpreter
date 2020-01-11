@@ -1,16 +1,33 @@
-type t = [0 .. 10];
+type t =  [0 .. 10];
+val x : t = 0;
 
-val x: int = 3;
 
-if(1)
+print(5 + 3);
+print(5 - 3);
+print(5 / 3);
+print(5 % 3);
+print(5 * 3);
+
+
+print(5 == 3);
+print(5 != 3);
+print(5 < 3);
+print(5 <= x);
+print(5 > 3);
+print(5 >= 3);
+print(5 && 3);
+print(5 || 3);
+print(!3);
+
+print(x + 3);
+
+foreach i in (0 .. 10)
 {
-    foreach i in t
-    {
-        if(1)
-        {
-
-            print(x);
-            val x: int = x;
-        }
-    }
+    print(i);
 }
+
+function somar(x : int, y : t) : t
+{
+    return 5;
+}
+

@@ -25,6 +25,13 @@ let varray_to_tuplo = function
   | Varray (range, t) -> (range, t)
   | _ -> error "A função varray_to_tuplo aceita apenas arrays"
 
+
+let string_of_value = function
+  | Vint n -> string_of_int n
+  | Vset (i, f) -> "[" ^ string_of_int i ^ " ," ^ string_of_int f ^ "]"
+  | _ -> error "A função vint_to_int aceita apenas int"
+
+
 exception Return of value
   
 (* print *)
@@ -198,29 +205,41 @@ and get_type t ctxs =
 (* interpretação de uma instrução - não devolve nada *)
 and stmt ctx = function
   | Sif (e, s1, s2)   ->
+      (* 1 - Verificar a condicao, se for verdade s1, se for falso s2 *)
       if is_true (expr ctx e) == 1 
       then stmt (ctx@[(Hashtbl.create 17 : table_ctx)]) s1 
       else stmt (ctx@[(Hashtbl.create 17 : table_ctx)]) s2
-  | Sreturn e         -> raise (Return (expr ctx e))
+      
+  | Sreturn e ->
+    (* 1 - Retorna a expressao e*)
+    raise (Return (expr ctx e))
+
   | Sassign (id, e1)  ->
-    if (List.length (find_id id ctx)) == 0 then error "Sassign: variável não declarada"
-    else 
-      let tbls = find_id id ctx in
-      let local_tbl = List.hd (List.rev tbls) in
-      let t = snd(Hashtbl.find local_tbl id) in
-      let v = expr ctx e1 in
-      if value_in_type_limits (vint_to_int v) t then 
-        Hashtbl.replace local_tbl id (v, t)
-      else error "Sassign: valor fora dos limites do tipo"
+      (* 1 - Ir buscar o tipo da variavel *)
+      let local_tbl = List.hd (List.rev (find_id id ctx)) in
+      let t1 = snd(Hashtbl.find local_tbl id) in
+
+      (* 2 - Ir buscar o novo valor*)
+      let v1 = expr ctx e1 in
+
+      (* 3 - Verificar que o valor esta dentro dos limites *)
+      if value_in_type_limits (vint_to_int v1) t1 then 
+        Hashtbl.replace local_tbl id (v1, t1)
+      else error ("Value out of bounds. The value " ^ string_of_value v1 ^ " can\'t be used with the variable " ^ id ^ ", try a value in the range " ^ string_of_value t1 ^ ".")
+
   | Sdeclare (id, t ,e1) ->
-    let local_tbl = List.hd (List.rev ctx) in
-    ignore(if Hashtbl.mem local_tbl id then error "Sdeclare: o identificador deve ser único"); (*Se já existir uma variável no scope *)
-    ignore(if Hashtbl.mem functions id then error "Sdeclare: o identificador deve ser único"); (*Se já existir uma função então termina *)
-    let new_value = expr ctx e1 in
+    (* 1 - Ir buscar o tipo da variavel*)
     let tp = get_type t ctx in
-    if value_in_type_limits (vint_to_int new_value) tp then
-      Hashtbl.add local_tbl id (new_value, tp)
-    else error "Sdeclare: valor fora dos limites do tipo"
+    
+    (* 2 - Ir buscar o valor da variabel*)
+    let local_tbl = List.hd (List.rev ctx) in
+    let v1 = expr ctx e1 in
+
+    (* 3 - Verificar que o valor esta dentro dos limites *)
+    if value_in_type_limits (vint_to_int v1) tp then
+      Hashtbl.add local_tbl id (v1, tp)
+    else error ("Value out of bounds. The value " ^ string_of_value v1 ^ " can\'t be used with the variable " ^ id ^ ", try a value in the range " ^ string_of_value tp ^ ".")
+
   | Sdeclarearray (id, ida, e) ->
     begin try
       let local_tbl = List.hd (List.rev ctx) in

@@ -38,7 +38,7 @@ and stmt =
   | Seval of expr
   | Saset of ident * expr * expr (* id[e2] := e3 *)
   
-  (* Para não podermos definir funções dentro de instruções *)
+(* Para não podermos definir funções dentro de instruções *)
 and stmts =                                               
   | Stblock of stmts list
   | Stfunction of ident * argument list * costumtype * stmt

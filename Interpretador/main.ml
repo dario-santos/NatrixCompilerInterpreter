@@ -49,9 +49,12 @@ let () =
 	      eprintf "\nsyntax error@.";
 	      exit 1
     | Interp.Error s ->
-	      eprintf "\nerror: %s@." s;
+	      eprintf "\nRun-time error:\n%s\n@." s;
         exit 1
-    | End_of_file -> 
+    | Typing.Error s -> 
+        eprintf "\nSemmantic analisys: %s@." s;
+        exit 1
+    | End_of_file ->
         printf "\nSucesso\n"; 
         exit 1
     | e ->
