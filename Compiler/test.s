@@ -1,20 +1,91 @@
 	.text
 	.globl	main
 main:
-	subq $0, %rsp
-	leaq -8(%rsp), %rbp
-	movq $2, %rax
+	subq $40, %rsp
+	leaq 32(%rsp), %rbp
+	movq $0, %rax
 	pushq %rax
-	movq $20, %rax
+	movq $10, %rax
 	pushq %rax
 	popq %rax
 	popq %rbx
-	subq %rbx, %rax
+	movq %rbx, 0(%rbp)
+	movq %rax, -8(%rbp)
+	movq $3, %rax
+	pushq %rax
+	popq %rax
+	movq %rax, -16(%rbp)
+	cmpq $0, -16(%rbp)
+	jge inicio_true_1
+	jmp print_error_t
+inicio_true_1:
+	cmpq $2147483647, -16(%rbp)
+	jle fim_true_1
+	jmp print_error_t
+fim_true_1:
+	movq $1, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne if_true_1
+	jmp if_end_1
+if_true_1:
+	movq $0, %rax
+	pushq %rax
+	popq %rax
+	movq %rax, -24(%rbp)
+	cmpq $0, -24(%rbp)
+	jge inicio_true_2
+	jmp print_error_t
+inicio_true_2:
+	cmpq $2147483647, -24(%rbp)
+	jle fim_true_2
+	jmp print_error_t
+fim_true_2:
+	movq 0(%rbp), %rax
+	pushq %rax
+	movq -8(%rbp), %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq %rax, -24(%rbp)
+	pushq %rbx
+foreach_i1:
+	movq $1, %rax
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne if_true_2
+	jmp if_end_2
+if_true_2:
+	movq -16(%rbp), %rax
 	pushq %rax
 	popq %rdi
 	call print_int
+	movq -16(%rbp), %rax
+	pushq %rax
+	popq %rax
+	movq %rax, -32(%rbp)
+	cmpq $0, -32(%rbp)
+	jge inicio_true_3
+	jmp print_error_t
+inicio_true_3:
+	cmpq $2147483647, -32(%rbp)
+	jle fim_true_3
+	jmp print_error_t
+fim_true_3:
+if_end_2:
+	movq -24(%rbp), %rax
+	incq %rax
+	movq %rax, -24(%rbp)
+	popq %rax
+	pushq %rax
+	cmpq %rax, -24(%rbp)
+	jle foreach_i1
+	popq %rax
+if_end_1:
 end:
-	addq $0, %rsp
+	addq $40, %rsp
 	movq $0, %rax
 	ret
 print_int:

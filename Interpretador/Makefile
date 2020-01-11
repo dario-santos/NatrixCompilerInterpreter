@@ -1,5 +1,5 @@
-CMO=lexer.cmo parser.cmo interp.cmo main.cmo
-GENERATED = lexer.ml parser.ml parser.mli
+CMO=lexer.cmo parser.cmo interp.cmo typing.cmo main.cmo
+GENERATED = lexer.ml parser.ml parser.mli 
 FLAGS=
 
 all: natrix

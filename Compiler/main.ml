@@ -19,7 +19,7 @@ let rec print_expr = function
   | Ebinop (_, e1, e2)    -> printf " Ebinop(Op,"; print_expr e1; printf ", "; print_expr e2; printf ") "
   | Eunop (Unot, e1)      -> printf " Eunop(Unot,"; print_expr e1; printf ") "
   | Ecall ("size", [e1])  -> printf " Ecall(size,"; print_expr e1; printf ") "
-  | Ecall (f, el)         -> printf " Ecall(FUNCTION) "
+  | Ecall (f, el)         -> printf " Ecall(%s " f; 
   | Eident id             -> printf " Eident(%s) " id
   | Eget (id, e2)         -> printf " Eget(%s," id; print_expr e2; printf ") " 
 
@@ -36,8 +36,12 @@ and print_stmt = function
   | Sforeach(x, e, bl) -> printf "Sforeach(%s, " x; print_expr e; printf ",\n"; print_stmt bl; printf ")"
   | _ -> raise Not_found
   
+and print_argument_list = function
+  | [] -> ()
+  | arg1 :: tl -> let id, t = arg1 in ignore(printf " %s : %t,\n" id, t); print_argument_list tl
+
 and print_stmts = function  
-  | Stfunction (f, args, return, body) -> printf "Stfunction()"
+  | Stfunction (f, args, return, body) -> printf "Stfunction( %s, " f ; print_argument_list args ; 
   | Stblock bl -> interpret_block_stmts bl
   | Stmt s -> print_stmt s
 
@@ -121,6 +125,7 @@ let () =
 
     (* Compilação da árvore de sintaxe abstracta p. O código máquina
        resultante desta transformação deve ficar escrito no ficheiro alvo ofile. *)
+       Typing.file p;
     Compile.compile_program p !ofile
   with
     | Lexer.Lexing_error c ->

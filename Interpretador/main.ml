@@ -37,6 +37,7 @@ let () =
     let f = Parser.prog Lexer.next_token lb in
     close_in c;
     if !parse_only then exit 0;
+    Typing.file f;
     Interp.file f
   with
     | Lexer.Lexing_error s ->
@@ -54,5 +55,5 @@ let () =
         printf "\nSucesso\n"; 
         exit 1
     | e ->
-	    eprintf "\nAnomaly: %s\n@." (Printexc.to_string e);
-	    exit 2
+	      eprintf "\nAnomaly: %s\n@." (Printexc.to_string e);
+	      exit 2

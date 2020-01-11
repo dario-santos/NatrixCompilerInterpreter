@@ -19,6 +19,7 @@ let number_of_for = ref 0
 let number_of_bool_tests = ref 0
 let number_of_ifs = ref 0
 let number_of_tipagens = ref 0
+let number_of_arraydefs = ref 0
 
 (* Hashtbl para as funções, a outra para os diferentes contextos *)
                  (*id, (tipo, ofs) *)
@@ -32,7 +33,6 @@ let rec find_id ctxs id =
     match ctxs with
     | hd::tl -> if Hashtbl.mem hd id then [hd] @ (find_id tl id) else (find_id tl id) 
     | _ -> []
-
 let is_rbx_in_type_boundaries ctxs t = 
   match t with
   | Int ->
@@ -235,7 +235,7 @@ let rec compile_expr ctxs = function
     let ctx, return = Hashtbl.find function_ctx f in
     let code = ref nop in
     let arguments = Hashtbl.fold (fun _ v acc -> v :: acc) ctx [] in
-    if (List.length arguments) != (List.length el) then error "Assinatura invalida";
+    if (List.length arguments) - 1 != (List.length el) then error "Assinatura invalida";
     for i = 0 to (List.length el) - 1 do
     (*
         1- ir buscar o valor da expressão
@@ -255,8 +255,18 @@ let rec compile_expr ctxs = function
     is_rbx_in_type_boundaries ctxs return ++
     pushq (reg rax)
   | _ -> error "Not implemented"
-    
-and compile_stmt ctxs = function
+
+let get_type_size ctxs s = 
+  match s with
+  | Eset (e1, e2) ->
+    compile_expr ctxs e1 ++
+    popq rax ++ (* Fim *)
+    popq rbx ++ (* Inicio *)
+    subq (reg rbx) (reg rax) ++
+    pushq (reg rax)
+  | _ -> compile_expr ctxs s
+
+let rec compile_stmt ctxs = function
   | Sif (e, s1, s2) ->
     number_of_ifs := !number_of_ifs + 1;
     let current_if_test = string_of_int(!number_of_ifs) in
@@ -287,6 +297,36 @@ and compile_stmt ctxs = function
     in
     Hashtbl.add ctx id (t, (-ofs));
     code
+  | Sdeclarearray (id, ida, e) ->
+      let ctx = List.hd (List.rev ctxs) in
+      if Hashtbl.mem ctx (id ^ "_array0") then error "o identificador deve ser único";   (*Se já existir uma array neste ctx *)
+      if Hashtbl.mem ctx (id ^ "_fim") then error "o identificador deve ser único";      (*Se já existir um conjunto neste ctx *)
+      if Hashtbl.mem ctx (id ^ "_defarray") then error "o identificador deve ser único"; (*Se já existir uma def de array neste ctx *)
+      if Hashtbl.mem ctx id then error "o identificador deve ser único";                 (*Se já existir uma variável neste ctx *)
+      if Hashtbl.mem function_ctx id then error "o identificador deve ser único";        (*Se já existir uma função neste ctx *)
+      (*
+        1 - Verificar que o id ainda não foi usado
+        2 - Verificar se o tipo existe
+        3 - Ir buscar o valor da expressão, verificar se é um inteiro válido
+        4 - Reservar n elementos
+      *)
+      number_of_arraydefs := !number_of_arraydefs + 1;
+      let current_arraydefs = string_of_int(!number_of_arraydefs) in
+      let ofs = !frame_size in
+      frame_size := 16 + !frame_size;
+      let code =
+        label ("arraydef_" ^ current_arraydefs) ++
+        popq rax ++ (* value  *)
+        movq (reg rbx) (ind ~ofs rbp) ++
+        (* Verificar o valor *)
+        popq rbx ++ (* size *)
+        decq (reg rbx) ++
+        pushq (reg rbx) ++
+        cmpq (imm 0) (reg rbx) ++
+        jl ("arraydef_" ^ current_arraydefs)
+      in
+      Hashtbl.add ctx (id ^ "_array0") (Int, -ofs);
+      code
   | Sassign (id, e1)  ->
       if (List.length (find_id ctxs id)) == 0 then error "Sassign: variável não declarada";
       let ctx = List.hd (List.rev (find_id ctxs id)) in
@@ -296,6 +336,44 @@ and compile_stmt ctxs = function
       popq rax ++
       movq (reg rax) (ind ~ofs rbp) ++
       is_in_type_boundaries ctxs (-ofs) t
+  | Sarray (id, sz, t) -> 
+      let ctx = List.hd (List.rev ctxs) in
+      if Hashtbl.mem ctx (id ^ "_array0") then error "o identificador deve ser único";   (*Se já existir uma array neste ctx *)
+      if Hashtbl.mem ctx (id ^ "_fim") then error "o identificador deve ser único";      (*Se já existir um conjunto neste ctx *)
+      if Hashtbl.mem ctx (id ^ "_defarray") then error "o identificador deve ser único"; (*Se já existir uma def de array neste ctx *)
+      if Hashtbl.mem ctx id then error "o identificador deve ser único";                 (*Se já existir uma variável neste ctx *)
+      if Hashtbl.mem function_ctx id then error "o identificador deve ser único";           (*Se já existir uma função neste ctx *)
+      (*
+        1 - Verificar que o id ainda não foi usado
+        2 - Verificar se o tipo existe
+        3 - Ir buscar o valor da expressão, verificar se é um conjunto
+        
+        ofs + 0  -> id_array_start
+        ofs + 8  -> id_array_elements
+        ofs + 16 -> id_array_t_inicio
+        ofs + 32 -> id_array_t_fim  
+      *)
+      let size = get_type_size ctxs sz in
+      let ofs = - !frame_size in
+      frame_size := 32 + !frame_size;
+      let code = 
+        size ++
+        (* Guardar o valor do size *)
+        popq rax ++ 
+        movq (imm 0) (ind ~ofs rbp) ++
+        movq (reg rax) (ind ~ofs:(ofs - 8) rbp) ++       
+        compile_expr ctxs t ++
+        popq rax ++ (* fim *)
+        popq rbx ++ (* inicio*)
+        movq (reg rbx) (ind ~ofs:(ofs - 16) rbp) ++
+  
+        movq (reg rbx) (ind ~ofs:(ofs - 24) rbp)
+      in
+      Hashtbl.add ctx (id ^ "_array_start") (Int   , -(ofs));
+      Hashtbl.add ctx (id ^ "_array_elements") (Int, -(ofs + 8));
+      Hashtbl.add ctx (id ^ "_array_t_inicio") (Int, -(ofs + 16));
+      Hashtbl.add ctx (id ^ "_array_t_fim") (Int   , -(ofs + 24));
+      code
   | Sset (id, set) ->
     let ctx = List.hd (List.rev ctxs) in
     if Hashtbl.mem ctx (id ^ "_fim") then error "Sset: o identificador deve ser único";
