@@ -1,25 +1,67 @@
 	.text
 	.globl	main
 main:
-	subq $0, %rsp
-	leaq -8(%rsp), %rbp
-	addq $1, is_in_function
-	call userx
-	movq %rax, %rbx
-	cmpq $0, %rbx
+	subq $24, %rsp
+	leaq 16(%rsp), %rbp
+	movq $0, 0(%rbp)
+	movq $0, -8(%rbp)
+	movq $0, %rax
+	pushq %rax
+	popq %rax
+	movq %rax, -16(%rbp)
+	cmpq $0, -16(%rbp)
+	jge inicio_true_3
+	jmp print_error_t
+inicio_true_3:
+	movq $9223372036854775807, %rax
+	cmpq %rax, -16(%rbp)
+	jle fim_true_3
+	jmp print_error_t
+fim_true_3:
+	leaq .Sscanf_int, %rdi
+	leaq -16(%rbp), %rsi
+	movq $0, %rax
+	call scanf
+	movq -16(%rbp), %rax
+	cmpq $0, -16(%rbp)
+	jge inicio_true_4
+	jmp print_error_t
+inicio_true_4:
+	movq $9223372036854775807, %rax
+	cmpq %rax, -16(%rbp)
+	jle fim_true_4
+	jmp print_error_t
+fim_true_4:
+	movq -16(%rbp), %rax
+	pushq %rax
+	popq %rax
+	movq %rax, -8(%rbp)
+	cmpq $0, -8(%rbp)
 	jge inicio_true_5
 	jmp print_error_t
 inicio_true_5:
 	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
+	cmpq %rax, -8(%rbp)
 	jle fim_true_5
 	jmp print_error_t
 fim_true_5:
+	addq $1, is_in_function
+	call useris_even2
+	movq %rax, %rbx
+	cmpq $0, %rbx
+	jge inicio_true_6
+	jmp print_error_t
+inicio_true_6:
+	movq $9223372036854775807, %rax
+	cmpq %rax, %rbx
+	jle fim_true_6
+	jmp print_error_t
+fim_true_6:
 	pushq %rbx
 	popq %rdi
 	call printn_int
 end:
-	addq $0, %rsp
+	addq $24, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -33,6 +75,14 @@ print_int:
 	leaq .Sprint_int, %rdi
 	movq $0, %rax
 	call printf
+	ret
+scanf_int:
+	movq %rdi, %rsi
+	leaq .Sscanf_int, %rdi
+	leaq input, %rsi
+	movq $0, %rax
+	call scanf
+	movq input, %rax
 	ret
 print_error_t:
 	movq %rdi, %rsi
@@ -58,46 +108,56 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
-userf:
+useris_even:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
 	subq $1, is_in_function
-	movq $3, %rax
+	movq 0(%rbp), %rax
 	pushq %rax
+	movq $2, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq $0, %rdx
+	cmpq $0, %rbx
+	je print_error_z
+	idivq %rbx
+	pushq %rdx
+	popq %rax
+	cmpq $0, %rax
+	je bool_true_1
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_1
+bool_true_1:
+	movq $1, %rax
+	pushq %rax
+bool_end_1:
 	popq %rax
 	ret
 	call print_error_f
 	ret
-userw:
+useris_even2:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
 	subq $1, is_in_function
-	addq $1, is_in_function
-	call userf
-	movq %rax, %rbx
-	cmpq $0, %rbx
+	movq -8(%rbp), %rax
+	pushq %rax
+	popq %rax
+	movq %rax, 0(%rbp)
+	cmpq $0, 0(%rbp)
 	jge inicio_true_1
 	jmp print_error_t
 inicio_true_1:
 	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
+	cmpq %rax, 0(%rbp)
 	jle fim_true_1
 	jmp print_error_t
 fim_true_1:
-	pushq %rbx
-	popq %rax
-	ret
-	call print_error_f
-	ret
-userz:
-	movq $0, %rax
-	cmpq is_in_function, %rax
-	je print_error_f
-	subq $1, is_in_function
 	addq $1, is_in_function
-	call userw
+	call useris_even
 	movq %rax, %rbx
 	cmpq $0, %rbx
 	jge inicio_true_2
@@ -108,50 +168,6 @@ inicio_true_2:
 	jle fim_true_2
 	jmp print_error_t
 fim_true_2:
-	pushq %rbx
-	popq %rax
-	ret
-	call print_error_f
-	ret
-usery:
-	movq $0, %rax
-	cmpq is_in_function, %rax
-	je print_error_f
-	subq $1, is_in_function
-	addq $1, is_in_function
-	call userz
-	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_3
-	jmp print_error_t
-inicio_true_3:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_3
-	jmp print_error_t
-fim_true_3:
-	pushq %rbx
-	popq %rax
-	ret
-	call print_error_f
-	ret
-userx:
-	movq $0, %rax
-	cmpq is_in_function, %rax
-	je print_error_f
-	subq $1, is_in_function
-	addq $1, is_in_function
-	call usery
-	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_4
-	jmp print_error_t
-inicio_true_4:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_4
-	jmp print_error_t
-fim_true_4:
 	pushq %rbx
 	popq %rax
 	ret
@@ -170,5 +186,9 @@ fim_true_4:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+.Sscanf_int:
+	.string "%ld"
+input:
+	.quad 0
 is_in_function:
 	.quad 0

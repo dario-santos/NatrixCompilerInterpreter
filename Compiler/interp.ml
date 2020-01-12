@@ -272,7 +272,14 @@ and interpret_stmt ctxs = function
   | Sprintn e ->
       (* 1 - Imprime a expressao _e_ com \n*)
       print_value (expr ctxs e); printf "@."
-
+  | Sscanf id -> 
+    begin   try
+      let x = (Scanf.sscanf (read_line()) " %ld" (fun a -> a)) in 
+      interpret_stmt ctxs (Sassign (id, Ecst (Int64.of_int32 x)))
+      with 
+    | Stdlib.Scanf.Scan_failure _ ->  begin interpret_stmt ctxs (Sassign (id, Ecst 0L)) end
+    end
+  
   | Sblock bl -> 
       (* 1 - Interpreta o bloco de instruções *)
       interpret_block_stmt ctxs bl

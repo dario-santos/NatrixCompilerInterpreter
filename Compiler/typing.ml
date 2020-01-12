@@ -227,7 +227,15 @@ let rec verify_stmt ctxs = function
       (* 1 - Verificar se estamos a receber um Tint*)
       let t1 = verify_expr ctxs e in
       if not (is_int t1) then error ("The print statement only supports Tint but was given a " ^ string_of_typ t1 ^ ".")
-  
+  | Sscanf id -> 
+      (* 1 - Verificar se a variavel existe *)
+      if List.length(find_id id ctxs) == 0 then error ("Lexical analysis: The variable " ^ id ^ " is not defined.");
+
+      (* 2 - Verificar se id e do tipo Tint *)
+      let ctx = List.hd (List.rev(find_id id ctxs)) in
+      let t1 = Hashtbl.find ctx id in
+      if not (is_int t1) then error ("The scanf statement only supports Tint but was given a " ^ string_of_typ t1 ^ ".")
+
   | Sblock bl -> verify_block_stmt ctxs bl
   | Sforeach(id, set, bl) ->
       (* 1 - Adiciona o contexto do for e declaracao da sua variavel *)

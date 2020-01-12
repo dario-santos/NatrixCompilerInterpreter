@@ -590,6 +590,24 @@ let rec compile_stmt ctxs = function
       popq rdi ++
       call "printn_int"
 
+  | Sscanf id ->
+      (* 1 - Vai buscar o contexto em que o id esta declarado *)        
+      let ctx = List.hd (List.rev (find_id ctxs id)) in
+
+      (* 2 - Vai buscar o tipo e o ofs de id *)
+      let t, ofs = Hashtbl.find ctx id in
+      let ofs = int_of_vint ofs in
+
+	    leaq (lab ".Sscanf_int") rdi ++
+	    leaq (ind ~ofs:(-ofs) rbp) rsi  ++
+      movq (imm64 0L) (reg rax) ++
+
+	    call "scanf" ++
+	    movq (ind ~ofs:(-ofs) rbp) (reg rax)++
+	      
+      (* 3 - Atualiza o valor que esta no endereço ofs*)
+      is_in_type_boundaries ctxs ofs t
+
   | Sblock bl -> 
       (* 1 - Compila um bloco de instrucoes *)
       let block = List.rev(compile_block_stmt ctxs bl) in
@@ -760,6 +778,8 @@ let compile_program p ofile =
         label ".Sprint_error_t" ++ string "\nRun-time error:\n\n     Value out of bounds.\n\n" ++
         label ".Sprint_error_s" ++ string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n" ++
         label ".Sprint_error_f" ++ string "\nFuncao sem retorno\n\n" ++
+        label ".Sscanf_int" ++ string "%ld" ++
+        label "input"  ++ dquad [0] ++
         label "is_in_function" ++ dquad [0]
     }
   in

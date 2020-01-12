@@ -28,6 +28,7 @@
       ("by", BY);
       ("print", PRINT);
       ("printn",PRINTN);
+      ("scanf", SCANF);
       ("function", FUNCTION);
       ("return", RETURN);
       ("maxint", MAXINT);

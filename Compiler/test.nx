@@ -1,8 +1,15 @@
-val x : int = 3;
-
-
-
-foreach print(x) in [0 .. 10]
+function is_even(n : int ) : int
 {
-    print(0);
+    return !n % 2;
 }
+
+function is_even2(n : int ) : int
+{
+    return is_even(n);
+}
+
+val x : int = 0;
+
+scanf(x);
+
+printn(is_even2(x));
