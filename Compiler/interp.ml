@@ -86,7 +86,7 @@ let rec expr ctxs = function
   | Eset (e1, e2) -> 
       let i = expr_int ctxs e1 in 
       let f = expr_int ctxs e2 in 
-      if i >= 0 && f >= 0 && i < f then Vset (i, f) 
+      if i >= 0 && f >= 0 && i <= f then Vset (i, f) 
       else error "valor inicial do conjunto é maior do que o final"
   | Eminint -> Vint 0
   | Emaxint -> Vint max_int
@@ -133,7 +133,10 @@ let rec expr ctxs = function
         begin match v with
           | Vset (i,f) -> Vset(i,f)
           | Vint n -> Vint n
+          | Varray (a, b) -> Varray(a, b)
+          | Vlist(a, b) -> Vlist(a, b)
           | _ -> error "O tipo array não pode ser utilizado desta forma"
+        
         end
           (* É sempre retornado o valor *)
           (* No caso da definição dos conjuntos e arrays o range *)
@@ -145,7 +148,7 @@ let rec expr ctxs = function
       let local_tbl = List.hd (List.rev tbls) in
     begin match fst(Hashtbl.find local_tbl id) with
       | Vlist (l, range) ->
-          let i,_ = vset_to_tuplo range in
+          let i,f = vset_to_tuplo range in
           let index = expr_int ctxs e2 in
           (try l.(index - i) with Invalid_argument _ -> error "index out of bounds")
       | _ -> error "list expected" 
@@ -294,7 +297,8 @@ and stmt ctx = function
             else error "Sassign: valor fora dos limites do tipo"
           | _       -> error "list expected" 
         end
-  | Sprint e          -> print_value (expr ctx e); printf "@."
+  | Sprint e          -> print_value (expr ctx e);
+  | Sprintn e         -> print_value (expr ctx e); printf "@."
   | Sblock bl         -> interpret_block_stmt ctx bl
   | Sforeach(x, e, bl) ->
     let i, f = expr_set ctx e in

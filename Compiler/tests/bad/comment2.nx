@@ -1,0 +1,12 @@
+(*
+
+val x : int = 3;
+
+if(x)
+{
+    print(42);
+}
+else
+{
+    print(42/2);
+}

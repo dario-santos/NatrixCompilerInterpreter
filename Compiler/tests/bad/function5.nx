@@ -1,0 +1,10 @@
+function somar(int x, int y) : int
+{
+    return 3;
+}
+
+function somar(int x, int y) : int
+{
+    return 3;
+}
+

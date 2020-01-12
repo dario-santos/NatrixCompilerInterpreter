@@ -10,7 +10,7 @@
 %token <int>       CST
 %token <Ast.binop> CMP
 %token <Ast.ident> IDENT
-%token IF ELSE PRINT VAL INT
+%token IF ELSE PRINT PRINTN VAL INT
 %token FOREACH IN TO
 %token FUNCTION RETURN
 %token TYPE
@@ -84,6 +84,7 @@ simple_stmt:
 | id = ident ":""=" e = expr ";"                   { Sassign (id, e) }
 | id = ident "["e2 = expr"]" ":""=" e3 = expr ";"  { Saset (id, e2, e3) }
 | PRINT "(" e = expr ")" ";"                       { Sprint e }
+| PRINTN "(" e = expr ")" ";"                      { Sprintn e }
 ;
 
 type_def:

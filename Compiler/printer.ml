@@ -24,6 +24,7 @@ and print_stmt = function
   | Sarray(id,sz,t) -> printf "Sarray(%s, " id; print_expr sz; printf ", "; print_expr t; printf ")"
   | Sdeclarearray(id, ida, e) -> printf "Sdeclarearray(%s, %s, " id ida; print_expr e; printf ")"
   | Sprint e        -> printf "Sprint("; print_expr e; printf ")"
+  | Sprintn e        -> printf "Sprintn("; print_expr e; printf ")"
   | Sblock bl       -> interpret_block_stmt  bl
   | Sforeach(x, e, bl) -> printf "Sforeach(%s, " x; print_expr e; printf ",\n"; print_stmt bl; printf ")"
   | Saset (id, e1, e2) -> printf "Saset(%s, " id; print_expr e1; printf ", "; print_expr e2; printf ")"

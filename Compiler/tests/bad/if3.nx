@@ -1,0 +1,9 @@
+type t = [0 .. 10];
+
+type a : array t of t;
+type v : a filled by 3;
+
+if(a)
+{
+    print(42);
+}

@@ -25,6 +25,7 @@
       ("filled", FILLED);
       ("by", BY);
       ("print", PRINT);
+      ("printn",PRINTN);
       ("function", FUNCTION);
       ("return", RETURN);
       ("maxint", MAXINT);

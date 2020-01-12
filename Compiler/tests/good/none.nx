@@ -1,0 +1,10 @@
+function foo () : int
+{
+    val x : int = 1;
+
+    return 0;
+}
+
+printn(foo());
+printn(foo() == foo());
+printn(foo() != foo());

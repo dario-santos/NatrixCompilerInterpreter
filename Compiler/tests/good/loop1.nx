@@ -1,0 +1,12 @@
+function loop(x : int) : int
+{
+    foreach i in x .. (x + 3)
+    {
+        printn(i);
+    }
+
+    return 0;
+}
+
+// Isto e uma forma de ignorar o valor de retorno de uma funcao
+if(loop(0)){}

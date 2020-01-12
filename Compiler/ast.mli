@@ -33,6 +33,7 @@ and stmt =
   | Sarray of ident * expr * expr
   | Sdeclarearray of ident * ident * expr
   | Sprint of expr
+  | Sprintn of expr
   | Sblock of stmt list
   | Sforeach of ident * expr * stmt
   | Saset of ident * expr * expr (* id[e2] := e3 *)

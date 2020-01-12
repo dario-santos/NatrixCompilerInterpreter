@@ -1,0 +1,4 @@
+type t = [0 .. 10];
+type a : array 3 of minint.maxint;
+
+val x : t = a;

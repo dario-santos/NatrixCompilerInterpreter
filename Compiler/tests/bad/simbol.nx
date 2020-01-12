@@ -1,0 +1,3 @@
+# Imprime 2 no ecra
+
+print(1 + 1);

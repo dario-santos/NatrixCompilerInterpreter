@@ -32,9 +32,7 @@ clean:
 	rm -f *.cm[io] *.o *~ $(BIN) $(GENERATED) parser.output
 	rm parser.automaton
 	rm parser.conflicts
-	rm *.s
-	rm 
-
+	
 .depend depend:$(GENERATED)
 	rm -f .depend
 	ocamldep *.ml *.mli > .depend

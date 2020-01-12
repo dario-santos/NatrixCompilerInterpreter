@@ -1,0 +1,8 @@
+type a : array 2 of minint..maxint;
+
+val x : a filled by 1;
+x[0] := 111;
+x[1] := 222;
+x[2] := 333;
+
+printn(x[1]);

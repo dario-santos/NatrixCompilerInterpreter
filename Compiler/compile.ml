@@ -400,6 +400,10 @@ let rec compile_stmt ctxs = function
       compile_expr ctxs e ++
       popq rdi ++
       call "print_int"
+  | Sprintn e ->
+      compile_expr ctxs e ++
+      popq rdi ++
+      call "printn_int"
   | Sblock bl -> 
       let block = List.rev(interpret_block_stmt ctxs bl) in
       List.fold_right (++) block nop
@@ -493,6 +497,12 @@ let compile_program p ofile =
         addq (imm !frame_size) !%rsp ++ (* desaloca a frame *)
         movq (imm 0) (reg rax) ++ (* exit *)
         ret ++
+        label "printn_int" ++
+        movq (reg rdi) (reg rsi) ++
+        leaq (lab ".Sprintn_int") rdi ++
+        movq (imm 0) (reg rax) ++
+        call "printf" ++
+        ret ++
         label "print_int" ++
         movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_int") rdi ++
@@ -519,7 +529,8 @@ let compile_program p ofile =
         jmp "end" ++
         !functions_code;
       data = 
-        label ".Sprint_int" ++ string "%d\n" ++
+        label ".Sprintn_int" ++ string "%d\n" ++
+        label ".Sprint_int" ++ string "%d" ++
         label ".Sprint_error_z" ++ string "Erro: Divisao por zero.\n" ++
         label ".Sprint_error_t" ++ string "Erro de tipagem\n" ++
         label ".Sprint_error_f" ++ string "Funcao sem retorno\n"

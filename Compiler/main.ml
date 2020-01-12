@@ -83,21 +83,25 @@ let () =
   | Lexer.Lexing_error c ->
 	    (* Erro léxico. Recupera-se a posição absoluta e converte-se para número de linha *)
 	    localisation (Lexing.lexeme_start_p buf);
-	    eprintf "Erro durante a análise léxica: %s@." c;
+	    eprintf "\nerror:\n\n    Erro durante a análise léxica: %s@." c;
       exit 1
   | Parser.Error ->
 	    (* Erro sintáctio. Recupera-se a posição e converte-se para número de linha *)
 	    localisation (Lexing.lexeme_start_p buf);
-	    eprintf "Erro durante a análise sintáctica@.";
+	    eprintf "\nerror:\n\n    Erro durante a análise sintáctica@.";
       exit 1
   | Typing.Error s -> 
-      eprintf "\nSemmantic analisys: %s@." s;
+      eprintf "\nerror:\n\n    Semmantic analysis:\n    %s\n@." s;
       exit 1
   | Compile.VarUndef s->
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "Erro de compilação: a variável  %s não está definida@." s;
-  exit 1
+	    eprintf "\nerror:\n\n    Erro de compilação: a variável  %s não está definida@." s;
+      exit 1
   | Compile.Error s->
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "Erro de compilação:  %s @." s;
+	    eprintf "\nerror:\n\n    Erro de compilação:  %s @." s;
+      exit 1
+  | Interp.Error s->
+	    (* Erro de utilização de variáveis durante a compilação *)
+	    eprintf "\nerror:\n\n    Erro de interpretação:  %s @." s;
       exit 1

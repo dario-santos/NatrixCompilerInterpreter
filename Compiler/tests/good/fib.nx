@@ -1,0 +1,25 @@
+
+// Calcula a sequencia de fib
+function fibaux(a : int, b : int, k : int) : int
+{
+    val tmp : int = 0;
+
+    foreach i in 0 .. (k - 1)
+    {
+        tmp := a;
+        a := b;
+        b := tmp + b;       
+    }
+
+    return a;
+}
+
+// Devolve o valor do elemento n da sequência de fibonacci
+function fib(n : int) : int
+{
+    return fibaux(0, 1, n);
+}
+
+printn(fib(2));
+printn(fib(11));
+printn(fib(42));

@@ -84,22 +84,30 @@ let rec verify_expr ctxs = function
       let t1 = verify_expr ctxs e1 in
       if not (is_int t1) then error ("Lexical analysis: The operator ! expects one integer but was given " ^ (string_of_typ t1) ^ "."); 
       Tint
+  | Ecall ("size", [el]) ->
+      (* 1 - Verificar que el é do tipo Tset ou Tarrayvar *)
+      let t1 = verify_expr ctxs el in
+      if not (is_set t1) && not(is_arrayvar t1) then error ("The function size accepts types Tset and Tarrayvar but was given " ^ (string_of_typ t1) ^ "."); 
+      
+      (* 2 - Se tudo correu bem entao retornamos o int *)
+      Tint
+
   | Ecall (f, el) ->
       (* 1 - Verificar se f existe *)
-      if not (Hashtbl.mem functions f) then error ("Lexical analysis: Could not find a function with the identifier " ^ f ^ ".");
+      if not (Hashtbl.mem functions f) then error ("Could not find a function with the identifier " ^ f ^ ".");
       let function_ctx ,return,_ = Hashtbl.find functions f in
 
       (* 2 - Verificar se todos os parametros de el sao inteiros ou conjuntos*)
       let rec verify_arguments = function
         | hd::tl -> 
           let tp = verify_expr ctxs hd in
-          if not(is_int tp) && not(is_set tp) then error ("Lexical analysis: Invalid type in the function call to " ^ f ^ ", was expecting an int or set but got " ^(string_of_typ tp) ^ ".")
+          if not(is_int tp) && not(is_set tp) then error ("Invalid type in the function call to " ^ f ^ ", was expecting an Tint or set but got " ^(string_of_typ tp) ^ ".")
         | [] -> ()
       in
       verify_arguments el;
       
       (* 4 - Verificar se passamos o mesmo numero de argumentos *)
-      if (List.length el) != (Hashtbl.length function_ctx)  then error ("Lexical analysis: Invalid call to the function " ^ f ^ ", got " ^ string_of_int(List.length el) ^ " arguments but was expecting " ^ string_of_int(Hashtbl.length function_ctx) ^ ".");
+      if (List.length el) != (Hashtbl.length function_ctx)  then error ("Invalid call to the function " ^ f ^ ", got " ^ string_of_int(List.length el) ^ " arguments but was expecting " ^ string_of_int(Hashtbl.length function_ctx) ^ ".");
       
       (* 5 - Se tudo correu bem entao retornamos o int *)
       Tint
@@ -214,7 +222,12 @@ let rec verify_stmt ctxs = function
       (* 1 - Verificar se estamos a receber um Tint*)
       let t1 = verify_expr ctxs e in
       if not (is_int t1) then error ("The print statement only supports Tint but was given a " ^ string_of_typ t1 ^ ".")
-
+  
+  | Sprintn e -> 
+      (* 1 - Verificar se estamos a receber um Tint*)
+      let t1 = verify_expr ctxs e in
+      if not (is_int t1) then error ("The print statement only supports Tint but was given a " ^ string_of_typ t1 ^ ".")
+  
   | Sblock bl -> verify_block_stmt ctxs bl
   | Sforeach(id, set, bl) ->
       (* 1 - Adiciona o contexto do for e declaracao da sua variavel *)

@@ -1,0 +1,19 @@
+val z : int = 3;
+
+function div( x : int, y : int) : int 
+{
+    printn(z);
+
+    if(y != 0)
+    {
+        printn(z);
+
+        val z : int = x / y;
+        printn(z);
+        return z; 
+    }
+
+    return y;
+}
+
+printn(div(3, 2));
