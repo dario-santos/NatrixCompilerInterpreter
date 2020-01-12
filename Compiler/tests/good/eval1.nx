@@ -1,4 +1,4 @@
-type a : array 2 of [minint..maxint];
+type a : array 3 of [minint .. maxint];
 
 val v : a filled by 1;
 

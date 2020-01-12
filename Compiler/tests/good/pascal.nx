@@ -3,8 +3,8 @@ function main() : int
     val h : int = 40;
  
     foreach i in [0 .. (h - 1)]
-    {
-        foreach j in [0 .. i]
+    {              
+        foreach j in [0 .. (i + 1)]
         {
             if(i % 2 == 0)
             {

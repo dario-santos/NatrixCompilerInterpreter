@@ -1,21 +1,2 @@
-function mistery(n : int) : int
-{
-    type a : array 9 of minint..maxint;
-    val v : a filled by 0;
-    
-    foreach i in 0 .. 9
-    {
-        v[i] := i;
-    }
 
-    if(n < 10)
-    {
-        return v[n];
-    }
-        
-    return (n / 10) + v[n % 10];
-}
-
-printn(mistery(0));
-printn(mistery(42));
-printn(mistery(1024));
+printn(size([0 .. 0]));

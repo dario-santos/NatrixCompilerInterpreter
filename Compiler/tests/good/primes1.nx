@@ -1,7 +1,12 @@
 function is_prime(n : int ) : int
 {
-    foreach i in [2 .. (n - 1)]
+    foreach i in [2 .. n]
     {
+        if(i == n)
+        {
+            return 1;
+        }
+
         if(!n % i)
         {
             return 0;

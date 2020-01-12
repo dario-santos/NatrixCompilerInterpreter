@@ -1,6 +1,6 @@
 function mistery(n : int) : int
 {
-    type a : array 9 of [minint..maxint];
+    type a : array 10 of [minint..maxint];
     val v : a filled by 0;
     
     foreach i in [0 .. 9]
