@@ -3,7 +3,7 @@
 main:
 	subq $8, %rsp
 	leaq 0(%rsp), %rbp
-	call foo
+	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
 	jge inicio_true_2
@@ -14,10 +14,10 @@ inicio_true_2:
 	jle fim_true_2
 	jmp print_error_t
 fim_true_2:
-	pushq %rax
+	pushq %rbx
 	popq %rdi
 	call printn_int
-	call foo
+	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
 	jge inicio_true_4
@@ -28,8 +28,8 @@ inicio_true_4:
 	jle fim_true_4
 	jmp print_error_t
 fim_true_4:
-	pushq %rax
-	call foo
+	pushq %rbx
+	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
 	jge inicio_true_3
@@ -40,7 +40,7 @@ inicio_true_3:
 	jle fim_true_3
 	jmp print_error_t
 fim_true_3:
-	pushq %rax
+	pushq %rbx
 	popq %rbx
 	popq %rax
 	cmpq %rbx, %rax
@@ -54,7 +54,7 @@ bool_true_1:
 bool_end_1:
 	popq %rdi
 	call printn_int
-	call foo
+	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
 	jge inicio_true_6
@@ -65,8 +65,8 @@ inicio_true_6:
 	jle fim_true_6
 	jmp print_error_t
 fim_true_6:
-	pushq %rax
-	call foo
+	pushq %rbx
+	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
 	jge inicio_true_5
@@ -77,7 +77,7 @@ inicio_true_5:
 	jle fim_true_5
 	jmp print_error_t
 fim_true_5:
-	pushq %rax
+	pushq %rbx
 	popq %rbx
 	popq %rax
 	cmpq %rbx, %rax
@@ -113,6 +113,12 @@ print_error_t:
 	movq $0, %rax
 	call printf
 	jmp end
+print_error_s:
+	movq %rdi, %rsi
+	leaq .Sprint_error_s, %rdi
+	movq $0, %rax
+	call printf
+	jmp end
 print_error_z:
 	movq %rdi, %rsi
 	leaq .Sprint_error_z, %rdi
@@ -125,7 +131,7 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
-foo:
+userfoo:
 	movq $1, %rax
 	pushq %rax
 	popq %rax
@@ -151,8 +157,10 @@ fim_true_1:
 .Sprint_int:
 	.string "%ld"
 .Sprint_error_z:
-	.string "Erro: Divisao por zero.\n"
+	.string "\nErro: Divisao por zero.\n\n"
 .Sprint_error_t:
-	.string "Erro de tipagem\n"
+	.string "\nRun-time error:\n\n     Value out of bounds.\n\n"
+.Sprint_error_s:
+	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
-	.string "Funcao sem retorno\n"
+	.string "\nFuncao sem retorno\n\n"

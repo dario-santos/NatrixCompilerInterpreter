@@ -1,0 +1,5 @@
+val x : int = 3;
+
+x := 42;
+
+printn(x);

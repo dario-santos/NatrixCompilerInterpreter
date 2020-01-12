@@ -18,11 +18,14 @@ bool_true_1:
 	movq $1, %rax
 	pushq %rax
 bool_end_1:
+	popq %rax
+	cmpq $1, %rax
+	je lazy_evaluation_1
 	movq $1, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	orq %rbx, %rax
+	orq $1, %rax
+lazy_evaluation_1:
 	pushq %rax
 	popq %rdi
 	call printn_int
@@ -48,6 +51,12 @@ print_error_t:
 	movq $0, %rax
 	call printf
 	jmp end
+print_error_s:
+	movq %rdi, %rsi
+	leaq .Sprint_error_s, %rdi
+	movq $0, %rax
+	call printf
+	jmp end
 print_error_z:
 	movq %rdi, %rsi
 	leaq .Sprint_error_z, %rdi
@@ -66,8 +75,10 @@ print_error_f:
 .Sprint_int:
 	.string "%ld"
 .Sprint_error_z:
-	.string "Erro: Divisao por zero.\n"
+	.string "\nErro: Divisao por zero.\n\n"
 .Sprint_error_t:
-	.string "Erro de tipagem\n"
+	.string "\nRun-time error:\n\n     Value out of bounds.\n\n"
+.Sprint_error_s:
+	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
-	.string "Funcao sem retorno\n"
+	.string "\nFuncao sem retorno\n\n"

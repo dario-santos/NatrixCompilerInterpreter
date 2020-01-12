@@ -1,11 +1,21 @@
 	.text
 	.globl	main
 main:
-	subq $24, %rsp
-	leaq 16(%rsp), %rbp
+	subq $32, %rsp
+	leaq 24(%rsp), %rbp
 	movq $0, %rax
 	pushq %rax
 	movq $10, %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	cmpq %rbx, %rax
+	jle print_error_s
+	cmpq $0, %rax
+	jl print_error_s
+	cmpq $0, %rbx
+	jl print_error_s
+	pushq %rbx
 	pushq %rax
 	popq %rax
 	popq %rbx
@@ -31,7 +41,7 @@ fim_true_1:
 	popq %rbx
 	popq %rax
 	movq %rax, -16(%rbp)
-	pushq %rbx
+	movq %rbx, -24(%rbp)
 foreach_i1:
 	movq -16(%rbp), %rax
 	pushq %rax
@@ -40,13 +50,11 @@ foreach_i1:
 	movq -16(%rbp), %rax
 	incq %rax
 	movq %rax, -16(%rbp)
-	popq %rax
-	pushq %rax
-	cmpq %rax, -16(%rbp)
+	movq -24(%rbp), %rbx
+	cmpq %rbx, %rax
 	jle foreach_i1
-	popq %rax
 end:
-	addq $24, %rsp
+	addq $32, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -64,6 +72,12 @@ print_int:
 print_error_t:
 	movq %rdi, %rsi
 	leaq .Sprint_error_t, %rdi
+	movq $0, %rax
+	call printf
+	jmp end
+print_error_s:
+	movq %rdi, %rsi
+	leaq .Sprint_error_s, %rdi
 	movq $0, %rax
 	call printf
 	jmp end
@@ -85,8 +99,10 @@ print_error_f:
 .Sprint_int:
 	.string "%ld"
 .Sprint_error_z:
-	.string "Erro: Divisao por zero.\n"
+	.string "\nErro: Divisao por zero.\n\n"
 .Sprint_error_t:
-	.string "Erro de tipagem\n"
+	.string "\nRun-time error:\n\n     Value out of bounds.\n\n"
+.Sprint_error_s:
+	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
-	.string "Funcao sem retorno\n"
+	.string "\nFuncao sem retorno\n\n"

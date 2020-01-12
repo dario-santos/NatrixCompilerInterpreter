@@ -1,0 +1,22 @@
+val cnt : int = 0;
+
+function printa() : int
+{
+    if(cnt == 0)
+    {
+        cnt := 1;
+        printn(0);
+        return 0;
+    }
+    else
+    {
+        cnt := 0;
+        printn(1);
+        return 1;
+    }
+}
+
+if(printa() || printa())
+{
+    printn(3);
+}

@@ -72,9 +72,9 @@ type table_ctx = (string, value * value) Hashtbl.t
 
 
 let rec find_id id l = 
-    match l with
-    | ct::tl -> if Hashtbl.mem ct id then [ct] @ (find_id id tl) else (find_id id tl) 
-    | _ -> []
+  match l with
+  | ct::tl -> if Hashtbl.mem ct id then [ct] @ (find_id id tl) else (find_id id tl) 
+  | _ -> []
 
 let value_of_costumtype ctxs t = 
   match t with
@@ -90,7 +90,9 @@ let value_in_type_limits v t =
 
 (* Interpretação de uma expressão (devolve um valor) *)
 let rec expr ctxs = function
-  | Ecst n -> Vint n
+  | Ecst n ->
+      if n < 0L then error ("Invalid constante, you are trying to use a negative number.");  
+      Vint n
   | Eset (e1, e2) -> 
       let i = expr_int ctxs e1 in 
       let f = expr_int ctxs e2 in

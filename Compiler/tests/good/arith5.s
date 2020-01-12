@@ -1,46 +1,29 @@
 	.text
 	.globl	main
 main:
-	subq $24, %rsp
-	leaq 16(%rsp), %rbp
-	movq $0, %rax
+	subq $0, %rsp
+	leaq -8(%rsp), %rbp
+	movq $1, %rax
+	pushq %rax
+	movq $2, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	addq %rbx, %rax
 	pushq %rax
 	movq $3, %rax
 	pushq %rax
-	popq %rax
 	popq %rbx
-	cmpq %rbx, %rax
-	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
+	popq %rax
+	movq $0, %rdx
 	cmpq $0, %rbx
-	jl print_error_s
-	pushq %rbx
-	pushq %rax
-	popq %rax
-	popq %rbx
-	movq %rbx, 0(%rbp)
-	movq %rax, -8(%rbp)
-	movq $3, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq 0(%rbp), %rax
-	cmpq %rax, -16(%rbp)
-	jge inicio_true_1
-	jmp print_error_t
-inicio_true_1:
-	movq -8(%rbp), %rax
-	cmpq %rax, -16(%rbp)
-	jle fim_true_1
-	jmp print_error_t
-fim_true_1:
-	movq -16(%rbp), %rax
+	je print_error_z
+	idivq %rbx
 	pushq %rax
 	popq %rdi
 	call printn_int
 end:
-	addq $24, %rsp
+	addq $0, %rsp
 	movq $0, %rax
 	ret
 printn_int:

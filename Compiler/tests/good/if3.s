@@ -1,46 +1,51 @@
 	.text
 	.globl	main
 main:
-	subq $24, %rsp
-	leaq 16(%rsp), %rbp
-	movq $0, %rax
-	pushq %rax
-	movq $3, %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	cmpq %rbx, %rax
-	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
+	subq $0, %rsp
+	leaq -8(%rsp), %rbp
+	call userprinta
+	movq %rax, %rbx
 	cmpq $0, %rbx
-	jl print_error_s
+	jge inicio_true_2
+	jmp print_error_t
+inicio_true_2:
+	movq $9223372036854775807, %rax
+	cmpq %rax, %rbx
+	jle fim_true_2
+	jmp print_error_t
+fim_true_2:
 	pushq %rbx
-	pushq %rax
 	popq %rax
-	popq %rbx
-	movq %rbx, 0(%rbp)
-	movq %rax, -8(%rbp)
-	movq $3, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq 0(%rbp), %rax
-	cmpq %rax, -16(%rbp)
+	cmpq $1, %rax
+	jne lazy_evaluation_1
+	call userprinta
+	movq %rax, %rbx
+	cmpq $0, %rbx
 	jge inicio_true_1
 	jmp print_error_t
 inicio_true_1:
-	movq -8(%rbp), %rax
-	cmpq %rax, -16(%rbp)
+	movq $9223372036854775807, %rax
+	cmpq %rax, %rbx
 	jle fim_true_1
 	jmp print_error_t
 fim_true_1:
-	movq -16(%rbp), %rax
+	pushq %rbx
+	popq %rax
+	andq $1, %rax
+lazy_evaluation_1:
+	pushq %rax
+	popq %rax
+	cmpq $0, %rax
+	jne if_true_1
+	jmp if_end_1
+if_true_1:
+	movq $3, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
+if_end_1:
 end:
-	addq $24, %rsp
+	addq $0, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -79,6 +84,17 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
+userprinta:
+	movq $1, %rax
+	pushq %rax
+	popq %rdi
+	call printn_int
+	movq $0, %rax
+	pushq %rax
+	popq %rax
+	ret
+	call print_error_f
+	ret
 	.data
 .Sprintn_int:
 	.string "%ld\n"

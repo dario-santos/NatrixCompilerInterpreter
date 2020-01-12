@@ -99,9 +99,9 @@ let () =
       exit 1
   | Compile.Error s->
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Erro de compilação:  %s @." s;
+	    eprintf "\nerror:\n\n    Erro de compilação:\n  %s\n@." s;
       exit 1
   | Interp.Error s->
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Erro de interpretação:  %s @." s;
+	    eprintf "\nerror:\n\n    Erro de interpretação:\n  %s\n@." s;
       exit 1

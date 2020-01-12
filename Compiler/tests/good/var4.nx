@@ -1,0 +1,17 @@
+val x : int = 5;
+val y : int = 4;
+val z : int = 7;
+val w : int = 2;
+
+x := y + w; // 6 
+
+y := z + x; // 12
+
+z := w + y; // 6
+
+w := x + z; // 12
+
+printn(x);
+printn(y);
+printn(z);
+printn(w);

@@ -7,9 +7,9 @@ main:
 	pushq %rax
 	movq $4, %rax
 	pushq %rax
-	movq $0, %rdx
 	popq %rbx
 	popq %rax
+	movq $0, %rdx
 	cmpq $0, %rbx
 	je print_error_z
 	idivq %rbx
@@ -38,6 +38,12 @@ print_error_t:
 	movq $0, %rax
 	call printf
 	jmp end
+print_error_s:
+	movq %rdi, %rsi
+	leaq .Sprint_error_s, %rdi
+	movq $0, %rax
+	call printf
+	jmp end
 print_error_z:
 	movq %rdi, %rsi
 	leaq .Sprint_error_z, %rdi
@@ -56,8 +62,10 @@ print_error_f:
 .Sprint_int:
 	.string "%ld"
 .Sprint_error_z:
-	.string "Erro: Divisao por zero.\n"
+	.string "\nErro: Divisao por zero.\n\n"
 .Sprint_error_t:
-	.string "Erro de tipagem\n"
+	.string "\nRun-time error:\n\n     Value out of bounds.\n\n"
+.Sprint_error_s:
+	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
-	.string "Funcao sem retorno\n"
+	.string "\nFuncao sem retorno\n\n"

@@ -1,46 +1,40 @@
 	.text
 	.globl	main
 main:
-	subq $24, %rsp
-	leaq 16(%rsp), %rbp
-	movq $0, %rax
-	pushq %rax
+	subq $8, %rsp
+	leaq 0(%rsp), %rbp
 	movq $3, %rax
 	pushq %rax
 	popq %rax
-	popq %rbx
-	cmpq %rbx, %rax
-	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
-	cmpq $0, %rbx
-	jl print_error_s
-	pushq %rbx
-	pushq %rax
-	popq %rax
-	popq %rbx
-	movq %rbx, 0(%rbp)
-	movq %rax, -8(%rbp)
-	movq $3, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq 0(%rbp), %rax
-	cmpq %rax, -16(%rbp)
+	movq %rax, 0(%rbp)
+	cmpq $0, 0(%rbp)
 	jge inicio_true_1
 	jmp print_error_t
 inicio_true_1:
-	movq -8(%rbp), %rax
-	cmpq %rax, -16(%rbp)
+	movq $9223372036854775807, %rax
+	cmpq %rax, 0(%rbp)
 	jle fim_true_1
 	jmp print_error_t
 fim_true_1:
-	movq -16(%rbp), %rax
+	movq $42, %rax
+	pushq %rax
+	popq %rax
+	movq %rax, 0(%rbp)
+	cmpq $0, 0(%rbp)
+	jge inicio_true_2
+	jmp print_error_t
+inicio_true_2:
+	movq $9223372036854775807, %rax
+	cmpq %rax, 0(%rbp)
+	jle fim_true_2
+	jmp print_error_t
+fim_true_2:
+	movq 0(%rbp), %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
 end:
-	addq $24, %rsp
+	addq $8, %rsp
 	movq $0, %rax
 	ret
 printn_int:
