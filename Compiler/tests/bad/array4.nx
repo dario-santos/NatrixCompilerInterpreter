@@ -1,0 +1,1 @@
+type t : array 6 of [minint .. minint];

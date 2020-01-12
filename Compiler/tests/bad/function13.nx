@@ -1,0 +1,6 @@
+function somar(x : int, y : int) : int
+{
+    return 3;
+}
+
+print(somar(2));

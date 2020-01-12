@@ -4,7 +4,7 @@ function fibaux(a : int, b : int, k : int) : int
 {
     val tmp : int = 0;
 
-    foreach i in 0 .. (k - 1)
+    foreach i in [0 .. (k - 1)]
     {
         tmp := a;
         a := b;

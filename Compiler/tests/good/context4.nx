@@ -10,7 +10,7 @@ if(1)
 
     printn(x);
 
-    foreach i in 0 .. 2
+    foreach i in [0 .. 2]
     {
         printn(x);
 

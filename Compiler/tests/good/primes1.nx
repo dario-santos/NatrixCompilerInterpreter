@@ -1,6 +1,6 @@
 function is_prime(n : int ) : int
 {
-    foreach i in 2 .. (n - 1)
+    foreach i in [2 .. (n - 1)]
     {
         if(!n % i)
         {
@@ -18,7 +18,7 @@ function print_primes(n : int) : int
         printn(2);
     }
 
-    foreach i in 3 .. n
+    foreach i in [3 .. n]
     {
         if(is_prime(i))
         {

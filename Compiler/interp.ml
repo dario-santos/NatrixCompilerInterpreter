@@ -134,9 +134,7 @@ let rec expr ctxs = function
           | Vset (i,f) -> Vset(i,f)
           | Vint n -> Vint n
           | Varray (a, b) -> Varray(a, b)
-          | Vlist(a, b) -> Vlist(a, b)
-          | _ -> error "O tipo array não pode ser utilizado desta forma"
-        
+          | Vlist(a, b) -> Vlist(a, b)        
         end
           (* É sempre retornado o valor *)
           (* No caso da definição dos conjuntos e arrays o range *)
@@ -269,8 +267,12 @@ and stmt ctx = function
       ignore(if Hashtbl.mem functions id then error "o identificador deve ser único"); (*Se já existir uma função então termina *)
       let range = 
         match expr ctx sz with
-        | Vint n -> Varray(0, n)
-        | Vset (i, f) -> Varray(i, f)
+        | Vint n -> 
+            if n <= 0 then error "Uma array nao pode conter 0 ou menos elementos"; 
+            Varray(0, n)
+        | Vset (i, f) ->
+            if f - i <= 0 || i < 0 || f <= 0 then error "Uma array nao pode conter 0 ou menos elementos"; 
+            Varray(i, f)
         | _ -> error "tipo de dados não suportado"
       in
       let tp = expr ctx t in

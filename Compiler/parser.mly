@@ -40,7 +40,6 @@
 %nonassoc CMP
 %left PLUS MINUS
 %left TIMES DIV MOD
-%nonassoc TO
 
 /* Ponto de entrada da gramática */
 %start prog
@@ -79,7 +78,7 @@ simple_stmt:
 | RETURN e = expr ";"                              { Sreturn e }
 | VAL id = ident ":" t = type_def "=" e = expr ";" { Sdeclare (id, t ,e) }
 | VAL id = ident ":" t = ident FILLED BY e = expr ";" { Sdeclarearray (id, t ,e) }
-| TYPE id = ident "=" "[" set = expr "]" ";"       { Sset (id, set) }
+| TYPE id = ident "=" set = expr ";"               { Sset (id, set) }
 | TYPE id = ident ":" ARRAY size = expr OF t = expr ";"   { Sarray (id, size, t) }
 | id = ident ":""=" e = expr ";"                   { Sassign (id, e) }
 | id = ident "["e2 = expr"]" ":""=" e3 = expr ";"  { Saset (id, e2, e3) }
@@ -97,7 +96,7 @@ expr:
 | MAXINT                            { Emaxint }
 | MININT                            { Eminint }
 | id = ident                        { Eident id }
-| e1 = expr TO e2 = expr            { Eset(e1, e2)}
+| "[" e1 = expr TO e2 = expr "]"    { Eset(e1, e2)}
 | id = ident "[" e2 = expr "]"      { Eget (id, e2)}
 | NOT e1 = expr                     { Eunop (Unot, e1)}
 | e1 = expr o = binop e2 = expr     { Ebinop (o, e1, e2) }

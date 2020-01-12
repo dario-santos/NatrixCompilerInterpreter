@@ -1,6 +1,6 @@
 function loop(x : int) : int
 {
-    foreach i in x .. (x + 3)
+    foreach i in [x .. (x + 3)]
     {
         printn(i);
     }

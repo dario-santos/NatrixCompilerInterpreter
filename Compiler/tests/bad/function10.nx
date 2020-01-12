@@ -1,0 +1,10 @@
+
+function somar(x : int, y : int) : int
+{
+    function teste(x : int, y : int) : int
+    {
+        return 2;
+    }
+
+    return 1;
+}

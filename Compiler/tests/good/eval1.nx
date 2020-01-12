@@ -1,13 +1,13 @@
-type a : array 2 of minint..maxint;
+type a : array 2 of [minint..maxint];
 
 val v : a filled by 1;
 
-foreach i in 0 .. 2
+foreach i in [0 .. 2]
 {
     v[i] := i + 1;
 }
 
-foreach i in 0 .. 2
+foreach i in [0 .. 2]
 {
     printn(v[i]);
 }
