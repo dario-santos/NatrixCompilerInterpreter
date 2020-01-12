@@ -2,7 +2,8 @@
   open Lexing
   open Ast
   open Parser
-  
+  open Int64
+
   exception Lexing_error of string
 
   let create_hashtable size init =
@@ -78,8 +79,8 @@ rule analisador = parse
   | integer as snum 
     { 
       try
-        [CST (int_of_string snum)]
-      with _ -> raise (Lexing_error ("constante demasiado grande: " ^ snum)) }
+        [CST (Int64.of_string snum)]
+      with _ -> raise (Lexing_error ("The constant is too big : " ^ snum)) }
   | id as word      
   { try
       let token = Hashtbl.find keyword_table word in  

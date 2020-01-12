@@ -3,13 +3,13 @@
 main:
 	subq $0, %rsp
 	leaq -8(%rsp), %rbp
-	movq $1, %rax
+	movq $0, %rax
 	pushq %rax
-	movq $2, %rax
+	movq $6, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
+	popq %rbx
+	subq %rbx, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int

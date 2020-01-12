@@ -232,7 +232,7 @@ let rec verify_stmt ctxs = function
   | Sforeach(id, set, bl) ->
       (* 1 - Adiciona o contexto do for e declaracao da sua variavel *)
       let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
-      verify_stmt ctxs (Sdeclare(id, Int, Ecst(0)));
+      verify_stmt ctxs (Sdeclare(id, Int, Ecst(0L)));
 
       (* 2 - Verifica que foi passado um conjunto *)
       let t1 = verify_expr ctxs set in

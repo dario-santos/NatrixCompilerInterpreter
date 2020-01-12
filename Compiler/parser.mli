@@ -34,7 +34,7 @@ type token =
   | ELSE
   | DIV
   | DELIMITER
-  | CST of (int)
+  | CST of (int64)
   | COMMA
   | COLON
   | CMP of (Ast.binop)

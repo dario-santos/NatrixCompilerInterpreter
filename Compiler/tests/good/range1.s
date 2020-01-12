@@ -1,20 +1,28 @@
 	.text
 	.globl	main
 main:
-	subq $0, %rsp
-	leaq -8(%rsp), %rbp
-	movq $1, %rax
+	subq $16, %rsp
+	leaq 8(%rsp), %rbp
+	movq $0, %rax
 	pushq %rax
-	movq $2, %rax
+	movq $6, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
+	popq %rbx
+	movq %rbx, 0(%rbp)
+	movq %rax, -8(%rbp)
+	movq 0(%rbp), %rax
+	pushq %rax
+	movq -8(%rbp), %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	subq %rbx, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
 end:
-	addq $0, %rsp
+	addq $16, %rsp
 	movq $0, %rax
 	ret
 printn_int:

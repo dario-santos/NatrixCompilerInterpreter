@@ -1,2 +1,1 @@
-
-printn(size([0 .. 0]));
+printn(1 + 2);

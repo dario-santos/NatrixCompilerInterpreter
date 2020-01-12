@@ -14,7 +14,7 @@ and binop =
   | Band | Bor 
 
 and expr =
-  | Ecst of int
+  | Ecst of int64
   | Eminint
   | Emaxint
   | Eset of expr * expr

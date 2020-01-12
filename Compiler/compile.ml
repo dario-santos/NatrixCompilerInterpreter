@@ -3,13 +3,14 @@
 open Format
 open X86_64
 open Ast
+open Int64
       
 exception VarUndef of string
 exception Error of string
 let error s = raise (Error s)
 
-let minint = 0
-let maxint = 2147483647
+let minint = Int64.zero
+let maxint = Int64.max_int
 
 (* Tamanho da frame, em byte (cada variável local ocupa 8 bytes) *)
 let frame_size = ref 0
@@ -22,8 +23,8 @@ let number_of_tipagens = ref 0
 let number_of_arraydefs = ref 0
 
 (* Hashtbl para as funções, a outra para os diferentes contextos *)
-                 (*id, (tipo, ofs) *)
 type table_ctx = (string, (Ast.costumtype * int)) Hashtbl.t
+(*                id       tipo             ofs  *)
 let (function_ctx : (string, table_ctx * costumtype) Hashtbl.t) = Hashtbl.create 17
 (*                   nome    ctx         retorno *)
 
@@ -33,52 +34,70 @@ let rec find_id ctxs id =
     match ctxs with
     | hd::tl -> if Hashtbl.mem hd id then [hd] @ (find_id tl id) else (find_id tl id) 
     | _ -> []
+
 let is_rbx_in_type_boundaries ctxs t = 
   match t with
   | Int ->
-    number_of_tipagens := !number_of_tipagens + 1;
-    let current_tipagem_test = string_of_int(!number_of_tipagens) in
-    cmpq (imm minint) (reg rbx) ++
-    jge ("inicio_true_" ^ current_tipagem_test) ++
+      (* 1 - Incrementar numero de verificacoes *)
+      number_of_tipagens := !number_of_tipagens + 1;
+      let current_tipagem_test = string_of_int(!number_of_tipagens) in
+      
+      (* 2 - Como 0 é suficiente pequeno nao temos que colocar num registo para testar o limite inferior *) 
+      cmpq (imm64 minint) (reg rbx) ++
+      
+      (* 3a - Se for superior entao vamos testar o limite superior*)
+      jge ("inicio_true_" ^ current_tipagem_test) ++
+
+      (* 3b - Se nao for superior entao terminamos *)
+      jmp "print_error_t" ++
+      
+      (* 4 - Verificamos se o limite superior tambem se cumpre *)
+      label ("inicio_true_" ^ current_tipagem_test) ++
+      movq (imm64 maxint) (reg rax) ++ 
+      cmpq (reg rax) (reg rbx) ++
+      
+      (* 5a - Se todos os limites foram compridos entao continuamos a execucao *)
+      jle ("fim_true_" ^ current_tipagem_test) ++
+      
+      (*  5b - Se algum dos limites nao for cumprido entao terminamos *)
+      jmp "print_error_t"++
+      label ("fim_true_" ^ current_tipagem_test) 
+
+  | CTid t ->
+      (* 1 - Incrementar numero de verificacoes *)
+      if List.length (find_id ctxs (t ^ "_fim")) = 0 then error "get_type_boundaries: Tipo nao definido";
+      let ctx = List.hd (List.rev (find_id ctxs (t ^ "_fim"))) in
+      let inicio_ofs = - snd(Hashtbl.find ctx (t ^ "_inicio")) in  
+      let fim_ofs = - snd(Hashtbl.find ctx (t ^ "_fim")) in
+      number_of_tipagens := !number_of_tipagens + 1;
+      let current_tipagem_test = string_of_int(!number_of_tipagens) in
+    
+      movq (ind ~ofs:(inicio_ofs) rbp) (reg rax) ++
+      cmpq (reg rax) (reg rbx) ++
+      jge ("inicio_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error_t"++
-    label ("inicio_true_" ^ current_tipagem_test) ++
-    cmpq (imm maxint) (reg rbx) ++
-    jle ("fim_true_" ^ current_tipagem_test) ++
+      jmp "print_error_t"++
+      label ("inicio_true_" ^ current_tipagem_test) ++
+      movq (ind ~ofs:(fim_ofs) rbp) (reg rax) ++
+      cmpq (reg rax) (reg rbx) ++
+      jle ("fim_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error_t"++
-    label ("fim_true_" ^ current_tipagem_test) 
-  | CTid t -> 
-    if List.length (find_id ctxs (t ^ "_fim")) = 0 then error "get_type_boundaries: Tipo nao definido";
-    let ctx = List.hd (List.rev (find_id ctxs (t ^ "_fim"))) in
-    let inicio_ofs = - snd(Hashtbl.find ctx (t ^ "_inicio")) in  
-    let fim_ofs = - snd(Hashtbl.find ctx (t ^ "_fim")) in
-    number_of_tipagens := !number_of_tipagens + 1;
-    let current_tipagem_test = string_of_int(!number_of_tipagens) in
-    movq (ind ~ofs:(inicio_ofs) rbp) (reg rax) ++
-    cmpq (reg rax) (reg rbx) ++
-    jge ("inicio_true_" ^ current_tipagem_test) ++
-      (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error_t"++
-    label ("inicio_true_" ^ current_tipagem_test) ++
-    movq (ind ~ofs:(fim_ofs) rbp) (reg rax) ++
-    cmpq (reg rax) (reg rbx) ++
-    jle ("fim_true_" ^ current_tipagem_test) ++
-      (* TODO: LANÇAR ERRO AQUI *)
-    jmp "print_error_t"++
-    label ("fim_true_" ^ current_tipagem_test)
+      jmp "print_error_t"++
+      label ("fim_true_" ^ current_tipagem_test)
 
 let is_in_type_boundaries ctxs id_ofs t = 
   match t with
   | Int ->
     number_of_tipagens := !number_of_tipagens + 1;
     let current_tipagem_test = string_of_int(!number_of_tipagens) in
-    cmpq (imm minint) (ind ~ofs:(-id_ofs) rbp) ++
+
+    cmpq (imm64 minint) (ind ~ofs:(-id_ofs) rbp) ++
     jge ("inicio_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
     jmp "print_error_t"++
     label ("inicio_true_" ^ current_tipagem_test) ++
-    cmpq (imm maxint) (ind ~ofs:(-id_ofs) rbp) ++
+    movq (imm64 maxint) (reg rax) ++
+    cmpq (reg rax) (ind ~ofs:(-id_ofs) rbp) ++
     jle ("fim_true_" ^ current_tipagem_test) ++
       (* TODO: LANÇAR ERRO AQUI *)
     jmp "print_error_t"++
@@ -105,16 +124,16 @@ let is_in_type_boundaries ctxs id_ofs t =
     
 let rec compile_expr ctxs = function
   | Ecst i ->
-      movq (imm i) (reg rax) ++
+      movq (imm64 i) (reg rax) ++
       pushq (reg rax)
   | Eset (e1, e2) ->
       compile_expr ctxs e1 ++ (* inicio *)
       compile_expr ctxs e2    (* fim *)
   | Eminint -> 
-      movq (imm minint) (reg rax) ++
+      movq (imm64 minint) (reg rax) ++
       pushq (reg rax) 
   | Emaxint ->
-      movq (imm maxint) (reg rax) ++
+      movq (imm64 maxint) (reg rax) ++
       pushq (reg rax)
   | Eident id -> 
     if (List.length(find_id ctxs (id ^ "_fim"))) != 0
@@ -409,7 +428,7 @@ let rec compile_stmt ctxs = function
       List.fold_right (++) block nop
   | Sforeach(x, e, bl) ->
       let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
-      let code = compile_stmt ctxs (Sdeclare(x, Int, Ecst 0)) in
+      let code = compile_stmt ctxs (Sdeclare(x, Int, Ecst 0L)) in
       let ctx = List.hd (List.rev ctxs) in
       let ofs = - snd(Hashtbl.find ctx x) in  
       number_of_for := !number_of_for + 1;
@@ -529,8 +548,8 @@ let compile_program p ofile =
         jmp "end" ++
         !functions_code;
       data = 
-        label ".Sprintn_int" ++ string "%d\n" ++
-        label ".Sprint_int" ++ string "%d" ++
+        label ".Sprintn_int" ++ string "%ld\n" ++
+        label ".Sprint_int" ++ string "%ld" ++
         label ".Sprint_error_z" ++ string "Erro: Divisao por zero.\n" ++
         label ".Sprint_error_t" ++ string "Erro de tipagem\n" ++
         label ".Sprint_error_f" ++ string "Funcao sem retorno\n"

@@ -5,11 +5,29 @@ main:
 	leaq -8(%rsp), %rbp
 	movq $1, %rax
 	pushq %rax
-	movq $2, %rax
+	popq %rdi
+	call printn_int
+	movq $0, %rax
+	pushq %rax
+	popq %rdi
+	call printn_int
+	movq $1, %rax
+	pushq %rax
+	movq $0, %rax
 	pushq %rax
 	popq %rbx
 	popq %rax
-	addq %rbx, %rax
+	andq %rbx, %rax
+	pushq %rax
+	popq %rdi
+	call printn_int
+	movq $1, %rax
+	pushq %rax
+	movq $0, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	orq %rbx, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int

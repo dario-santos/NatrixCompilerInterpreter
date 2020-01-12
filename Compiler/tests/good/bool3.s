@@ -9,7 +9,20 @@ main:
 	pushq %rax
 	popq %rbx
 	popq %rax
-	addq %rbx, %rax
+	cmpq %rbx, %rax
+	jg bool_true_1
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_1
+bool_true_1:
+	movq $1, %rax
+	pushq %rax
+bool_end_1:
+	movq $1, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	andq %rbx, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int

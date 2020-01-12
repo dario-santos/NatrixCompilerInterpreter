@@ -7,7 +7,7 @@
   open Ast
 %}
 
-%token <int>       CST
+%token <int64>     CST
 %token <Ast.binop> CMP
 %token <Ast.ident> IDENT
 %token IF ELSE PRINT PRINTN VAL INT

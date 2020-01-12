@@ -2,7 +2,7 @@ open Ast
 open Format
 
 let rec print_expr = function
-  | Ecst n                -> printf " Ecst(%d) " n
+  | Ecst n                -> printf " Ecst(%s) " (Int64.to_string n)
   | Eset (e1, e2)         -> printf " Eset("; print_expr e1; print_expr e2; printf ") "
   | Eminint               -> printf " Eminint(minint) "
   | Emaxint               -> printf " Emaxint(maxint) "

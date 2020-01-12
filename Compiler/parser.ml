@@ -42,7 +42,7 @@ module MenhirBasics = struct
     | DELIMITER
     | CST of (
 # 10 "parser.mly"
-       (int)
+       (int64)
 # 47 "parser.ml"
   )
     | COMMA
@@ -2393,7 +2393,7 @@ and _menhir_run12 : _menhir_env -> 'ttv_tail -> _menhir_state -> 'ttv_return =
 
 and _menhir_run13 : _menhir_env -> 'ttv_tail -> _menhir_state -> (
 # 10 "parser.mly"
-       (int)
+       (int64)
 # 2398 "parser.ml"
 ) -> 'ttv_return =
   fun _menhir_env _menhir_stack _menhir_s _v ->
@@ -2403,11 +2403,11 @@ and _menhir_run13 : _menhir_env -> 'ttv_tail -> _menhir_state -> (
     let (_menhir_s : _menhir_state) = _menhir_s in
     let ((c : (
 # 10 "parser.mly"
-       (int)
+       (int64)
 # 2408 "parser.ml"
     )) : (
 # 10 "parser.mly"
-       (int)
+       (int64)
 # 2412 "parser.ml"
     )) = _v in
     ((let _v : 'tv_expr = 
