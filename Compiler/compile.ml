@@ -180,13 +180,13 @@ let rec compile_expr ctxs = function
 
       (* 4 - Faz as verificacoes *)
       cmpq (reg rbx) (reg rax) ++      
-      jle ("print_error_s") ++
+      jle "print_error_s" ++
 
       cmpq (imm64 0L) (reg rax) ++      
-      jl ("print_error_s") ++
+      jl "print_error_s" ++
 
       cmpq (imm64 0L) (reg rbx) ++      
-      jl ("print_error_s") ++
+      jl "print_error_s" ++
 
       (* Coloca os valores *)
       pushq (reg rbx) ++
@@ -402,6 +402,7 @@ let rec compile_expr ctxs = function
       done;
       (* Verificar se o retorno esta nos limites do tipo *)
       !code ++ 
+      addq (imm64 1L) (lab "is_in_function") ++
       call ("user" ^ f) ++
       movq (reg rax) (reg rbx) ++
       is_rbx_in_type_boundaries ctxs return ++
@@ -444,6 +445,12 @@ let rec compile_stmt ctxs = function
       label ("if_end_" ^ current_if_test)
 
   | Sreturn (e1) ->
+      
+      movq (imm64 0L) (reg rax) ++
+      cmpq (lab "is_in_function") (reg rax) ++
+      je "print_error_f" ++
+      subq (imm64 1L) (lab "is_in_function") ++
+      
       (* 1 - Calcula o valor de e1*) 
       compile_expr ctxs e1 ++
       popq rax ++
@@ -702,11 +709,11 @@ let compile_program p ofile =
   let p =
     { text =
         globl "main" ++ label "main" ++
-        subq (imm !frame_size) !%rsp ++ (* aloca a frame *)
+        subq (imm !frame_size) (reg rsp) ++ (* aloca a frame *)
         leaq (ind ~ofs:(!frame_size - 8) rsp) rbp ++ (* %rbp = ... *)
         code ++
         label "end" ++
-        addq (imm !frame_size) !%rsp ++ (* desaloca a frame *)
+        addq (imm !frame_size) (reg rsp) ++ (* desaloca a frame *)
         movq (imm64 0L) (reg rax) ++ (* exit *)
         ret ++
         label "printn_int" ++
@@ -722,27 +729,27 @@ let compile_program p ofile =
         call "printf" ++
         ret ++
         label "print_error_t" ++
-        movq !%rdi !%rsi ++
+        movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_error_t") rdi ++
         movq (imm64 0L) (reg rax) ++
         call "printf" ++
         jmp "end" ++
         label "print_error_s" ++
-        movq !%rdi !%rsi ++
+        movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_error_s") rdi ++
         movq (imm64 0L) (reg rax) ++
         call "printf" ++
         jmp "end" ++
         label "print_error_z" ++
-        movq !%rdi !%rsi ++
+        movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_error_z") rdi ++
         movq (imm64 0L) (reg rax) ++
         call "printf" ++
         jmp "end" ++
         label "print_error_f" ++
-        movq !%rdi !%rsi ++
+        movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_error_f") rdi ++
-        movq (imm64 0L) !%rax ++
+        movq (imm64 0L) (reg rax) ++
         call "printf" ++
         jmp "end" ++
         !functions_code;
@@ -752,7 +759,8 @@ let compile_program p ofile =
         label ".Sprint_error_z" ++ string "\nErro: Divisao por zero.\n\n" ++
         label ".Sprint_error_t" ++ string "\nRun-time error:\n\n     Value out of bounds.\n\n" ++
         label ".Sprint_error_s" ++ string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n" ++
-        label ".Sprint_error_f" ++ string "\nFuncao sem retorno\n\n"
+        label ".Sprint_error_f" ++ string "\nFuncao sem retorno\n\n" ++
+        label "is_in_function" ++ dquad [0]
     }
   in
   let f = open_out ofile in

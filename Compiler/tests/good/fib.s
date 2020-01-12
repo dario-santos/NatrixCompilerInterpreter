@@ -20,6 +20,7 @@ inicio_true_10:
 	jle fim_true_10
 	jmp print_error_t
 fim_true_10:
+	addq $1, is_in_function
 	call userfib
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -47,6 +48,7 @@ inicio_true_12:
 	jle fim_true_12
 	jmp print_error_t
 fim_true_12:
+	addq $1, is_in_function
 	call userfib
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -74,6 +76,7 @@ inicio_true_14:
 	jle fim_true_14
 	jmp print_error_t
 fim_true_14:
+	addq $1, is_in_function
 	call userfib
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -231,6 +234,10 @@ fim_true_5:
 	movq -40(%rbp), %rbx
 	cmpq %rbx, %rax
 	jle foreach_i1
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
 	movq 0(%rbp), %rax
 	pushq %rax
 	popq %rax
@@ -238,6 +245,10 @@ fim_true_5:
 	call print_error_f
 	ret
 userfib:
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
 	movq $0, %rax
 	pushq %rax
 	popq %rax
@@ -277,6 +288,7 @@ inicio_true_8:
 	jle fim_true_8
 	jmp print_error_t
 fim_true_8:
+	addq $1, is_in_function
 	call userfibaux
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -306,3 +318,5 @@ fim_true_9:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

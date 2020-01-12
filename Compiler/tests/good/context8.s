@@ -44,6 +44,7 @@ inicio_true_4:
 	jle fim_true_4
 	jmp print_error_t
 fim_true_4:
+	addq $1, is_in_function
 	call userdiv
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -153,11 +154,19 @@ fim_true_2:
 	pushq %rax
 	popq %rdi
 	call printn_int
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
 	movq -24(%rbp), %rax
 	pushq %rax
 	popq %rax
 	ret
 if_end_1:
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
 	movq -16(%rbp), %rax
 	pushq %rax
 	popq %rax
@@ -177,3 +186,5 @@ if_end_1:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

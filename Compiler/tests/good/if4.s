@@ -16,6 +16,7 @@ inicio_true_1:
 	jle fim_true_1
 	jmp print_error_t
 fim_true_1:
+	addq $1, is_in_function
 	call userprinta
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -31,6 +32,7 @@ fim_true_5:
 	popq %rax
 	cmpq $1, %rax
 	je lazy_evaluation_1
+	addq $1, is_in_function
 	call userprinta
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -133,6 +135,10 @@ fim_true_3:
 	pushq %rax
 	popq %rdi
 	call printn_int
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
 	movq $1, %rax
 	pushq %rax
 	popq %rax
@@ -157,6 +163,10 @@ fim_true_2:
 	popq %rdi
 	call printn_int
 	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
@@ -176,3 +186,5 @@ if_end_1:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

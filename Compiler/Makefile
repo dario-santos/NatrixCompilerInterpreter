@@ -28,6 +28,10 @@ $(BIN):$(CMO)
 .mly.mli:
 	menhir -v $<
 
+test:
+	./run-tests
+	./run-tests_c
+
 clean:
 	rm -f *.cm[io] *.o *~ $(BIN) $(GENERATED) parser.output
 	rm parser.automaton

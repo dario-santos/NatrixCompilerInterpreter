@@ -13,8 +13,8 @@ let maxint = Int64.max_int
 
 (* Tipos de dados*)
 type value =
-  | Vint of int64                  (* valor       *)
-  | Vset of int64 * int64            (* inicio, fim *)
+  | Vint of int64                (* valor       *)
+  | Vset of int64 * int64        (* inicio, fim *)
   | Vlist of value array * value (* lista, range*)
 
 let vset_to_tuplo = function

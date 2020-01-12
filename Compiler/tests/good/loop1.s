@@ -17,6 +17,7 @@ inicio_true_2:
 	jle fim_true_2
 	jmp print_error_t
 fim_true_2:
+	addq $1, is_in_function
 	call userloop
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -125,6 +126,10 @@ foreach_i1:
 	cmpq %rbx, %rax
 	jle foreach_i1
 	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
@@ -143,3 +148,5 @@ foreach_i1:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

@@ -3,6 +3,7 @@
 main:
 	subq $0, %rsp
 	leaq -8(%rsp), %rbp
+	addq $1, is_in_function
 	call userprinta
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -18,6 +19,7 @@ fim_true_2:
 	popq %rax
 	cmpq $1, %rax
 	jne lazy_evaluation_1
+	addq $1, is_in_function
 	call userprinta
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -90,6 +92,10 @@ userprinta:
 	popq %rdi
 	call printn_int
 	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
@@ -108,3 +114,5 @@ userprinta:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

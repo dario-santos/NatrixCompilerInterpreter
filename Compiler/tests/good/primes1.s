@@ -18,6 +18,7 @@ inicio_true_5:
 	jle fim_true_5
 	jmp print_error_t
 fim_true_5:
+	addq $1, is_in_function
 	call userprint_primes
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -129,6 +130,10 @@ bool_end_1:
 	jne if_true_1
 	jmp if_end_1
 if_true_1:
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
 	movq $1, %rax
 	pushq %rax
 	popq %rax
@@ -161,6 +166,10 @@ bool_end_2:
 	jmp if_end_2
 if_true_2:
 	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
@@ -171,6 +180,10 @@ if_end_2:
 	movq -16(%rbp), %rbx
 	cmpq %rbx, %rax
 	jle foreach_i1
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
 	movq $1, %rax
 	pushq %rax
 	popq %rax
@@ -248,6 +261,7 @@ inicio_true_3:
 	jle fim_true_3
 	jmp print_error_t
 fim_true_3:
+	addq $1, is_in_function
 	call useris_prime
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -277,6 +291,10 @@ if_end_4:
 	cmpq %rbx, %rax
 	jle foreach_i2
 	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
@@ -295,3 +313,5 @@ if_end_4:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

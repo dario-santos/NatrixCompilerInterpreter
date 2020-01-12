@@ -18,7 +18,7 @@ let ofile = ref ""
 
 let set_file f s = f := s
 
-(* As opções do compilador que são mostradas quando é invocada o comando arithc --help *)
+(* As opções do compilador que são mostradas quando é invocada o comando --help *)
 let options =
   ["-parse-only", Arg.Set parse_only,
    "  Executar somente o parsing";
@@ -29,24 +29,24 @@ let options =
    "-o", Arg.String (set_file ofile),
    "<file>  Para indicar o nome do ficheiro em saída"]
 
-let usage = "usage: arithc [option] file.exp"
+let usage = "usage: natrix [option] file.nx"
 
 (* localiza um erro indicando a linha e a coluna *)
 let localisation pos =
   let l = pos.pos_lnum in
   let c = pos.pos_cnum - pos.pos_bol + 1 in
-  eprintf "File \"%s\", line %d, characters %d-%d:\n" !ifile l (c-1) c
+  eprintf "\n\nFile \"%s\", line %d, characters %d-%d:\n" !ifile l (c-1) c
 
 let () =
   (* Parsing da linha de comando *)
   Arg.parse options (set_file ifile) usage;
 
   (* Verifica-se que o nome do ficheiro fonte foi bem introduzido *)
-  if !ifile="" then begin eprintf "Nenhum ficheiro para compilar\n@?"; exit 1 end;
+  if !ifile="" then begin eprintf "\n\nerror:\n\n    Was expecting a file but got none. Pass the file to compile\n\n@?"; exit 1 end;
 
-  (* Este ficheiro deve ter como extensão  .nx *)
+  (* Este ficheiro deve ter como extensão .nx *)
   if not (Filename.check_suffix !ifile ".nx") then begin
-    eprintf "O ficheiro em entrada deve ter a extensão .nx\n@?";
+    eprintf "The input file must be of the type .nx\n@?";
     Arg.usage options usage;
     exit 1
   end;
@@ -81,27 +81,31 @@ let () =
       Compile.compile_program p !ofile
   with
   | Lexer.Lexing_error c ->
-	    (* Erro léxico. Recupera-se a posição absoluta e converte-se para número de linha *)
-	    localisation (Lexing.lexeme_start_p buf);
-	    eprintf "\nerror:\n\n    Erro durante a análise léxica: %s@." c;
+  (* Erro léxico. Recupera-se a posição absoluta e converte-se para número de linha *)
+      localisation (Lexing.lexeme_start_p buf);
+	    eprintf "\nerror:\n\n  Lexical error: invalid symbol: %s.\n\n@." c;
       exit 1
   | Parser.Error ->
 	    (* Erro sintáctio. Recupera-se a posição e converte-se para número de linha *)
 	    localisation (Lexing.lexeme_start_p buf);
-	    eprintf "\nerror:\n\n    Erro durante a análise sintáctica@.";
+	    eprintf "\nerror:\n\n   Syntatic error: invalid derivation.\n\n@.";
       exit 1
   | Typing.Error s -> 
-      eprintf "\nerror:\n\n    Semmantic analysis:\n    %s\n@." s;
+      eprintf "\nerror:\n\n  Semmantic analysis:\n    %s\n@." s;
       exit 1
   | Compile.VarUndef s->
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Erro de compilação: a variável  %s não está definida@." s;
+	    eprintf "\nerror:\n\n  Erro de compilação: a variável  %s não está definida@." s;
       exit 1
   | Compile.Error s->
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Erro de compilação:\n  %s\n@." s;
+	    eprintf "\nerror:\n\n  Erro de compilação:\n  %s\n@." s;
       exit 1
-  | Interp.Error s->
+  | Interp.Error s ->
 	    (* Erro de utilização de variáveis durante a compilação *)
 	    eprintf "\nerror:\n\n    Erro de interpretação:\n  %s\n@." s;
+      exit 1
+  | Interp.Return _ -> 
+	    (* Erro de utilização de variáveis durante a compilação *)
+	    eprintf "\nerror:\n\n    Erro de interpretação:\n Run-time error: Illegal return statement. You can only use return statements inside functions  \n@.";
       exit 1

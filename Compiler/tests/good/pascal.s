@@ -3,6 +3,7 @@
 main:
 	subq $40, %rsp
 	leaq 32(%rsp), %rbp
+	addq $1, is_in_function
 	call userprint_int
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -250,6 +251,10 @@ if_end_1:
 	cmpq %rbx, %rax
 	jle foreach_i1
 	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
@@ -268,3 +273,5 @@ if_end_1:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

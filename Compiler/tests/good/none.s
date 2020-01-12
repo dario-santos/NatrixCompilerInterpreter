@@ -3,6 +3,7 @@
 main:
 	subq $8, %rsp
 	leaq 0(%rsp), %rbp
+	addq $1, is_in_function
 	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -17,6 +18,7 @@ fim_true_2:
 	pushq %rbx
 	popq %rdi
 	call printn_int
+	addq $1, is_in_function
 	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -29,6 +31,7 @@ inicio_true_4:
 	jmp print_error_t
 fim_true_4:
 	pushq %rbx
+	addq $1, is_in_function
 	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -54,6 +57,7 @@ bool_true_1:
 bool_end_1:
 	popq %rdi
 	call printn_int
+	addq $1, is_in_function
 	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -66,6 +70,7 @@ inicio_true_6:
 	jmp print_error_t
 fim_true_6:
 	pushq %rbx
+	addq $1, is_in_function
 	call userfoo
 	movq %rax, %rbx
 	cmpq $0, %rbx
@@ -146,6 +151,10 @@ inicio_true_1:
 	jmp print_error_t
 fim_true_1:
 	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	subq $1, is_in_function
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
@@ -164,3 +173,5 @@ fim_true_1:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+is_in_function:
+	.quad 0

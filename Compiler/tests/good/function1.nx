@@ -1,0 +1,23 @@
+function f() : int
+{
+    return 3;
+}
+function w() : int
+{
+    return f();
+}
+function z() : int
+{
+    return w();
+}
+function y() : int
+{
+    return z();
+}
+
+function x() : int
+{
+    return y();
+}
+
+printn(x());

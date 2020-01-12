@@ -6,6 +6,7 @@
 
   exception Lexing_error of string
 
+
   let create_hashtable size init =
     let tbl = Hashtbl.create size in
     List.iter (fun (key, data) -> Hashtbl.add tbl key data) init;
@@ -49,7 +50,7 @@ let whitespace = [' ' '\t']
 rule analisador = parse
   | "//"            { singlecomment lexbuf}
   | "(*"            { multicomment lexbuf }
-  | newline         { analisador lexbuf}
+  | newline         { new_line lexbuf; analisador lexbuf}
   | whitespace      { analisador lexbuf}
   | '='             { [ASSIGN] }
   | '('             { [LPR] }
@@ -98,6 +99,7 @@ and singlecomment = parse
 and multicomment = parse
   | "*)"      { analisador lexbuf}
   | eof       { raise (Lexing_error "comentario nao fechado")}
+  | '\n'      {new_line lexbuf; multicomment lexbuf}
   | _         { multicomment lexbuf}
 
 {
