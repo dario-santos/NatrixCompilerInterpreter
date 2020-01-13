@@ -21,15 +21,15 @@ let set_file f s = f := s
 (* As opções do compilador que são mostradas quando é invocada o comando --help *)
 let options =
   ["-parse-only", Arg.Set parse_only,
-   "  Executar somente o parsing";
+   "  Executes only the lexer and parser ";
   "-print-ast", Arg.Set print_ast,
-  "  Executar somente o parsing";
+  "  Prints the AST of a givin file ";
   "-interpt", Arg.Set interpt,
-  "  Utilizar o interpretador";
+  "  Utilizes the interpt instead of the compiler ";
    "-o", Arg.String (set_file ofile),
-   "<file>  Para indicar o nome do ficheiro em saída"]
+   "<file>  To indicate the name of the output file"]
 
-let usage = "usage: natrix [option] file.nx"
+let usage = "usage: natrix [option(s)] file.nx"
 
 (* localiza um erro indicando a linha e a coluna *)
 let localisation pos =
@@ -77,8 +77,10 @@ let () =
     (* Compilação da árvore de sintaxe abstracta p. O código máquina
        resultante desta transformação deve ficar escrito no ficheiro alvo ofile. *)
     Typing.file p;
+
     if !interpt then begin Interp.file p; exit 0; end;
-      Compile.compile_program p !ofile
+    
+    Compile.compile_program p !ofile
   with
   | Lexer.Lexing_error c ->
   (* Erro léxico. Recupera-se a posição absoluta e converte-se para número de linha *)

@@ -1,19 +1,24 @@
 open Ast
 open Format
 
-let rec print_expr = function
-  | Ecst n                -> printf " Ecst(%s) " (Int64.to_string n)
-  | Eset (e1, e2)         -> printf " Eset("; print_expr e1; print_expr e2; printf ") "
-  | Eminint               -> printf " Eminint(minint) "
-  | Emaxint               -> printf " Emaxint(maxint) "
-  | Ebinop (Band, e1, e2) -> printf " Ebinop(Band,"; print_expr e1; printf ", "; print_expr e2; printf ") "
-  | Ebinop (Bor, e1, e2)  -> printf " Ebinop(Bor,"; print_expr e1; printf ", "; print_expr e2; printf ") "
-  | Ebinop (_, e1, e2)    -> printf " Ebinop(Op,"; print_expr e1; printf ", "; print_expr e2; printf ") "
-  | Eunop (Unot, e1)      -> printf " Eunop(Unot,"; print_expr e1; printf ") "
-  | Ecall ("size", [e1])  -> printf " Ecall(size,"; print_expr e1; printf ") "
-  | Ecall (f, el)         -> printf " Ecall(%s " f; 
-  | Eident id             -> printf " Eident(%s) " id
-  | Eget (id, e2)         -> printf " Eget(%s," id; print_expr e2; printf ") " 
+let rec print_expr_list = function
+  | [hd] -> print_expr hd
+  | hd::tl -> print_expr hd; printf ", " ; print_expr_list tl
+  | _ -> ()
+
+and print_expr = function
+  | Ecst n                -> printf " Ecst( %s ) " (Int64.to_string n)
+  | Eset (e1, e2)         -> printf " Eset( "; print_expr e1; print_expr e2; printf ") "
+  | Eminint               -> printf " Eminint "
+  | Emaxint               -> printf " Emaxint "
+  | Ebinop (Band, e1, e2) -> printf " Ebinop( Band, "; print_expr e1; printf ", "; print_expr e2; printf ") "
+  | Ebinop (Bor, e1, e2)  -> printf " Ebinop( Bor, "; print_expr e1; printf ", "; print_expr e2; printf ") "
+  | Ebinop (_, e1, e2)    -> printf " Ebinop( Op, "; print_expr e1; printf ", "; print_expr e2; printf ") "
+  | Eunop (Unot, e1)      -> printf " Eunop( Unot, "; print_expr e1; printf ") "
+  | Ecall ("size", [e1])  -> printf " Ecall( size, "; print_expr e1; printf ") "
+  | Ecall (f, el)         -> printf " Ecall( %s, " f; print_expr_list el; printf " ) "  
+  | Eident id             -> printf " Eident( %s ) " id
+  | Eget (id, e2)         -> printf " Eget( %s," id; print_expr e2; printf ") " 
 
 and print_stmt = function
   | Sif (e, s1, s2) -> printf "Sif("; print_expr e; printf ", "; print_stmt s1; printf ","; print_stmt s2; printf ")"
@@ -31,11 +36,16 @@ and print_stmt = function
   | Saset (id, e1, e2) -> printf "Saset(%s, " id; print_expr e1; printf ", "; print_expr e2; printf ")"
   
 and print_argument_list = function
+  | [arg1] -> let id, t = arg1 in printf " %s : " id; print_costum_type t
+  | arg1 :: tl -> let id, t = arg1 in printf " %s : " id; print_costum_type t; printf ", "; print_argument_list tl
   | [] -> ()
-  | arg1 :: tl -> let id, t = arg1 in ignore(printf " %s : %t,\n" id, t); print_argument_list tl
+
+and print_costum_type = function 
+  | Int -> printf "int"
+  | CTid t -> printf "t"
 
 and print_stmts = function  
-  | Stfunction (f, args, return, body) -> printf "Stfunction( %s, " f ; print_argument_list args ; 
+  | Stfunction (f, args, return, body) -> printf "Stfunction( %s, (" f ; print_argument_list args; printf "), "; print_costum_type return; printf ", "; print_stmt body
   | Stblock bl -> interpret_block_stmts bl
   | Stmt s -> print_stmt s
 

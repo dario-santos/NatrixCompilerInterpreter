@@ -597,15 +597,12 @@ let rec compile_stmt ctxs = function
       (* 2 - Vai buscar o tipo e o ofs de id *)
       let t, ofs = Hashtbl.find ctx id in
       let ofs = int_of_vint ofs in
-
-      pushq (reg rdx) ++
-      leaq (lab ".Sscanf_int") rdi ++
-	    leaq (ind ~ofs:(-ofs) rbp) rsi  ++
-      xorq (reg rax) (reg rax) ++
-
-	    call "scanf" ++
-      movq (ind ~ofs:(-ofs) rbp) (reg rax)++
-      popq rdx ++
+      let _push, _pop = if !frame_size mod 16 != 0 then pushq (reg rdx), popq rdx else nop, nop in
+      
+      _push ++
+      call "scanf_int" ++
+      movq (reg rax) (ind ~ofs:(-ofs) rbp) ++
+      _pop ++
 
       (* 3 - Atualiza o valor que esta no endereço ofs*)
       is_in_type_boundaries ctxs ofs t
@@ -748,6 +745,17 @@ let compile_program p ofile =
         movq (imm64 0L) (reg rax) ++
         call "printf" ++
         ret ++
+
+        label "scanf_int" ++
+        
+        leaq (lab ".Sscanf_int") rdi ++
+        leaq (lab "input") rsi  ++
+        xorq (reg rax) (reg rax) ++
+  
+        call "scanf" ++
+        movq (lab "input") (reg rax) ++
+        ret ++
+
         label "print_error_t" ++
         movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_error_t") rdi ++
@@ -781,8 +789,8 @@ let compile_program p ofile =
         label ".Sprint_error_s" ++ string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n" ++
         label ".Sprint_error_f" ++ string "\nFuncao sem retorno\n\n" ++
         label ".Sscanf_int" ++ string "%ld" ++
-        label "input"  ++ dquad [0] ++
-        label "is_in_function" ++ dquad [0]
+        label "is_in_function" ++ dquad [0] ++
+        label "input"  ++ dquad [0]
     }
   in
   let f = open_out ofile in

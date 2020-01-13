@@ -1,8 +1,8 @@
 	.text
 	.globl	main
 main:
-	subq $24, %rsp
-	leaq 16(%rsp), %rbp
+	subq $32, %rsp
+	leaq 24(%rsp), %rbp
 	movq $0, 0(%rbp)
 	movq $0, -8(%rbp)
 	movq $0, %rax
@@ -18,50 +18,60 @@ inicio_true_3:
 	jle fim_true_3
 	jmp print_error_t
 fim_true_3:
-	leaq .Sscanf_int, %rdi
-	leaq -16(%rbp), %rsi
 	movq $0, %rax
-	call scanf
-	movq -16(%rbp), %rax
-	cmpq $0, -16(%rbp)
+	pushq %rax
+	popq %rax
+	movq %rax, -24(%rbp)
+	cmpq $0, -24(%rbp)
 	jge inicio_true_4
 	jmp print_error_t
 inicio_true_4:
 	movq $9223372036854775807, %rax
-	cmpq %rax, -16(%rbp)
+	cmpq %rax, -24(%rbp)
 	jle fim_true_4
 	jmp print_error_t
 fim_true_4:
+	call scanf_int
+	movq %rax, -16(%rbp)
+	cmpq $0, -16(%rbp)
+	jge inicio_true_5
+	jmp print_error_t
+inicio_true_5:
+	movq $9223372036854775807, %rax
+	cmpq %rax, -16(%rbp)
+	jle fim_true_5
+	jmp print_error_t
+fim_true_5:
 	movq -16(%rbp), %rax
 	pushq %rax
 	popq %rax
 	movq %rax, -8(%rbp)
 	cmpq $0, -8(%rbp)
-	jge inicio_true_5
-	jmp print_error_t
-inicio_true_5:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -8(%rbp)
-	jle fim_true_5
-	jmp print_error_t
-fim_true_5:
-	addq $1, is_in_function
-	call useris_even2
-	movq %rax, %rbx
-	cmpq $0, %rbx
 	jge inicio_true_6
 	jmp print_error_t
 inicio_true_6:
 	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
+	cmpq %rax, -8(%rbp)
 	jle fim_true_6
 	jmp print_error_t
 fim_true_6:
+	addq $1, is_in_function
+	call useris_even2
+	movq %rax, %rbx
+	cmpq $0, %rbx
+	jge inicio_true_7
+	jmp print_error_t
+inicio_true_7:
+	movq $9223372036854775807, %rax
+	cmpq %rax, %rbx
+	jle fim_true_7
+	jmp print_error_t
+fim_true_7:
 	pushq %rbx
 	popq %rdi
 	call printn_int
 end:
-	addq $24, %rsp
+	addq $32, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -77,10 +87,9 @@ print_int:
 	call printf
 	ret
 scanf_int:
-	movq %rdi, %rsi
 	leaq .Sscanf_int, %rdi
 	leaq input, %rsi
-	movq $0, %rax
+	xorq %rax, %rax
 	call scanf
 	movq input, %rax
 	ret
@@ -188,7 +197,7 @@ fim_true_2:
 	.string "\nFuncao sem retorno\n\n"
 .Sscanf_int:
 	.string "%ld"
-input:
-	.quad 0
 is_in_function:
+	.quad 0
+input:
 	.quad 0
