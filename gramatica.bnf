@@ -1,6 +1,9 @@
 # Definição da Gramática
 
 # Lexer
+# É de realçar que a gramática do Natrix foi alterada durante a implementação
+# Sendo assim este ficheiro pode não ser 100% fiel 
+
 
 <digit> ::= ['0'-'9']
 <char>  ::= ['a-zA-Z']
@@ -24,7 +27,7 @@
 			    	'{' <statement> '}'
 				'else'
 					'{' <statement> '}'
-			  | 'foreach' <id> 'in' <integer> '..' <integer> '{' <statement> '}'
+			  | 'foreach' <id> 'in' [<integer> '..' <integer>] '{' <statement> '}'
 			  | 'print' '(' <expression> ')' ';'
 			  | <id> ':=' <expression> ';'
 			  | <id> '[' <expression> ']' ':=' <expression> ';'

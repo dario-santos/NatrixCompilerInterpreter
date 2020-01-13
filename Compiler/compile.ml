@@ -598,13 +598,15 @@ let rec compile_stmt ctxs = function
       let t, ofs = Hashtbl.find ctx id in
       let ofs = int_of_vint ofs in
 
-	    leaq (lab ".Sscanf_int") rdi ++
+      pushq (reg rdx) ++
+      leaq (lab ".Sscanf_int") rdi ++
 	    leaq (ind ~ofs:(-ofs) rbp) rsi  ++
-      movq (imm64 0L) (reg rax) ++
+      xorq (reg rax) (reg rax) ++
 
 	    call "scanf" ++
-	    movq (ind ~ofs:(-ofs) rbp) (reg rax)++
-	      
+      movq (ind ~ofs:(-ofs) rbp) (reg rax)++
+      popq rdx ++
+
       (* 3 - Atualiza o valor que esta no endereço ofs*)
       is_in_type_boundaries ctxs ofs t
 

@@ -1,19 +1,43 @@
-# NatrixCompiler
-A compiler for the Natrix language, the final project of the Language Processing course at the University of Beira Interior (UBI).
+# Natrix Compiler
+Um compilador para a linguagem Natrix
 
-## How to Test
-run the makefile that is in the Ocaml folder and do:
+## Como compilar
 
-```S
-./natrix ./file_to_test
-```
-
-or
+Executa o makefile contido na pasta Compiler
 
 ```S
-./natrix < file_to_test
+make
+
+./natrix file.nx
+
 ```
 
-## Documentation
+O programa disponibiliza de um conjunto de opções
+
+-parser-only: Executa o lexer e o parser.
+-print-ast  : Imprime a árvore de sintaxe abstrata do ficheiro dado.
+-interpt    : Utiliza o interpretador em vez do compilador.
+
+Utilização:
+
+```S
+./natrix -parser-only file.nx
+
+```
+
+
+## Como testar
+
+O makefile disponibiliza de uma entrada para testes
+
+```S
+make
+
+make test
+```
+
+## Documentação
+
+No link abaixo contém a documentação feita para a linguagem natrix.
 
 https://dario-santos.github.io/Natrix/index
