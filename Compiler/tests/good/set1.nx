@@ -1,0 +1,7 @@
+type a = [0 .. 10];
+
+type t = a;
+
+val x : t = 3;
+
+printn(x);

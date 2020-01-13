@@ -1,0 +1,4 @@
+type t = [0 .. 1];
+type a : array t of t;
+
+printn(1<2 || a);

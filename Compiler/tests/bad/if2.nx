@@ -1,0 +1,8 @@
+type t = [0 .. 10];
+
+type a : array t of t;
+
+if(a)
+{
+    print(42);
+}

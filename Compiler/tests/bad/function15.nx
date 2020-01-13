@@ -1,0 +1,4 @@
+function somar(x : [0 .. 2], y : int) : int
+{
+    return 3;
+}

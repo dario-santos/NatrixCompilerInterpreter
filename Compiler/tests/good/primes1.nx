@@ -1,0 +1,36 @@
+function is_prime(n : int ) : int
+{
+    foreach i in [2 .. n]
+    {
+        if(i == n)
+        {
+            return 1;
+        }
+
+        if(!n % i)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+function print_primes(n : int) : int
+{
+    // trata do caso do 2
+    if(n >= 2)
+    {
+        printn(2);
+    }
+
+    foreach i in [3 .. n]
+    {
+        if(is_prime(i))
+        {
+            printn(i);
+        }
+    }
+    return 0;
+}
+
+if(print_primes(100)){}

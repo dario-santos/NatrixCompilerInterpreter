@@ -1,0 +1,15 @@
+function is_even(n : int ) : int
+{
+    return !n % 2;
+}
+
+function is_even2(n : int ) : int
+{
+    return is_even(n);
+}
+
+val x : int = 0;
+
+scanf(x);
+
+printn(is_even2(x));

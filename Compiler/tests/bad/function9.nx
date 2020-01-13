@@ -1,0 +1,7 @@
+type t = [0 .. 10];
+type a : array 10 of t;
+
+function somar(x : int, y : int) : int
+{
+    return a;
+}

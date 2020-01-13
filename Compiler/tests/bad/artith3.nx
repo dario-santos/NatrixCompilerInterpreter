@@ -1,0 +1,5 @@
+type t = [0 .. 10];
+
+val a : array t of t;
+
+print(10 - a);

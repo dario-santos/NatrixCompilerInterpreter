@@ -1,0 +1,8 @@
+val x : int = 3;
+
+
+
+foreach print(x) in [0 .. 10]
+{
+    print(0);
+}

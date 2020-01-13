@@ -1,0 +1,14 @@
+val x : int = 3;
+
+printn(x);
+
+if(1)
+{
+    printn(x);
+
+    val x : int = 2;
+
+    printn(x);
+}
+
+printn(x);

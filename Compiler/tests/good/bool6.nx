@@ -1,0 +1,6 @@
+printn(1 == 0);
+printn(1 != 0);
+printn(1 <  0);
+printn(1 <= 0);
+printn(1 >  0);
+printn(1 >= 0);

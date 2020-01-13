@@ -1,0 +1,11 @@
+type a : array 5 of [minint..maxint];
+
+val x : a filled by 1;
+
+x[0] := 0;
+x[1] := 0;
+x[2] := 1;
+x[3] := 42;
+x[4] := 1;
+
+printn(x[3]);

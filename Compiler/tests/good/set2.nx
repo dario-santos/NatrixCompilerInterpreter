@@ -1,0 +1,6 @@
+type t = [0 .. 10];
+
+foreach i in t
+{
+    printn(i);
+}

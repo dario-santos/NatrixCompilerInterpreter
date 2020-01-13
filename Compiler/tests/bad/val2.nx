@@ -1,0 +1,3 @@
+type t = [0 .. 10];
+
+val x : int = t;

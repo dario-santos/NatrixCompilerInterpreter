@@ -1,0 +1,10 @@
+type t = [0 .. 10];
+
+if(1)
+{
+    print(t);
+}
+else
+{
+    print(4);
+}

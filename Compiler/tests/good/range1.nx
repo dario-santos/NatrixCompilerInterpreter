@@ -1,0 +1,4 @@
+type t = [0 .. 6];
+
+printn(size(t));
+

@@ -1,0 +1,24 @@
+function print_int() : int
+{
+    val h : int = 40;
+ 
+    foreach i in [0 .. (h - 1)]
+    {              
+        foreach j in [0 .. (i + 1)]
+        {
+            if(i % 2 == 0)
+            {
+                print(!j % 10);
+            }
+            else
+            {
+                print((!j % 7) + 7);
+            }
+        }
+        printn(0);
+    } 
+    
+    return 0;
+}
+
+if(print_int()){}

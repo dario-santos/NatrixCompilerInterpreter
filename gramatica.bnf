@@ -1,10 +1,13 @@
 # Definição da Gramática
 
 # Lexer
+# É de realçar que a gramática do Natrix foi alterada durante a implementação
+# Sendo assim este ficheiro pode não ser 100% fiel 
+
 
 <digit> ::= ['0'-'9']
 <char>  ::= ['a-zA-Z']
-<int>   ::= <digit>+
+<integer>   ::= <digit>+
 <id>    ::= ('_' | <char>)(<char> | <digit>)* 
 <newline> ::= '\n'
 <whitespace> ::= '\t' | ' '
@@ -17,23 +20,24 @@
 
 <statements> ::= (<statement> | <function_def>)*
 
-<type> ::= <int> | <id>
+<type> ::= int | <id>
 
 <statement> ::= <statement>*
-              | 'if' '(' <boolean_expression> ')' 'then' 
+              | 'if' '(' <boolean_expression> ')'
 			    	'{' <statement> '}'
 				'else'
 					'{' <statement> '}'
-			  | 'foreach' <id> 'in' <int> '..' <int> 'do' '{' <statement> '}'
+			  | 'foreach' <id> 'in' [<integer> '..' <integer>] '{' <statement> '}'
 			  | 'print' '(' <expression> ')' ';'
 			  | <id> ':=' <expression> ';'
 			  | <id> '[' <expression> ']' ':=' <expression> ';'
-			  | 'var' <id> ':' <int> '=' <expression> ';'
+			  | 'val' <id> ':' <type> '=' <expression> ';'
+			  | 'type' <id> '=' '[' <integer> '..' <integer> ']' ';'
 
 <expression> ::= <lparen> <expression> <rparen>
                | <expression> <binop> <expression>
                | <expression> <lbracket> <expression> <rbracket>
-			   | <int>
+			   | <integer>
 			   | <id>
 
 <boolean_expression> ::= '('<expression> <booleanop> <expression> ')'
@@ -41,4 +45,4 @@
 					   | '!' <boolean_expression>
 
 <argument_list> ::= (<id> ':' <type>)*
-<function_def> ::= 'function' <id> '(' <argument_list> ')' '{' <statement> '}'
+<function_def> ::= 'function' <id> '(' <argument_list> ')' ':' <type> '{' <statement> 'return' <integer> ';' '}'

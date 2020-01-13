@@ -1,0 +1,5 @@
+function somar(x : int, y : int) : 5
+{
+    return 3;
+}
+

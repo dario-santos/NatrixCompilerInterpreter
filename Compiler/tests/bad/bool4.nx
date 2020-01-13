@@ -1,0 +1,4 @@
+type t = [0 .. 1];
+type a : array 1 of t;
+
+printn(1<2 && a);

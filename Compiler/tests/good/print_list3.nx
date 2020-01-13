@@ -1,0 +1,13 @@
+type a : array 4 of [minint .. maxint];
+
+val x : a filled by 0;
+
+foreach i in [0 .. 3]
+{
+    x[i] := i + 1;
+}
+
+foreach i in [0 .. 3]
+{
+    printn(x[i]);
+}

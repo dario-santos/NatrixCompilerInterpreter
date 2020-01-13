@@ -1,0 +1,15 @@
+type t = [0 .. 4];
+type a : array t of t;
+
+val v : a filled by 3;
+
+printn(v[2]);
+
+if(1)
+{
+    printn(v[2]);
+    val v : a filled by 1;
+    printn(v[2]);
+}
+
+printn(v[2]);

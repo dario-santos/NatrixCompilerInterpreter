@@ -1,6 +1,0 @@
-lexer.cmo :
-lexer.cmx :
-main.cmo : \
-    lexer.cmo
-main.cmx : \
-    lexer.cmx

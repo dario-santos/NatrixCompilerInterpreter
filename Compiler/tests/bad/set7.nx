@@ -1,0 +1,6 @@
+function a() : int
+{
+    return 2;
+}
+
+type t = a();

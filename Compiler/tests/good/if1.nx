@@ -1,0 +1,10 @@
+function printa() : int
+{
+    printn(1);
+    return 1;
+}
+
+if(printa() && printa())
+{
+    printn(3);
+}

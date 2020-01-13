@@ -1,0 +1,7 @@
+type t = [0 .. 6];
+
+type a : array t of t;
+
+val v : a filled by 3;
+
+printn(size(v));
