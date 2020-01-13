@@ -22,7 +22,6 @@ Utilização:
 
 ```S
 ./natrix -parser-only file.nx
-
 ```
 
 
@@ -38,6 +37,6 @@ make test
 
 ## Documentação
 
-No link abaixo contém a documentação feita para a linguagem natrix.
+No link abaixo temos acesso à documentação feita para a linguagem Natrix.
 
 https://dario-santos.github.io/Natrix/index
