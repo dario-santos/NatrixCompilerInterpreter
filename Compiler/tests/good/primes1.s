@@ -116,7 +116,7 @@ fim_true_1:
 	popq %rax
 	movq %rax, -8(%rbp)
 	movq %rbx, -16(%rbp)
-foreach_i1:
+foreach_1_inicio:
 	movq -8(%rbp), %rax
 	pushq %rax
 	movq 0(%rbp), %rax
@@ -148,15 +148,6 @@ if_true_1:
 if_end_1:
 	movq 0(%rbp), %rax
 	pushq %rax
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	movq $0, %rdx
-	cmpq $0, %rbx
-	je print_error_z
-	idivq %rbx
-	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	je bool_true_2
@@ -167,6 +158,15 @@ bool_true_2:
 	movq $1, %rax
 	pushq %rax
 bool_end_2:
+	movq -8(%rbp), %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq $0, %rdx
+	cmpq $0, %rbx
+	je print_error_z
+	idivq %rbx
+	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	jne if_true_2
@@ -186,7 +186,8 @@ if_end_2:
 	movq %rax, -8(%rbp)
 	movq -16(%rbp), %rbx
 	cmpq %rbx, %rax
-	jle foreach_i1
+	jle foreach_1_inicio
+foreach_1_fim:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
@@ -254,7 +255,7 @@ fim_true_2:
 	popq %rax
 	movq %rax, -32(%rbp)
 	movq %rbx, -40(%rbp)
-foreach_i2:
+foreach_2_inicio:
 	movq -32(%rbp), %rax
 	pushq %rax
 	popq %rax
@@ -296,7 +297,8 @@ if_end_4:
 	movq %rax, -32(%rbp)
 	movq -40(%rbp), %rbx
 	cmpq %rbx, %rax
-	jle foreach_i2
+	jle foreach_2_inicio
+foreach_2_fim:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
@@ -324,5 +326,9 @@ if_end_4:
 	.string "%ld"
 is_in_function:
 	.quad 0
+number_of_loop:
+	.quad 0
 input:
 	.quad 0
+shift:
+	.byte 0

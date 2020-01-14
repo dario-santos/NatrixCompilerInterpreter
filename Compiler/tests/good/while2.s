@@ -16,8 +16,8 @@ inicio_true_1:
 	jle fim_true_1
 	jmp print_error_t
 fim_true_1:
-while_1_start:
-	movq 0(%rbp), %rax
+while_1_inicio:
+	movq -8(%rbp), %rax
 	pushq %rax
 	movq $10, %rax
 	pushq %rax
@@ -34,7 +34,7 @@ bool_true_1:
 bool_end_1:
 	popq %rax
 	cmpq $0, %rax
-	je while_1_end
+	je while_1_fim
 	movq 0(%rbp), %rax
 	pushq %rax
 	popq %rdi
@@ -43,10 +43,10 @@ bool_end_1:
 	pushq %rax
 	movq $1, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	movq %rax, 0(%rbp)
 	cmpq $0, 0(%rbp)
@@ -71,8 +71,8 @@ inicio_true_3:
 	jle fim_true_3
 	jmp print_error_t
 fim_true_3:
-	jmp while_1_start
-while_1_end:
+	jmp while_1_inicio
+while_1_fim:
 end:
 	addq $16, %rsp
 	movq $0, %rax
@@ -137,5 +137,9 @@ print_error_f:
 	.string "%ld"
 is_in_function:
 	.quad 0
+number_of_loop:
+	.quad 0
 input:
 	.quad 0
+shift:
+	.byte 0

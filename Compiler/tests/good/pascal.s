@@ -102,10 +102,10 @@ fim_true_2:
 	pushq %rax
 	movq $1, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	subq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	subq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	popq %rbx
 	cmpq %rbx, %rax
@@ -120,7 +120,7 @@ fim_true_2:
 	popq %rax
 	movq %rax, -8(%rbp)
 	movq %rbx, -16(%rbp)
-foreach_i1:
+foreach_1_inicio:
 	movq $0, %rax
 	pushq %rax
 	popq %rax
@@ -140,10 +140,10 @@ fim_true_3:
 	pushq %rax
 	movq $1, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	popq %rbx
 	cmpq %rbx, %rax
@@ -158,7 +158,7 @@ fim_true_3:
 	popq %rax
 	movq %rax, -24(%rbp)
 	movq %rbx, -32(%rbp)
-foreach_j2:
+foreach_2_inicio:
 	movq -8(%rbp), %rax
 	pushq %rax
 	movq $2, %rax
@@ -188,15 +188,6 @@ bool_end_3:
 	jne if_true_1
 	movq -24(%rbp), %rax
 	pushq %rax
-	movq $7, %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	movq $0, %rdx
-	cmpq $0, %rbx
-	je print_error_z
-	idivq %rbx
-	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	je bool_true_2
@@ -211,23 +202,23 @@ bool_end_2:
 	pushq %rax
 	popq %rbx
 	popq %rax
-	addq %rbx, %rax
+	movq $0, %rdx
+	cmpq $0, %rbx
+	je print_error_z
+	idivq %rbx
+	pushq %rdx
+	movq $7, %rax
 	pushq %rax
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rdi
 	call print_int
 	jmp if_end_1
 if_true_1:
 	movq -24(%rbp), %rax
 	pushq %rax
-	movq $10, %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	movq $0, %rdx
-	cmpq $0, %rbx
-	je print_error_z
-	idivq %rbx
-	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	je bool_true_1
@@ -238,6 +229,15 @@ bool_true_1:
 	movq $1, %rax
 	pushq %rax
 bool_end_1:
+	movq $10, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq $0, %rdx
+	cmpq $0, %rbx
+	je print_error_z
+	idivq %rbx
+	pushq %rdx
 	popq %rdi
 	call print_int
 if_end_1:
@@ -246,7 +246,8 @@ if_end_1:
 	movq %rax, -24(%rbp)
 	movq -32(%rbp), %rbx
 	cmpq %rbx, %rax
-	jle foreach_j2
+	jle foreach_2_inicio
+foreach_2_fim:
 	movq $0, %rax
 	pushq %rax
 	popq %rdi
@@ -256,7 +257,8 @@ if_end_1:
 	movq %rax, -8(%rbp)
 	movq -16(%rbp), %rbx
 	cmpq %rbx, %rax
-	jle foreach_i1
+	jle foreach_1_inicio
+foreach_1_fim:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
@@ -284,5 +286,9 @@ if_end_1:
 	.string "%ld"
 is_in_function:
 	.quad 0
+number_of_loop:
+	.quad 0
 input:
 	.quad 0
+shift:
+	.byte 0

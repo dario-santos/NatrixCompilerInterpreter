@@ -1,11 +1,6 @@
-3
-3
-2
-2
-1
-2
-1
-2
-1
-2
-3
+
+error:
+
+  Semmantic analysis:
+    The condition of the while statement only accepts Tint but was givin a Tset.
+

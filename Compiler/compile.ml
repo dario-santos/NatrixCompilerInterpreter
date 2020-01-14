@@ -25,6 +25,8 @@ let number_of_ifs = ref 0
 let number_of_tipagens = ref 0
 let number_of_arraydefs = ref 0
 
+let loops = ref []
+
 type value =
   | Vint of int             (* valor       *)
   | Vset of int * int       (* inicio, fim *)
@@ -255,12 +257,12 @@ let rec compile_expr ctxs = function
       compile_expr ctxs e2 ++
 
       (* 3 - Recebe os valores da pilha *)
-      popq rbx ++
       popq rax ++
+      popq rbx ++
       
       (* 4 - Realiza a operacao e coloca o resultado na pilha *)
-      op (reg rbx) (reg rax) ++
-      pushq (reg rax)
+      op (reg rax) (reg rbx) ++
+      pushq (reg rbx)
 
   | Ebinop (Band | Bor as o, e1, e2) ->
       number_of_and_or := !number_of_and_or + 1;
@@ -309,30 +311,13 @@ let rec compile_expr ctxs = function
       compile_expr ctxs e2 ++
   
       (* 4 - Recebe os valores da pilha *)
-      popq rbx ++
       popq rax ++
+      popq rcx ++
 
-      op (reg rbx) (reg rax) ++
+      movb (reg cl) (lab "shift") ++
+
+      op  (lab "shift") (reg rax) ++
       pushq (reg rax)
-
-  | Ebinop (Bitand | Bitor | Bitxor as o, e1 , e2) ->
-      let op = match o with
-        | Bitand -> andq
-        | Bitor-> orq
-        | Bitxor -> xorq
-        | _ -> assert false
-      in  
-
-      (* 3 - Colocar e1 e e2 na pilha*)  
-      compile_expr ctxs e1 ++
-      compile_expr ctxs e2 ++
-  
-      (* 4 - Recebe os valores da pilha *)
-      popq rbx ++
-      popq rax ++
-
-      op (reg rbx) (reg rax) ++
-      pushq (reg rax)    
   
   | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
@@ -499,6 +484,17 @@ let rec compile_stmt ctxs = function
       
       (* 2 - Retorna *)
       ret
+  | Sbreak ->
+      if List.length !loops <= 0 then error "Using the break statement outside of a loop";
+      let current_loop = List.hd !loops in
+     
+      jmp (current_loop ^  "_fim")
+
+  | Scontinue -> 
+      if List.length !loops <= 0 then error "Using the continue statement outside of a loop";
+      let current_loop = List.hd !loops in
+     
+      jmp (current_loop ^  "_condicao")
 
   | Sdeclare (id, t ,e) ->
       (* 1 - Calcular o tamanho do frame *)
@@ -560,6 +556,7 @@ let rec compile_stmt ctxs = function
       (* 2 - Atualiza o valor que esta no endereço ofs*)
       compile_expr ctxs e1 ++
       popq rax ++
+
       movq (reg rax) (ind ~ofs:(-ofs) rbp) ++
       is_in_type_boundaries ctxs ofs t
 
@@ -671,6 +668,8 @@ let rec compile_stmt ctxs = function
       number_of_for := !number_of_for + 1;
       let for_index = string_of_int(!number_of_for) in
       
+      loops := [("for_" ^ for_index)]@(!loops);
+
       (* 5 - Inicializacao do foreach *)
       let loop_initialize = 
         (* 5.1 - Acrescenta o codigo da declaracao do id *)
@@ -693,6 +692,7 @@ let rec compile_stmt ctxs = function
 
       (* 7 - Atualiza a variavel id *)
       let for_verification = 
+        label ("for_" ^ for_index ^ "_condicao") ++
         (* 7.1 Incrementa o valor de id*)
         compile_expr ctxs incr ++
         popq rax ++
@@ -705,7 +705,8 @@ let rec compile_stmt ctxs = function
         jne ("for_" ^ for_index ^ "_inicio") ++
         label ("for_" ^ for_index ^ "_fim")
       in
-      
+      loops := List.tl !loops;
+
       (* 8 - Junta a inicializacao, o corpo e a verificacao *)
       loop_initialize ++ body ++ for_verification  
   
@@ -726,7 +727,8 @@ let rec compile_stmt ctxs = function
       (* 4 - Incrementa o numero de fors existentes*)
       number_of_foreach := !number_of_foreach + 1;
       let foreach_index = string_of_int(!number_of_foreach) in
-      
+      loops := [("foreach_" ^ foreach_index)]@(!loops);
+
       (* 5 - Inicializacao do foreach *)
       let loop_initialize = 
         (* 5.1 - Acrescenta o codigo da declaracao do x *)
@@ -745,7 +747,7 @@ let rec compile_stmt ctxs = function
         movq (reg rbx) (ind ~ofs:(ofs - 8) rbp) ++
 
         (* 5.6 - Cria a label do foreach para os jumps*)
-        label ("foreach_" ^ x ^ foreach_index)
+        label ("foreach_" ^ foreach_index ^ "_inicio")
       in
 
       (* 6 - Compila o corpo do foreach *)
@@ -753,6 +755,7 @@ let rec compile_stmt ctxs = function
 
       (* 7 - Compara o valor do x em relacao ao limite superior do foreach *)
       let for_verification = 
+        label ("foreach_" ^ foreach_index ^ "_condicao") ++
         (* 7.1 Incrementa o valor de x*)
         movq (ind ~ofs rbp) (reg rax) ++
         incq (reg rax) ++
@@ -761,37 +764,44 @@ let rec compile_stmt ctxs = function
         
         movq (ind ~ofs:(ofs - 8) rbp) (reg rbx) ++
         cmpq (reg rbx)  (reg rax) ++
-        jle ("foreach_" ^ x ^ foreach_index)
+        jle ("foreach_" ^ foreach_index ^ "_inicio") ++
+        label ("foreach_" ^ foreach_index ^ "_fim")
       in
       
+      loops := List.tl !loops;
       (* 8 - Junta a inicializacao, o corpo e a verificacao *)
       loop_initialize ++ body ++ for_verification
 
   | Swhile(e, bl) ->
       (* 1 - Cria o contexto do foreach *)
 
-      let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
+      let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
 
       (* 2 - Incrementa o numero de fors existentes*)
       number_of_while := !number_of_while + 1;
       let while_index = string_of_int(!number_of_while) in
+      loops := [("while_" ^ while_index)]@(!loops);
+       
+      let code = 
+        (* 3 - Cria a label do while - Vai buscar o valor de e *)
+        label ("while_" ^ while_index ^ "_inicio") ++
       
+        compile_expr ctxs e ++
+        popq rax ++
         
-      (* 3 - Cria a label do while - Vai buscar o valor de e *)
-      label ("while_" ^ while_index ^ "_start") ++
-      compile_expr ctxs e ++
-      popq rax ++
-        
-      cmpq (imm64 0L) (reg rax) ++
-      je ("while_" ^ while_index ^ "_end") ++
+        cmpq (imm64 0L) (reg rax) ++
+        je ("while_" ^ while_index ^ "_fim") ++
 
-      (* 6 - Compila o corpo do foreach *)
-      compile_stmt while_ctxs bl ++
+        (* 6 - Compila o corpo do while *)
+        compile_stmt ctxs bl ++
 
-      (* 7 - Compara o valor do x em relacao ao limite superior do foreach *)
-      jmp ("while_" ^ while_index ^ "_start") ++
-      label ("while_" ^ while_index ^ "_end")
+        (* 7 - Compara o valor do x em relacao ao limite superior do foreach *)
+        jmp ("while_" ^ while_index ^ "_inicio") ++
+        label ("while_" ^ while_index ^ "_fim")
+      in
+      loops := List.tl !loops;
       
+      code
   | _ -> error "COMPILE STMT"
         
 and compile_block_stmt ctx = function
@@ -913,7 +923,9 @@ let compile_program p ofile =
         label ".Sprint_error_f" ++ string "\nFuncao sem retorno\n\n" ++
         label ".Sscanf_int" ++ string "%ld" ++
         label "is_in_function" ++ dquad [0] ++
-        label "input"  ++ dquad [0]
+        label "number_of_loop" ++ dquad [0] ++
+        label "input"  ++ dquad [0] ++
+        label "shift"  ++ dbyte [0]
     }
   in
   let f = open_out ofile in

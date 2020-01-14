@@ -184,5 +184,9 @@ fim_true_1:
 	.string "%ld"
 is_in_function:
 	.quad 0
+number_of_loop:
+	.quad 0
 input:
 	.quad 0
+shift:
+	.byte 0

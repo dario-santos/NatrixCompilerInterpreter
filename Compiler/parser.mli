@@ -46,9 +46,11 @@ type token =
   | DIV
   | DELIMITER
   | CST of (int64)
+  | CONTINUE
   | COMMA
   | COLON
   | BY
+  | BREAK
   | BITXOR
   | BITOR
   | BITNOT

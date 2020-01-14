@@ -1,4 +1,12 @@
-val x : int = 8 << 2;  
+val x : int = 3;
 
-printn(x);
+while(1)
+{
+    scanf(x);
+
+    if(x == 0)
+    {
+        break;
+    }
+}
 

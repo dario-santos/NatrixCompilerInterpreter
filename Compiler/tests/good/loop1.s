@@ -103,10 +103,10 @@ fim_true_1:
 	pushq %rax
 	movq $3, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	popq %rbx
 	cmpq %rbx, %rax
@@ -121,7 +121,7 @@ fim_true_1:
 	popq %rax
 	movq %rax, -8(%rbp)
 	movq %rbx, -16(%rbp)
-foreach_i1:
+foreach_1_inicio:
 	movq -8(%rbp), %rax
 	pushq %rax
 	popq %rdi
@@ -131,7 +131,8 @@ foreach_i1:
 	movq %rax, -8(%rbp)
 	movq -16(%rbp), %rbx
 	cmpq %rbx, %rax
-	jle foreach_i1
+	jle foreach_1_inicio
+foreach_1_fim:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
@@ -159,5 +160,9 @@ foreach_i1:
 	.string "%ld"
 is_in_function:
 	.quad 0
+number_of_loop:
+	.quad 0
 input:
 	.quad 0
+shift:
+	.byte 0

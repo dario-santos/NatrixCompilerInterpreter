@@ -59,10 +59,10 @@ fim_true_4:
 	pushq %rax
 	movq -24(%rbp), %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	movq %rax, 0(%rbp)
 	cmpq $0, 0(%rbp)
@@ -78,10 +78,10 @@ fim_true_5:
 	pushq %rax
 	movq 0(%rbp), %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	movq %rax, -8(%rbp)
 	cmpq $0, -8(%rbp)
@@ -97,10 +97,10 @@ fim_true_6:
 	pushq %rax
 	movq -8(%rbp), %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	movq %rax, -16(%rbp)
 	cmpq $0, -16(%rbp)
@@ -116,10 +116,10 @@ fim_true_7:
 	pushq %rax
 	movq -16(%rbp), %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	movq %rax, -24(%rbp)
 	cmpq $0, -24(%rbp)
@@ -211,5 +211,9 @@ print_error_f:
 	.string "%ld"
 is_in_function:
 	.quad 0
+number_of_loop:
+	.quad 0
 input:
 	.quad 0
+shift:
+	.byte 0

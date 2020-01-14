@@ -11,6 +11,7 @@
 %token <Ast.ident> IDENT
 %token IF ELSE PRINT PRINTN SCANF VAL INT
 %token FOREACH IN TO WHILE FOR
+%token CONTINUE BREAK
 %token FUNCTION RETURN
 %token TYPE
 %token ARRAY OF FILLED BY
@@ -85,6 +86,8 @@ stmt:
 
 simple_stmt:
 | RETURN e = expr ";"                              { Sreturn e }
+| BREAK ";"                                        { Sbreak }
+| CONTINUE ";"                                     { Scontinue }
 | VAL id = ident ":" t = type_def "=" e = expr ";" { Sdeclare (id, t ,e) }
 | VAL id = ident ":" t = ident FILLED BY e = expr ";" { Sdeclarearray (id, t ,e) }
 | TYPE id = ident "=" set = expr ";"               { Sset (id, set) }

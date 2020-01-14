@@ -29,6 +29,8 @@ and expr =
 and stmt =
   | Sif of expr * stmt * stmt
   | Sreturn of expr
+  | Sbreak
+  | Scontinue
   | Sassign of ident * expr
   | Sdeclare of ident * costumtype * expr
   | Sset of ident * expr

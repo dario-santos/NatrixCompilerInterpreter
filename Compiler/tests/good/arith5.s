@@ -7,10 +7,10 @@ main:
 	pushq %rax
 	movq $2, %rax
 	pushq %rax
-	popq %rbx
 	popq %rax
-	addq %rbx, %rax
-	pushq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	movq $3, %rax
 	pushq %rax
 	popq %rbx
@@ -86,5 +86,9 @@ print_error_f:
 	.string "%ld"
 is_in_function:
 	.quad 0
+number_of_loop:
+	.quad 0
 input:
 	.quad 0
+shift:
+	.byte 0

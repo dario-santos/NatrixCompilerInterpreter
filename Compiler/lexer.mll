@@ -23,6 +23,8 @@
       ("while", WHILE);
       ("for", FOR);
       ("in", IN);
+      ("break", BREAK);
+      ("continue", CONTINUE);
       ("type", TYPE);
       ("array", ARRAY);
       ("of", OF);

@@ -151,7 +151,7 @@ let rec verify_stmt ctxs = function
     (* 1 - Verificar se o retorno e do tipo Tint*)
     let t1 = verify_expr ctxs e in
     if not(is_int t1) then error ("Lexical analysis: The return statement only supports integers.")
-  
+  | Sbreak | Scontinue -> ()
   | Sdeclare (id, t, e) ->
       (* 1 - Verificar se o nome ja nao esta a ser usado *)
       let ctx = List.hd (List.rev ctxs) in
