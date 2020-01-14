@@ -40,3 +40,11 @@ make test
 No link abaixo temos acesso à documentação feita para a linguagem Natrix.
 
 https://dario-santos.github.io/Natrix/index
+
+## Todo:
+
+- [ ] Um comando para o do while (em vez do uso do while e do break);
+- [ ] if/else if/else;
+- [ ] Vetores no compilador;
+- [ ] operadores bitwise;
+- [ ] Um melhor manuseonamento da memório.
