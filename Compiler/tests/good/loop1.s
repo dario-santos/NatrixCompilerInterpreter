@@ -32,9 +32,9 @@ fim_true_3:
 	pushq %rbx
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
+	je if_else_11
 	jmp if_end_1
-if_true_1:
+if_else_11:
 if_end_1:
 end:
 	addq $24, %rsp

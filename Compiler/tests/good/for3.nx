@@ -1,0 +1,6 @@
+
+for(val x : int = 3 ; x < 10 ; x + 1)
+{    
+    x := 20;
+    printn(x);
+}

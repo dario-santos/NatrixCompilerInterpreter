@@ -3,18 +3,8 @@
 main:
 	subq $8, %rsp
 	leaq 0(%rsp), %rbp
-	movq $0, %rax
+	movq $29, %rax
 	pushq %rax
-	popq %rax
-	cmpq $0, %rax
-	jne ternary_true_1
-	movq $60, %rax
-	pushq %rax
-	jmp ternary_end_1
-ternary_true_1:
-	movq $60, %rax
-	pushq %rax
-ternary_end_1:
 	popq %rax
 	movq %rax, 0(%rbp)
 	cmpq $0, 0(%rbp)
@@ -28,8 +18,33 @@ inicio_true_1:
 fim_true_1:
 	movq 0(%rbp), %rax
 	pushq %rax
+	movq $0, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	cmpq %rbx, %rax
+	je bool_true_1
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_1
+bool_true_1:
+	movq $1, %rax
+	pushq %rax
+bool_end_1:
+	popq %rax
+	cmpq $0, %rax
+	je if_else_11
+	movq $0, %rax
+	pushq %rax
 	popq %rdi
 	call printn_int
+	jmp if_end_1
+if_else_11:
+	movq $3, %rax
+	pushq %rax
+	popq %rdi
+	call printn_int
+if_end_1:
 end:
 	addq $8, %rsp
 	movq $0, %rax

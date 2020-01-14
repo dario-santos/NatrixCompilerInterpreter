@@ -28,7 +28,7 @@ and expr =
   | Eternary of expr * expr * expr
 
 and stmt =
-  | Sif of expr * stmt * stmt
+  | Sif of expr * stmt * elif list
   | Sreturn of expr
   | Sbreak
   | Scontinue
@@ -53,6 +53,8 @@ and stmts =
   | Stblock of stmts list
   | Stfunction of ident * argument list * costumtype * stmt
   | Stmt of stmt
+
+and elif = expr * stmt
 
 and argument = ident * costumtype
 

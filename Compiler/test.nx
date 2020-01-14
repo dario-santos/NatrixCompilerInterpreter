@@ -1,5 +1,10 @@
-val x : int = 0 ? 50 : 60;
+val x : int = 29;
 
-
-printn(x);
-
+if(x == 0)
+{
+    printn(0);
+}
+else
+{
+    printn(3);
+}

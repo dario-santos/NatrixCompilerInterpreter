@@ -153,15 +153,26 @@ let rec verify_expr ctxs = function
      
 (* Verificacao de uma instrucao - Instruções nao devolvem um valor *)
 let rec verify_stmt ctxs = function
-  | Sif (e, s1, s2) ->
+  | Sif (e, s1, elif) ->
       (* 1 - Verificar a expressao e do tipo Tint *)
       let t1 = verify_expr ctxs e in
       if not (is_int t1) then error ("Lexical analisys: The expression of the if statement needs to be evaluated an integer.");
       
       (* 2 - Verificar os dois ramos do if *)
       verify_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1;
-      verify_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s2
-
+      
+      (* 3 - Verificar todos os else if *)
+      let rec verify_elif = function
+        | hd::tl -> 
+          let e, s = hd in 
+          let t1 = verify_expr ctxs e in
+          if not(is_int t1) then error ("The statement Else If only accepts expressions of the type Tint but was givin " ^ string_of_typ t1 ^ ".");
+          verify_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s;
+          verify_elif tl
+        | _ -> ()  
+        in
+      verify_elif elif
+      
   | Sreturn e ->
     (* 1 - Verificar se o retorno e do tipo Tint*)
     let t1 = verify_expr ctxs e in

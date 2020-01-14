@@ -24,9 +24,7 @@ fim_true_1:
 	pushq %rax
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
-	jmp if_end_1
-if_true_1:
+	je if_else_11
 	movq 0(%rbp), %rax
 	pushq %rax
 	popq %rdi
@@ -113,6 +111,8 @@ foreach_1_fim:
 	pushq %rax
 	popq %rdi
 	call printn_int
+	jmp if_end_1
+if_else_11:
 if_end_1:
 	movq 0(%rbp), %rax
 	pushq %rax

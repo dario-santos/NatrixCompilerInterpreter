@@ -111,9 +111,7 @@ bool_true_1:
 bool_end_1:
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
-	jmp if_end_1
-if_true_1:
+	je if_else_11
 	movq 0(%rbp), %rax
 	pushq %rax
 	movq -8(%rbp), %rax
@@ -144,6 +142,8 @@ fim_true_1:
 	pushq %rax
 	popq %rax
 	ret
+	jmp if_end_1
+if_else_11:
 if_end_1:
 	movq $0, %rax
 	cmpq is_in_function, %rax

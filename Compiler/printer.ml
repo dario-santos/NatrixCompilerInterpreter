@@ -21,7 +21,7 @@ and print_expr = function
   | Eget (id, e2)         -> printf " Eget( %s," id; print_expr e2; printf ") " 
 
 and print_stmt = function
-  | Sif (e, s1, s2) -> printf "Sif("; print_expr e; printf ", "; print_stmt s1; printf ","; print_stmt s2; printf ")"
+  | Sif (e, s1, elif) -> printf "Sif("; print_expr e; printf ", "; print_stmt s1; printf ","; printf ")"
   | Sreturn e       -> printf "Sreturn("; print_expr e; printf ")"
   | Sassign (id, e1)-> printf "Sassign(%s, " id; print_expr e1; printf ")"
   | Sdeclare (id, t ,e1) -> printf "Sdeclare(%s, t, " id ; print_expr e1; printf ")"

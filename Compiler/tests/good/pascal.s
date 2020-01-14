@@ -18,9 +18,9 @@ fim_true_4:
 	pushq %rbx
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_2
+	je if_else_12
 	jmp if_end_2
-if_true_2:
+if_else_12:
 if_end_2:
 end:
 	addq $40, %rsp
@@ -185,10 +185,10 @@ bool_true_3:
 bool_end_3:
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
+	je if_else_11
 	movq -24(%rbp), %rax
 	pushq %rax
-	movq $7, %rax
+	movq $10, %rax
 	pushq %rax
 	popq %rbx
 	popq %rax
@@ -207,19 +207,13 @@ bool_true_2:
 	movq $1, %rax
 	pushq %rax
 bool_end_2:
-	movq $7, %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	addq %rax, %rbx
-	pushq %rbx
 	popq %rdi
 	call print_int
 	jmp if_end_1
-if_true_1:
+if_else_11:
 	movq -24(%rbp), %rax
 	pushq %rax
-	movq $10, %rax
+	movq $7, %rax
 	pushq %rax
 	popq %rbx
 	popq %rax
@@ -238,6 +232,12 @@ bool_true_1:
 	movq $1, %rax
 	pushq %rax
 bool_end_1:
+	movq $7, %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
 	popq %rdi
 	call print_int
 if_end_1:

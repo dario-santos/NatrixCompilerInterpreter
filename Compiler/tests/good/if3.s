@@ -38,13 +38,13 @@ lazy_evaluation_1:
 	pushq %rax
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
-	jmp if_end_1
-if_true_1:
+	je if_else_11
 	movq $3, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
+	jmp if_end_1
+if_else_11:
 if_end_1:
 end:
 	addq $0, %rsp

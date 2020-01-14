@@ -456,7 +456,7 @@ let rec compile_expr ctxs = function
       (* 4b - Se for 1 executa o then *)
       label ("ternary_true_" ^ current_ternary) ++
       
-      compile_expr ctxs e2 ++
+      compile_expr ctxs e1 ++
 
       (* 5 - Termina *)
       label ("ternary_end_" ^ current_ternary)
@@ -474,29 +474,55 @@ let get_type_size ctxs s =
   | _ -> compile_expr ctxs s
 
 let rec compile_stmt ctxs = function
-  | Sif (e, s1, s2) ->
+  | Sif (e, s1, selif) ->
       (*1 - Incrementa o numero de ifs realizados ate ao momento *)
       number_of_ifs := !number_of_ifs + 1;
       let current_if_test = string_of_int(!number_of_ifs) in
+  
+      let rec compile_elif index = function
+        | [hd] ->
+            let _, s = hd in 
+            label ("if_else_" ^ string_of_int index ^ current_if_test) ++
+            
+            (* 4a - Se for 0 executa o else*)
+            compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s
+          
+        | hd::tl -> 
+          let e, s = hd in 
+        
+            label ("if_else_" ^ (string_of_int index) ^ current_if_test) ++
+            compile_expr ctxs e ++
+            popq rax ++
     
+            (* 3 - Se vor diferente de 0 entao é verdade *)
+            cmpq (imm 0) (reg rax) ++
+            je ("if_else_" ^ string_of_int (index + 1) ^ current_if_test) ++
+    
+            (* 4a - Se for 0 executa o else*)
+            compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s ++
+            jmp ("if_end_" ^ current_if_test) ++
+            
+            compile_elif (index + 1) tl
+        | _ -> label ("if_else_" ^ string_of_int index ^ current_if_test)
+        in
+
       (* 2 - Calcular o valor da condicao *)
       compile_expr ctxs e ++
       popq rax ++
 
-      (* 3 - Se vor diferente de entao e verdade *)
+      (* 3 - Se vor diferente de 0 entao é verdade *)
       cmpq (imm 0) (reg rax) ++
-      jne ("if_true_" ^ current_if_test) ++
-
-      (* 4a - Se for 0 executa o else*)
-      compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s2 ++
-      jmp ("if_end_" ^ current_if_test) ++
-
-      (* 4b - Se for 1 executa o then *)
-      label ("if_true_" ^ current_if_test) ++
+      je ("if_else_" ^ string_of_int 1 ^ current_if_test) ++
+    
+      (* 4b - Se for diferente de 0 executa o if *)
       compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 ++
+      jmp ("if_end_" ^ current_if_test) ++
+      (* 4a - Se for 0 vai à próxima condição*)
+      compile_elif 1 selif ++
     
       (* 5 - Termina *)
       label ("if_end_" ^ current_if_test)
+
   | Snothing -> nop
   | Sreturn (e1) ->
       

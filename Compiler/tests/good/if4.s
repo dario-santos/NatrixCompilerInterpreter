@@ -51,13 +51,13 @@ lazy_evaluation_1:
 	pushq %rax
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_2
-	jmp if_end_2
-if_true_2:
+	je if_else_12
 	movq $3, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
+	jmp if_end_2
+if_else_12:
 if_end_2:
 end:
 	addq $8, %rsp
@@ -124,8 +124,8 @@ bool_true_1:
 bool_end_1:
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
-	movq $0, %rax
+	je if_else_11
+	movq $1, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
@@ -138,7 +138,7 @@ inicio_true_3:
 	jle fim_true_3
 	jmp print_error_t
 fim_true_3:
-	movq $1, %rax
+	movq $0, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
@@ -146,13 +146,13 @@ fim_true_3:
 	cmpq is_in_function, %rax
 	je print_error_f
 	decq is_in_function
-	movq $1, %rax
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	ret
 	jmp if_end_1
-if_true_1:
-	movq $1, %rax
+if_else_11:
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
@@ -165,7 +165,7 @@ inicio_true_2:
 	jle fim_true_2
 	jmp print_error_t
 fim_true_2:
-	movq $0, %rax
+	movq $1, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
@@ -173,7 +173,7 @@ fim_true_2:
 	cmpq is_in_function, %rax
 	je print_error_f
 	decq is_in_function
-	movq $0, %rax
+	movq $1, %rax
 	pushq %rax
 	popq %rax
 	ret

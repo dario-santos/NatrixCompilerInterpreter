@@ -33,9 +33,9 @@ fim_true_6:
 	pushq %rbx
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_5
+	je if_else_15
 	jmp if_end_5
-if_true_5:
+if_else_15:
 if_end_5:
 end:
 	addq $48, %rsp
@@ -134,9 +134,7 @@ bool_true_1:
 bool_end_1:
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
-	jmp if_end_1
-if_true_1:
+	je if_else_11
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
@@ -145,6 +143,8 @@ if_true_1:
 	pushq %rax
 	popq %rax
 	ret
+	jmp if_end_1
+if_else_11:
 if_end_1:
 	movq 0(%rbp), %rax
 	pushq %rax
@@ -169,9 +169,7 @@ bool_true_2:
 bool_end_2:
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_2
-	jmp if_end_2
-if_true_2:
+	je if_else_12
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
@@ -180,6 +178,8 @@ if_true_2:
 	pushq %rax
 	popq %rax
 	ret
+	jmp if_end_2
+if_else_12:
 if_end_2:
 foreach_1_condicao:
 	movq -8(%rbp), %rax
@@ -217,13 +217,13 @@ bool_true_3:
 bool_end_3:
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_3
-	jmp if_end_3
-if_true_3:
+	je if_else_13
 	movq $2, %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
+	jmp if_end_3
+if_else_13:
 if_end_3:
 	movq $0, %rax
 	pushq %rax
@@ -285,13 +285,13 @@ fim_true_4:
 	pushq %rbx
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_4
-	jmp if_end_4
-if_true_4:
+	je if_else_14
 	movq -32(%rbp), %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
+	jmp if_end_4
+if_else_14:
 if_end_4:
 foreach_2_condicao:
 	movq -32(%rbp), %rax

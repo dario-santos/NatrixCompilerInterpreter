@@ -38,7 +38,7 @@
 
 /* Definição das prioridades e associatividades dos tokens */
 
-%left TERNARY
+%left TERNARY COLON
 %left OR
 %left AND
 %left BITOR
@@ -74,18 +74,21 @@ argument_list:
 ;
 
 suite:
-| "{" l = list(stmt) "}" { Sblock l }
-| s = stmt               { Sblock [s] }
+| l = list(stmt) { Sblock l }
+;
+
+elif:
+| ELSE IF "(" e = expr ")" "{" s = suite "}" { (e, s) }
+| ELSE "{" s = suite "}" { ( Ecst 1L ,s) }
 ;
 
 stmt:
-| s = simple_stmt                                 { s } 
-| IF "(" e = expr ")" s1 = suite                  { Sif(e, s1, Sblock []) }
-| IF "(" e = expr ")" s1 = suite ELSE s2 = suite  { Sif(e, s1, s2) }
-| FOREACH id = ident IN set = expr  s = suite     { Sforeach(id, set, s) }
-| WHILE "(" e = expr ")" s = suite                { Swhile(e, s) }
-| FOR "(" VAL id = ident ":" t = type_def "=" e = expr ";" cond = expr ";" incr = expr ")" s = suite  {Sfor(id, t, e, cond, incr, s)} 
-| DO s = suite WHILE "(" e = expr ")" ";"         { Sdowhile(e,s) }
+| s = simple_stmt                                        { s } 
+| IF "(" e = expr ")" "{" s1 = suite "}" l = list(elif)  { Sif(e, s1, l)}
+| FOREACH id = ident IN set = expr "{" s = suite "}"     { Sforeach(id, set, s) }
+| WHILE "(" e = expr ")" "{" s = suite "}"               { Swhile(e, s) }
+| FOR "(" VAL id = ident ":" t = type_def "=" e = expr ";" cond = expr ";" incr = expr ")" "{" s = suite "}" {Sfor(id, t, e, cond, incr, s)} 
+| DO "{" s = suite "}" WHILE "(" e = expr ")" ";"         { Sdowhile(e,s) }
 ;
 
 simple_stmt:
@@ -93,7 +96,7 @@ simple_stmt:
 | BREAK ";"                                        { Sbreak }
 | CONTINUE ";"                                     { Scontinue }
 | VAL id = ident ":" t = type_def "=" e = expr ";" { Sdeclare (id, t ,e) }
-| VAL id = ident ":" t = ident FILLED BY e = expr ";" { Sdeclarearray (id, t ,e) }
+| VAL id = ident ":" t = ident FILLED BY e = expr ";"     { Sdeclarearray (id, t ,e) }
 | TYPE id = ident "=" set = expr ";"               { Sset (id, set) }
 | TYPE id = ident ":" ARRAY size = expr OF t = expr ";"   { Sarray (id, size, t) }
 | id = ident ":""=" e = expr ";"                   { Sassign (id, e) }
@@ -150,5 +153,5 @@ expr:
 ;
 
 ident:
-  id = IDENT { id }
+| id = IDENT { id }
 ;

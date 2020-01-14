@@ -188,12 +188,23 @@ and expr_int ctxs e =
 
 (* Interpretacao de instrucoes - locais*)
 and interpret_stmt ctxs = function
-  | Sif (e, s1, s2)   ->
+  | Sif (e, s1, elif_else)   ->
+      
+      let rec interpret_elif = function
+        | hd::tl -> 
+          let e, s = hd in 
+          let v1 = expr_int ctxs e in
+          if v1 = 1L then interpret_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s
+          else interpret_elif tl
+        | _ -> ()
+      in
+      
       (* 1 - Verificar a condicao, se for verdade s1, se for falso s2 *)
       if is_true (expr ctxs e) = 1L 
       then interpret_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 
-      else interpret_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s2
-  
+      (* 2 - Vai testar cada um dos else if e o else *)
+      else interpret_elif elif_else
+          
   | Snothing -> ()
 
   | Sreturn e ->
@@ -347,34 +358,30 @@ and interpret_stmt ctxs = function
       | Break -> ()
     end
   | Sforeach(x, e, bl) ->
-    (* 1 - Ir buscar os limites do foreach*)
-    let i, f = vset_to_tuplo (expr ctxs e) in
-    let i = ref i in
-    (* 2 - Iterar o corpo do foreach *)
-    begin try 
-    while(!i <= f) do
-      (* 2.1 - Cada iteração representa um contexto único*)
-      let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
+      (* 1 - Ir buscar os limites do foreach*)
+      let i, f = vset_to_tuplo (expr ctxs e) in
+      let i = ref i in
+      (* 2 - Iterar o corpo do foreach *)
+      begin try 
+        while(!i <= f) do
+        (* 2.1 - Cada iteração representa um contexto único*)
+        let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
       
-      (* 2.2 - Atualizamos a variavel i *)
-      interpret_stmt ctxs (Sdeclare(x, Int, Ecst !i));
+        (* 2.2 - Atualizamos a variavel i *)
+        interpret_stmt ctxs (Sdeclare(x, Int, Ecst !i));
 
-      begin try
-      (* 2.3 - Interpretamos o corpo do for*)
-        interpret_stmt ctxs bl;
-      with 
-      | Continue -> ()
-      | Break -> raise Break end;
-
-      (* 2.4 - Ir buscar o valor de  x *)
-      let ctx = List.hd (List.rev ctxs) in
-      let x = vint_to_int(fst(Hashtbl.find ctx x))in
+        (* 2.3 - Interpretamos o corpo do for*)
+        begin try interpret_stmt ctxs bl; with Continue -> () end;
       
-      i := Int64.add x Int64.one
-    done
-    with
-    | Break -> ()
-  end 
+        (* 2.4 - Ir buscar o valor de  x *)
+        let ctx = List.hd (List.rev ctxs) in
+        let x = vint_to_int(fst(Hashtbl.find ctx x))in
+      
+        i := Int64.add x Int64.one
+        done
+      with
+        | Break -> ()
+      end 
   | Swhile (e, bl) ->
       (* 1 - Ir buscar o valor da expressão*)
       let i = ref 0L in
