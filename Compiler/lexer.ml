@@ -21,8 +21,8 @@
       ("if", IF);
       ("else", ELSE);
       ("foreach", FOREACH);
-      ("while", WHILE);
-      ("for", FOR);
+      ("comipracrl", WHILE);
+      ("horadoshow", FOR);
       ("in", IN);
       ("break", BREAK);
       ("continue", CONTINUE);
