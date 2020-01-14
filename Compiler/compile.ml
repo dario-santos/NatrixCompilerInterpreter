@@ -9,7 +9,7 @@ exception VarUndef of string
 exception Error of string
 let error s = raise (Error s)
 
-let minint = Int64.zero
+let minint = Int64.min_int
 let maxint = Int64.max_int
 
 (* Tamanho da frame, em byte (cada variável local ocupa 8 bytes) *)
@@ -74,7 +74,8 @@ let is_rbx_in_type_boundaries ctxs t =
       let current_tipagem_test = string_of_int(!number_of_tipagens) in
       
       (* 2 - Como 0 é suficiente pequeno nao temos que colocar num registo para testar o limite inferior *) 
-      cmpq (imm64 minint) (reg rbx) ++
+      movq (imm64 minint) (reg rax) ++
+      cmpq (reg rax) (reg rbx) ++
       
       (* 3a - Se for superior entao vamos testar o limite superior*)
       jge ("inicio_true_" ^ current_tipagem_test) ++
@@ -126,7 +127,9 @@ let is_in_type_boundaries ctxs id_ofs t =
       let current_tipagem_test = string_of_int(!number_of_tipagens) in
 
       (* 2 - Como 0 é suficiente pequeno nao temos que colocar num registo para testar o limite inferior *) 
-      cmpq (imm64 minint) (ind ~ofs:(-id_ofs) rbp) ++
+      movq (imm64 minint) (reg rbx) ++
+      movq (ind ~ofs:(-id_ofs) rbp) (reg rax) ++
+      cmpq (reg rbx) (reg rax) ++
       
       (* 3a - Se for superior entao vamos testar o limite superior*)
       jge ("inicio_true_" ^ current_tipagem_test) ++
@@ -136,8 +139,9 @@ let is_in_type_boundaries ctxs id_ofs t =
 
       (* 4 - Verificamos se o limite superior tambem se cumpre *)
       label ("inicio_true_" ^ current_tipagem_test) ++
-      movq (imm64 maxint) (reg rax) ++
-      cmpq (reg rax) (ind ~ofs:(-id_ofs) rbp) ++
+      movq (imm64 maxint) (reg rbx) ++
+      movq (ind ~ofs:(-id_ofs) rbp) (reg rax) ++
+      cmpq (reg rbx) (reg rax) ++
       
       (* 5a - Se todos os limites foram compridos entao continuamos a execucao *)
       jle ("fim_true_" ^ current_tipagem_test) ++
@@ -918,6 +922,9 @@ and compile_stmts ctxs = function
       in
       let arguments_code = translate_arguments args in
       let ctx_body = Hashtbl.copy ctx in
+      
+      Hashtbl.add function_ctx f (!ctx_list, return);
+      
       functions_code := !functions_code ++
       label ("user" ^ f) ++
       compile_stmt (ctxs@[ctx_body]) body ++
@@ -926,7 +933,6 @@ and compile_stmts ctxs = function
       call "print_error_f" ++
       ret;
 
-      Hashtbl.add function_ctx f (!ctx_list, return);
       arguments_code
 
   | Stblock bl -> 

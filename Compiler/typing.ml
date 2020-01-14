@@ -172,13 +172,13 @@ let rec verify_stmt ctxs = function
         | _ -> ()  
         in
       verify_elif elif
-      
+
   | Sreturn e ->
     (* 1 - Verificar se o retorno e do tipo Tint*)
     let t1 = verify_expr ctxs e in
     if not(is_int t1) then error ("Lexical analysis: The return statement only supports integers.")
   
-  |Snothing -> ()
+  | Snothing -> ()
 
   | Sbreak | Scontinue -> ()
 
@@ -267,6 +267,7 @@ let rec verify_stmt ctxs = function
       if not (is_int t1) then error ("The scanf statement only supports Tint but was given a " ^ string_of_typ t1 ^ ".")
 
   | Sblock bl -> verify_block_stmt ctxs bl
+
   | Sfor(id, t, e, cond, incr, bl) ->
       (* 1 - Adiciona o contexto do for e declaracao da sua variavel *)
       let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
@@ -370,14 +371,15 @@ and verify_stmts ctxs = function
     (* 3 - Verifica se o tipo do retorno e int ou set *)
     let return_typ = costumtype_to_typ ctxs return in
     if not(is_int return_typ) && not (is_set return_typ) then error ("Lexical analysis: The return of the function " ^ f ^ " needs to be an int or set.");
-    
-    (* 4 - Verifica se o corpo esta bem tipado *)
-    let body_context = Hashtbl.copy args_ctx in
-    verify_stmt (ctxs@[body_context]) body;
-    
-    (* 5 - Se estiver tudo em ordem entao guarda a funcao *)
-    Hashtbl.add functions f (args_ctx, return, body)
+        
+    (* 4 - Se estiver tudo em ordem entao guarda a funcao *)
+    Hashtbl.add functions f (args_ctx, return, body);
 
+    (* Se verificarmos o corpo depois, deixamos que existam funcoes recursivas*)
+    (* 5 - Verifica se o corpo esta bem tipado *)
+    let body_context = Hashtbl.copy args_ctx in
+    verify_stmt (ctxs@[body_context]) body
+    
   | Stblock bl -> verify_block_stmts ctxs bl
   | Stmt s -> verify_stmt ctxs s
 

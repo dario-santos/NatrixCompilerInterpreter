@@ -10,7 +10,7 @@ exception Return of int64
 exception Break
 exception Continue 
 
-let minint = Int64.zero
+let minint = Int64.min_int
 let maxint = Int64.max_int
 
 (* Tipos de dados*)
@@ -188,7 +188,7 @@ and expr_int ctxs e =
 
 (* Interpretacao de instrucoes - locais*)
 and interpret_stmt ctxs = function
-  | Sif (e, s1, elif_else)   ->
+  | Sif (e, s1, selif)   ->
       
       let rec interpret_elif = function
         | hd::tl -> 
@@ -203,7 +203,7 @@ and interpret_stmt ctxs = function
       if is_true (expr ctxs e) = 1L 
       then interpret_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 
       (* 2 - Vai testar cada um dos else if e o else *)
-      else interpret_elif elif_else
+      else interpret_elif selif
           
   | Snothing -> ()
 
