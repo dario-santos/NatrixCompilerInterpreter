@@ -1,0 +1,6 @@
+foreach i in [0 .. 10]
+{
+    printn(i);
+    
+    i := 11;
+}

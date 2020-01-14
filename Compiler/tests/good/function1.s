@@ -34,6 +34,13 @@ print_int:
 	movq $0, %rax
 	call printf
 	ret
+scanf_int:
+	leaq .Sscanf_int, %rdi
+	leaq input, %rsi
+	xorq %rax, %rax
+	call scanf
+	movq input, %rax
+	ret
 print_error_t:
 	movq %rdi, %rsi
 	leaq .Sprint_error_t, %rdi
@@ -62,7 +69,7 @@ userf:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
-	subq $1, is_in_function
+	decq is_in_function
 	movq $3, %rax
 	pushq %rax
 	popq %rax
@@ -73,7 +80,7 @@ userw:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
-	subq $1, is_in_function
+	decq is_in_function
 	addq $1, is_in_function
 	call userf
 	movq %rax, %rbx
@@ -95,7 +102,7 @@ userz:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
-	subq $1, is_in_function
+	decq is_in_function
 	addq $1, is_in_function
 	call userw
 	movq %rax, %rbx
@@ -117,7 +124,7 @@ usery:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
-	subq $1, is_in_function
+	decq is_in_function
 	addq $1, is_in_function
 	call userz
 	movq %rax, %rbx
@@ -139,7 +146,7 @@ userx:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
-	subq $1, is_in_function
+	decq is_in_function
 	addq $1, is_in_function
 	call usery
 	movq %rax, %rbx
@@ -170,5 +177,9 @@ fim_true_4:
 	.string "\nRun-time error:\n\n     Invalid size of set. A set needs to have atleast the size of one.\n\n"
 .Sprint_error_f:
 	.string "\nFuncao sem retorno\n\n"
+.Sscanf_int:
+	.string "%ld"
 is_in_function:
+	.quad 0
+input:
 	.quad 0

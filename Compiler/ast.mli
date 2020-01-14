@@ -36,7 +36,9 @@ and stmt =
   | Sprintn of expr
   | Sscanf of ident
   | Sblock of stmt list
+  | Sfor of ident * costumtype * expr * expr * expr * stmt
   | Sforeach of ident * expr * stmt
+  | Swhile of expr * stmt
   | Saset of ident * expr * expr (* id[e2] := e3 *)
   
 (* Para não podermos definir funções dentro de instruções *)

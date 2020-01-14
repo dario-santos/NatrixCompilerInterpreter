@@ -17,6 +17,11 @@ type value =
   | Vset of int64 * int64        (* inicio, fim *)
   | Vlist of value array * value (* lista, range*)
 
+let vint_to_int = function
+  | Vint n     -> n
+  | _          -> error "A função vset_to_tuplo aceita apenas conjuntos"
+
+
 let vset_to_tuplo = function
   | Vint n     -> (minint, (Int64.sub n 1L))
   | Vset (i,f) -> (i, f)
@@ -274,22 +279,47 @@ and interpret_stmt ctxs = function
       print_value (expr ctxs e); printf "@."
   | Sscanf id -> 
     begin   try
-      let x = (Scanf.sscanf (read_line()) " %ld" (fun a -> a)) in 
+      let x = (Scanf.scanf " %ld" (fun a -> a)) in 
       interpret_stmt ctxs (Sassign (id, Ecst (Int64.of_int32 x)))
       with 
-    | Stdlib.Scanf.Scan_failure _ ->  begin interpret_stmt ctxs (Sassign (id, Ecst 0L)) end
+    | _ ->  begin interpret_stmt ctxs (Sassign (id, Ecst 0L)) end
     end
   
   | Sblock bl -> 
       (* 1 - Interpreta o bloco de instruções *)
       interpret_block_stmt ctxs bl
+  | Sfor(id, t, e, cond, incr, bl) ->
+      (* 1 - Cria um contexto para o for *)
+      let for_ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
+      let v = ref (expr_int for_ctxs e) in
+      interpret_stmt ctxs (Sdeclare(id, t, (Ecst !v)));
+      
+      let i = ref (expr_int for_ctxs cond) in
+      
+      (* 2 - Iterar o corpo do foreach *)
+      while(not (!i = 0L)) do
+        (* 2.1 - Cada iteração representa um contexto único*)
+        let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
+        
+        (* 2.2 - Atualizamos a variavel i *)
+        interpret_stmt ctxs (Sdeclare(id, t, (Ecst !v)));
+  
+        (* 2.3 - Interpretamos o corpo do for*)
+        interpret_stmt ctxs bl;
+        
+        (* 2.4 - Atualizar o valor de id *)
+        v := (expr_int ctxs incr);
+        interpret_stmt ctxs (Sassign(id, (Ecst !v)));
 
+        (* 2.5 - Verificar a condicao *)
+        i := (expr_int ctxs cond)
+      done
   | Sforeach(x, e, bl) ->
     (* 1 - Ir buscar os limites do foreach*)
     let i, f = vset_to_tuplo (expr ctxs e) in
     let i = ref i in
     (* 2 - Iterar o corpo do foreach *)
-    while( !i <= f) do
+    while(!i <= f) do
       (* 2.1 - Cada iteração representa um contexto único*)
       let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
       
@@ -299,9 +329,30 @@ and interpret_stmt ctxs = function
       (* 2.3 - Interpretamos o corpo do foreach*)
       interpret_stmt ctxs bl;
       
-      i := Int64.add !i 1L
+      (* 2.4 - Ir buscar o valor de  x *)
+      let ctx = List.hd (List.rev ctxs) in
+      let x = vint_to_int(fst(Hashtbl.find ctx x))in
+      
+      i := Int64.add x Int64.one
     done
-
+  | Swhile (e, bl) ->
+      (* 1 - Ir buscar o valor da expressão*)
+      let i = ref 0L in
+      i := vint_to_int(expr ctxs e);
+      
+      (* 2 - Iterar o corpo do while *)
+      while not (!i = 0L) do
+        (* 2.1 - Cada iteração representa um contexto único*)
+        let while_ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
+        
+        (* 2.2 - Interpretamos o corpo do while*)
+        interpret_stmt while_ctxs bl;
+        
+        (* 2.3 - Verificar a condição do while *)
+        i := vint_to_int(expr ctxs e)
+      
+      done
+      
 (* Interpretacao de instrucoes - globais *)
 and interpret_stmts ctxs = function  
   | Stfunction (f, args, return, body) ->

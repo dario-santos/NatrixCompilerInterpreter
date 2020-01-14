@@ -237,8 +237,32 @@ let rec verify_stmt ctxs = function
       if not (is_int t1) then error ("The scanf statement only supports Tint but was given a " ^ string_of_typ t1 ^ ".")
 
   | Sblock bl -> verify_block_stmt ctxs bl
-  | Sforeach(id, set, bl) ->
+  | Sfor(id, t, e, cond, incr, bl) ->
       (* 1 - Adiciona o contexto do for e declaracao da sua variavel *)
+      let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
+      verify_stmt ctxs (Sdeclare(id, Int, Ecst(0L)));
+
+      (* 3 - Verificar se o tipo existe e é do tipo Tint ou Tset *)
+      let tp = costumtype_to_typ ctxs t in
+      if not (is_int tp) && not (is_set tp) then error ("Error declaring the variable of the for. Was expecting the type Tint or Tset but was given " ^ string_of_typ tp ^ ".");
+
+      (* 4 - Verifica se o valor de e é um inteiro *)
+      let t1 = verify_expr ctxs e in
+      if not (is_int t1) then error ("The condition of the while statement only accepts Tint but was givin a " ^ string_of_typ t1 ^ ".");
+
+      (* 5 - Verifica se o valor de cond é um interiro *)
+      let t2 = verify_expr ctxs cond in
+      if not (is_int t2) then error ("The condition of the while statement only accepts Tint but was givin a " ^ string_of_typ t2 ^ ".");
+
+      (* 6 - Verifica se o valor de incr é um interiro *)
+      let t3 = verify_expr ctxs cond in
+      if not (is_int t3) then error ("The condition of the while statement only accepts Tint but was givin a " ^ string_of_typ t3 ^ ".");
+
+      (* 7 - Verifica o corpo *)
+      verify_stmt ctxs bl
+
+  | Sforeach(id, set, bl) ->
+      (* 1 - Adiciona o contexto do foreach e declaracao da sua variavel *)
       let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
       verify_stmt ctxs (Sdeclare(id, Int, Ecst(0L)));
 
@@ -248,7 +272,16 @@ let rec verify_stmt ctxs = function
   
       (* 3 - Verifica o corpo *)
       verify_stmt ctxs bl
+  | Swhile(e, bl) ->
+      (* 1 - Adiciona o contexto do while *)
+      let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
 
+      (* 2 - Verifica que foi passado um inteiro *)
+      let t1 = verify_expr ctxs e in
+      if not (is_int t1) then error ("The condition of the while statement only accepts Tint but was givin a " ^ string_of_typ t1 ^ ".");
+  
+      (* 3 - Verifica o corpo *)
+      verify_stmt ctxs bl
   | Saset (id, e1, e2) ->
       (* 1 - Verificar que id existe *)
       if List.length(find_id id ctxs) == 0 then error ("The variable " ^ id ^ " is not defined.");

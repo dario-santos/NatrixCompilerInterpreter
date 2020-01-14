@@ -16,6 +16,8 @@ let maxint = Int64.max_int
 let frame_size = ref 0
 
 (* Variáveis para garantir que cada for/if/etc. tem labels com nomes diferentes *)
+let number_of_while = ref 0
+let number_of_foreach = ref 0
 let number_of_for = ref 0
 let number_of_bool_tests = ref 0
 let number_of_and_or = ref 0
@@ -449,7 +451,7 @@ let rec compile_stmt ctxs = function
       movq (imm64 0L) (reg rax) ++
       cmpq (lab "is_in_function") (reg rax) ++
       je "print_error_f" ++
-      subq (imm64 1L) (lab "is_in_function") ++
+      decq (lab "is_in_function") ++
       
       (* 1 - Calcula o valor de e1*) 
       compile_expr ctxs e1 ++
@@ -612,6 +614,63 @@ let rec compile_stmt ctxs = function
       let block = List.rev(compile_block_stmt ctxs bl) in
       List.fold_right (++) block nop
 
+  | Sfor(id, t, e, cond, incr, bl) ->
+      (* 1 - Cria o contexto do for *)
+      let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
+
+      (* 2 - Declara a variavel id *)
+      let code = compile_stmt ctxs (Sdeclare(id, t, e)) in
+
+      (* 3 - Vai buscar o contexto do for *)
+      let ctx = List.hd (List.rev ctxs) in
+
+      (* 4 - Guarda o offset da variavel id *)
+      let ofs = - int_of_vint (snd(Hashtbl.find ctx id)) in
+      
+      (* 4 - Incrementa o numero de fors existentes *)
+      number_of_for := !number_of_for + 1;
+      let for_index = string_of_int(!number_of_for) in
+      
+      (* 5 - Inicializacao do foreach *)
+      let loop_initialize = 
+        (* 5.1 - Acrescenta o codigo da declaracao do id *)
+        code ++
+
+        (* 5.2 - Vai buscar o valor de cond *)
+        compile_expr ctxs cond ++
+        popq rax ++
+
+        (* 5.3 - Verifica se a condição é válida *)
+        cmpq (imm64 0L) (reg rbx) ++
+        je ("for_" ^ for_index ^ "_fim") ++
+
+        (* 5.6 - Cria a label do foreach para os jumps*)
+        label ("for_" ^ for_index ^ "_inicio")
+      in
+
+      (* 6 - Compila o corpo do foreach *)
+      let body = compile_stmt ctxs bl in
+
+      (* 7 - Atualiza a variavel id *)
+      let for_verification = 
+        (* 7.1 Incrementa o valor de id*)
+        compile_expr ctxs incr ++
+        popq rax ++
+        movq (reg rax) (ind ~ofs rbp) ++
+        
+        (* 7.2 Compara o valor a expr *) 
+        compile_expr ctxs cond ++
+        popq rax ++
+        cmpq (imm64 0L)  (reg rax) ++
+        jne ("for_" ^ for_index ^ "_inicio") ++
+        label ("for_" ^ for_index ^ "_fim")
+      in
+      
+      (* 8 - Junta a inicializacao, o corpo e a verificacao *)
+      loop_initialize ++ body ++ for_verification
+
+  
+  
   | Sforeach(x, e, bl) ->
       (* 1 - Cria o contexto do foreach *)
       let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
@@ -627,8 +686,8 @@ let rec compile_stmt ctxs = function
       let ofs = - int_of_vint  (snd(Hashtbl.find ctx x)) in
       
       (* 4 - Incrementa o numero de fors existentes*)
-      number_of_for := !number_of_for + 1;
-      let foreach_index = string_of_int(!number_of_for) in
+      number_of_foreach := !number_of_foreach + 1;
+      let foreach_index = string_of_int(!number_of_foreach) in
       
       (* 5 - Inicializacao do foreach *)
       let loop_initialize = 
@@ -669,6 +728,32 @@ let rec compile_stmt ctxs = function
       
       (* 8 - Junta a inicializacao, o corpo e a verificacao *)
       loop_initialize ++ body ++ for_verification
+
+  | Swhile(e, bl) ->
+      (* 1 - Cria o contexto do foreach *)
+
+      let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
+
+      (* 2 - Incrementa o numero de fors existentes*)
+      number_of_while := !number_of_while + 1;
+      let while_index = string_of_int(!number_of_while) in
+      
+        
+      (* 3 - Cria a label do while - Vai buscar o valor de e *)
+      label ("while_" ^ while_index ^ "_start") ++
+      compile_expr ctxs e ++
+      popq rax ++
+        
+      cmpq (imm64 0L) (reg rax) ++
+      je ("while_" ^ while_index ^ "_end") ++
+
+      (* 6 - Compila o corpo do foreach *)
+      compile_stmt while_ctxs bl ++
+
+      (* 7 - Compara o valor do x em relacao ao limite superior do foreach *)
+      jmp ("while_" ^ while_index ^ "_start") ++
+      label ("while_" ^ while_index ^ "_end")
+      
   | _ -> error "COMPILE STMT"
         
 and compile_block_stmt ctx = function

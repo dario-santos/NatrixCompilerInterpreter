@@ -33,6 +33,7 @@ and print_stmt = function
   | Sscanf id       ->printf "Sscanf( %s )" id
   | Sblock bl       -> interpret_block_stmt  bl
   | Sforeach(x, e, bl) -> printf "Sforeach(%s, " x; print_expr e; printf ",\n"; print_stmt bl; printf ")"
+  | Swhile(e, bl) -> printf "Swhile( "; print_expr e; printf ",\n"; print_stmt bl; printf ")"
   | Saset (id, e1, e2) -> printf "Saset(%s, " id; print_expr e1; printf ", "; print_expr e2; printf ")"
   
 and print_argument_list = function

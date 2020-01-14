@@ -20,6 +20,8 @@
       ("if", IF);
       ("else", ELSE);
       ("foreach", FOREACH);
+      ("while", WHILE);
+      ("for", FOR);
       ("in", IN);
       ("type", TYPE);
       ("array", ARRAY);

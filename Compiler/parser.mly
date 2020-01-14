@@ -11,7 +11,7 @@
 %token <Ast.binop> CMP
 %token <Ast.ident> IDENT
 %token IF ELSE PRINT PRINTN SCANF VAL INT
-%token FOREACH IN TO
+%token FOREACH IN TO WHILE FOR
 %token FUNCTION RETURN
 %token TYPE
 %token ARRAY OF FILLED BY
@@ -69,9 +69,11 @@ suite:
 
 stmt:
 | s = simple_stmt                                                 { s } 
-| IF "(" e = expr ")" "{" s1 = suite "}"                          { Sif(e, s1, Sblock [])}
-| IF "(" e = expr ")" "{" s1 = suite "}" ELSE "{" s2 = suite "}"  { Sif(e, s1, s2)}
-| FOREACH id = ident IN set = expr "{" s = suite "}"              { Sforeach(id, set, s)}
+| IF "(" e = expr ")" "{" s1 = suite "}"                          { Sif(e, s1, Sblock []) }
+| IF "(" e = expr ")" "{" s1 = suite "}" ELSE "{" s2 = suite "}"  { Sif(e, s1, s2) }
+| FOREACH id = ident IN set = expr "{" s = suite "}"              { Sforeach(id, set, s) }
+| WHILE "(" e = expr ")" "{" s = suite "}"                        { Swhile(e, s) }
+| FOR "(" VAL id = ident ":" t = type_def "=" e = expr ";" cond = expr ";" incr = expr ")" "{" s = suite "}"  {Sfor(id, t, e, cond, incr, s)} 
 ;
 
 simple_stmt:

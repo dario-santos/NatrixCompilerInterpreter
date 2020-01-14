@@ -1,0 +1,7 @@
+val x : int = 0;
+while(x < 10)
+{
+    printn(x);
+    
+    x := x + 1;
+}

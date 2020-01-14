@@ -2,5 +2,5 @@
 error:
 
   Semmantic analysis:
-    Lexical analysis: Variable a not found
+    The condition of the while statement only accepts Tint but was givin a Tset.
 
