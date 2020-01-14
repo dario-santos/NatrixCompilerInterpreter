@@ -1,5 +1,4 @@
+val x : int = 8 << 2;  
 
-for(val x : int = 0; x < 5 ; x + 1)
-{
-    printn(x);
-}
+printn(x);
+

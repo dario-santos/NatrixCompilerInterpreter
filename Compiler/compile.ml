@@ -294,6 +294,46 @@ let rec compile_expr ctxs = function
       pushq (reg rax)
 
 
+  | Ebinop (Bitls | Bitrs | Bitand | Bitor | Bitxor as o, e1 , e2) ->
+      let op = match o with
+        | Bitand -> andq
+        | Bitor-> orq
+        | Bitxor -> xorq
+        | Bitrs -> shrq
+        | Bitls -> shlq
+        | _ -> assert false
+      in  
+
+      (* 3 - Colocar e1 e e2 na pilha*)  
+      compile_expr ctxs e1 ++
+      compile_expr ctxs e2 ++
+  
+      (* 4 - Recebe os valores da pilha *)
+      popq rbx ++
+      popq rax ++
+
+      op (reg rbx) (reg rax) ++
+      pushq (reg rax)
+
+  | Ebinop (Bitand | Bitor | Bitxor as o, e1 , e2) ->
+      let op = match o with
+        | Bitand -> andq
+        | Bitor-> orq
+        | Bitxor -> xorq
+        | _ -> assert false
+      in  
+
+      (* 3 - Colocar e1 e e2 na pilha*)  
+      compile_expr ctxs e1 ++
+      compile_expr ctxs e2 ++
+  
+      (* 4 - Recebe os valores da pilha *)
+      popq rbx ++
+      popq rax ++
+
+      op (reg rbx) (reg rax) ++
+      pushq (reg rax)    
+  
   | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
       let op = match o with
@@ -667,9 +707,7 @@ let rec compile_stmt ctxs = function
       in
       
       (* 8 - Junta a inicializacao, o corpo e a verificacao *)
-      loop_initialize ++ body ++ for_verification
-
-  
+      loop_initialize ++ body ++ for_verification  
   
   | Sforeach(x, e, bl) ->
       (* 1 - Cria o contexto do foreach *)

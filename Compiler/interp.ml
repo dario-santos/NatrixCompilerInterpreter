@@ -67,6 +67,11 @@ let binop op v1 v2 = match op, v1, v2 with
   | Ble,  Vint n1, Vint n2 -> if compare n1 n2 <= 0 then Vint 1L else Vint 0L
   | Bgt,  Vint n1, Vint n2 -> if compare n1 n2 > 0  then Vint 1L else Vint 0L
   | Bge,  Vint n1, Vint n2 -> if compare n1 n2 >= 0 then Vint 1L else Vint 0L
+  | Bitand, Vint n1, Vint n2 -> Vint (Int64.logand n1 n2) 
+  | Bitor,  Vint n1, Vint n2 -> Vint (Int64.logor n1 n2) 
+  | Bitxor, Vint n1, Vint n2 -> Vint (Int64.logxor n1 n2) 
+  | Bitls,  Vint n1, Vint n2 -> Vint (Int64.shift_left n1 (Int64.to_int n2)) 
+  | Bitrs,  Vint n1, Vint n2 -> Vint (Int64.shift_right n1 (Int64.to_int n2))
   | _ -> assert false
 
 (* As funções são globais *)
@@ -114,11 +119,13 @@ let rec expr ctxs = function
       if is_false v1 = 1L then expr ctxs e2 else v1
 
   | Ebinop (Badd | Bsub | Bmul | Bdiv | Bmod |
-            Beq | Bneq | Blt | Ble | Bgt | Bge as op, e1, e2) ->
+            Beq | Bneq | Blt | Ble | Bgt | Bge | Bitand | Bitor | Bitxor | Bitls | Bitrs as op, e1, e2) ->
       binop op (expr ctxs e1) (expr ctxs e2)
 
   | Eunop (Unot, e1) ->
       Vint (is_false (expr ctxs e1))
+  | Eunop (Ubitnot, e1) ->
+      Vint (Int64.lognot  (expr_int ctxs e1))
 
   | Ecall ("size", [e1]) -> 
       (* 1 - Calcula o tamanho de e1*)

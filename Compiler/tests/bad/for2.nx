@@ -1,7 +1,6 @@
-type t = [0 .. 1];
-type a : array t of t;
+type t = [0 .. 10];
 
-foreach i in a
+for(int x : t = 3; t ; x + 2)
 {   
     print(i);
 }

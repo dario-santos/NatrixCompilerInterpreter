@@ -1,4 +1,6 @@
-foreach i in 5
+type t = [0 .. 10];
+
+for(int x : t = 3; x < 10 ; t)
 {   
     print(i);
 }

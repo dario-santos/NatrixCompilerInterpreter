@@ -1,0 +1,9 @@
+type t = [0 .. 1];
+type a : array t of t;
+
+val b : a filled by 2;
+
+foreach i in b
+{   
+    print(i);
+}

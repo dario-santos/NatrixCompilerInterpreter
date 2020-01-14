@@ -8,7 +8,6 @@
 %}
 
 %token <int64>     CST
-%token <Ast.binop> CMP
 %token <Ast.ident> IDENT
 %token IF ELSE PRINT PRINTN SCANF VAL INT
 %token FOREACH IN TO WHILE FOR
@@ -17,6 +16,9 @@
 %token ARRAY OF FILLED BY
 %token MAXINT MININT
 %token PLUS MINUS TIMES DIV MOD
+%token BITAND BITOR BITXOR LSHIFT RSHIFT BITNOT
+%token GT GET LT LET 
+%token EQ NEQ
 %token LPR "(" 
 %token RPR ")"
 %token LBC "{"
@@ -36,10 +38,15 @@
 
 %left OR
 %left AND
-%nonassoc NOT
-%nonassoc CMP
+%left BITOR
+%left BITXOR
+%left BITAND
+%left EQ NEQ
+%left GT LT GET LET 
+%left LSHIFT RSHIFT
 %left PLUS MINUS
 %left TIMES DIV MOD
+%left NOT BITNOT
 
 /* Ponto de entrada da gramática */
 %start prog
@@ -102,10 +109,15 @@ expr:
 | id = ident                        { Eident id }
 | "[" e1 = expr TO e2 = expr "]"    { Eset(e1, e2)}
 | id = ident "[" e2 = expr "]"      { Eget (id, e2)}
-| NOT e1 = expr                     { Eunop (Unot, e1)}
+| u = unop e1 = expr                { Eunop (u, e1)}
 | e1 = expr o = binop e2 = expr     { Ebinop (o, e1, e2) }
 | id = ident "(" l = separated_list("," , expr) ")" {Ecall(id, l)}
 | "(" e = expr ")"                  { e }
+;
+
+%inline unop:
+| NOT    {Unot}
+| BITNOT {Ubitnot}
 ;
 
 %inline binop:
@@ -114,9 +126,19 @@ expr:
 | TIMES { Bmul }
 | DIV   { Bdiv }
 | MOD   { Bmod }
-| c=CMP { c    }
+| EQ    { Beq }
+| NEQ   { Bneq }
+| GT    { Bgt }
+| LT    { Blt }
+| GET   { Bge }
+| LET   { Ble }
 | AND   { Band }
 | OR    { Bor  }
+| BITAND{ Bitand } 
+| BITOR { Bitor }
+| BITXOR{ Bitxor }
+| LSHIFT{ Bitls }
+| RSHIFT{ Bitrs }
 ;
 
 ident:

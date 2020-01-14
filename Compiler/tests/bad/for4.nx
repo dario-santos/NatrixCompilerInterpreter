@@ -1,9 +1,8 @@
-type t = [0 .. 1];
-type a : array t of t;
+val x : int = 3;
 
-val b : a filled by 2;
-
-foreach i in [t .. [0 .. 10]]
+for(val x : int = 3; x < 20 ; x + 2)
 {   
-    print(i);
+    val x : int = 4;
+    
+    printn(x);
 }

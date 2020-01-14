@@ -1,9 +1,6 @@
-type t = [0 .. 1];
-type a : array t of t;
+type t = [0 .. 10];
 
-val b : a filled by 2;
-
-foreach i in b
+for(x ; x < 20 ; x + 2)
 {   
     print(i);
 }

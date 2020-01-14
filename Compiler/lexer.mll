@@ -67,14 +67,20 @@ rule analisador = parse
   | '*'             { [TIMES] }
   | '/'             { [DIV] }
   | '%'             { [MOD] }
-  | "<"             { [CMP Blt] }
-  | "<="            { [CMP Ble] }
-  | ">"             { [CMP Bgt] }
-  | ">="            { [CMP Bge] }
-  | "=="            { [CMP Beq] }
-  | "!="            { [CMP Bneq] }
+  | "&"             { [BITAND] }
+  | "|"             { [BITOR] }
+  | "^"             { [BITXOR] }
+  | "<<"            { [LSHIFT] }
+  | ">>"            { [RSHIFT] }
+  | "<"             { [LT] }
+  | "<="            { [LET] }
+  | ">"             { [GT] }
+  | ">="            { [GET] }
+  | "=="            { [EQ] }
+  | "!="            { [NEQ] }
   | "||"            { [OR] }
   | "&&"            { [AND] }
+  | "~"             { [BITNOT] }
   | "!"             { [NOT] }
   | ':'             { [COLON] }
   | ';'             { [DELIMITER] }

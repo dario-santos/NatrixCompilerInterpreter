@@ -7,11 +7,13 @@ type ident = string
 
 type unop = 
   | Unot
+  | Ubitnot
 
 and binop =
   | Badd | Bsub | Bmul | Bdiv | Bmod
   | Beq | Bneq | Blt | Ble | Bgt | Bge
   | Band | Bor 
+  | Bitand | Bitor | Bitxor | Bitls | Bitrs
 
 and expr =
   | Ecst of int64

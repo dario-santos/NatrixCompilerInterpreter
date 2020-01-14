@@ -80,7 +80,7 @@ let rec verify_expr ctxs = function
       let t2 = verify_expr ctxs e2 in
       if not (is_int t1) || not (is_int t2) then error ("Lexical analysis: The operator " ^ (string_of_binop op) ^ " expects two integers but was given " ^ (string_of_typ t1) ^ " and " ^ (string_of_typ t2) ^ "."); 
       Tint
-  | Eunop (Unot, e1) ->
+  | Eunop (op, e1) ->
       let t1 = verify_expr ctxs e1 in
       if not (is_int t1) then error ("Lexical analysis: The operator ! expects one integer but was given " ^ (string_of_typ t1) ^ "."); 
       Tint
