@@ -1,0 +1,17 @@
+val x : int = 0;
+
+while(x < 10)
+{
+    val y : int = 0;
+
+    while(y < 5)
+    {
+        print(y + x);
+
+        y := y + 1;
+    }
+
+    printn(x);
+    
+    x := x + 1;
+}

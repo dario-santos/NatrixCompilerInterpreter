@@ -16,6 +16,13 @@ let string_of_typ = function
   | Tarray -> "Tarray"
   | Tarrayvar -> "Tarrayvar"
 
+let compare_typ = function 
+  | Tint, Tint -> true
+  | Tset _, Tset _-> true
+  | Tarray, Tarray -> true
+  | Tarrayvar, Tarrayvar -> true 
+  | _ -> false
+
 let string_of_binop = function
   | Badd -> "+"
   | Bsub -> "-"
@@ -135,7 +142,15 @@ let rec verify_expr ctxs = function
 
       (* 4 - Retornar Tint*)
       Tint
+  | Eternary(cond, e1, e2) ->
+    let tcond = verify_expr ctxs cond in 
+    let t1 = verify_expr ctxs e1 in
+    let t2 = verify_expr ctxs e2 in
 
+    if not (is_int tcond) then error ("The condition of the ternary operator only supports integers but was given a " ^ string_of_typ tcond ^".");
+    if not (compare_typ (t1, t2)) then error ("Both branches of the ternary operator need to be of the same type .");
+    t1
+     
 (* Verificacao de uma instrucao - Instruções nao devolvem um valor *)
 let rec verify_stmt ctxs = function
   | Sif (e, s1, s2) ->
@@ -151,7 +166,11 @@ let rec verify_stmt ctxs = function
     (* 1 - Verificar se o retorno e do tipo Tint*)
     let t1 = verify_expr ctxs e in
     if not(is_int t1) then error ("Lexical analysis: The return statement only supports integers.")
+  
+  |Snothing -> ()
+
   | Sbreak | Scontinue -> ()
+
   | Sdeclare (id, t, e) ->
       (* 1 - Verificar se o nome ja nao esta a ser usado *)
       let ctx = List.hd (List.rev ctxs) in
@@ -173,7 +192,7 @@ let rec verify_stmt ctxs = function
 
       (* 2 - Verificar se estamos a lhe dar um Tint *)
       let t1 = verify_expr ctxs e1 in
-      if not(is_int t1) then error ("Lexical analisys: the assignment statement only supports integers bu was given a " ^ string_of_typ t1 ^".")
+      if not(is_int t1) then error ("The assignment statement only supports integers bu was given a " ^ string_of_typ t1 ^".")
 
   | Sdeclarearray (id, ida, e) ->
       (* 1 - Verificar se o id e unico *)
@@ -282,6 +301,16 @@ let rec verify_stmt ctxs = function
   
       (* 3 - Verifica o corpo *)
       verify_stmt ctxs bl
+  | Sdowhile(e, bl) ->
+      (* 1 - Adiciona o contexto do while *)
+      let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
+    
+      verify_stmt ctxs bl;
+
+      (* 2 - Verifica que foi passado um inteiro *)
+      let t1 = verify_expr ctxs e in
+      if not (is_int t1) then error ("The condition of the while statement only accepts Tint but was givin a " ^ string_of_typ t1 ^ ".")
+  
   | Saset (id, e1, e2) ->
       (* 1 - Verificar que id existe *)
       if List.length(find_id id ctxs) == 0 then error ("The variable " ^ id ^ " is not defined.");
@@ -298,7 +327,7 @@ let rec verify_stmt ctxs = function
       (* 4 - Verificar que o novo valor e do tipo Tint *)
       let t2 = verify_expr ctxs e2 in
       if not(is_int t2) then error ("The assignment statement only supports integers but was given a " ^ string_of_typ t2  ^ ".")  
-  
+
 and verify_stmts ctxs = function  
   | Stfunction (f, args, return, body) -> 
     (* 1 - Verifica que o o identificador de f ja nao esta em uso *)

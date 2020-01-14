@@ -126,6 +126,7 @@ foreach_1_inicio:
 	pushq %rax
 	popq %rdi
 	call printn_int
+foreach_1_condicao:
 	movq -8(%rbp), %rax
 	incq %rax
 	movq %rax, -8(%rbp)

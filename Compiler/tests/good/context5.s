@@ -128,6 +128,7 @@ fim_true_4:
 	pushq %rax
 	popq %rdi
 	call printn_int
+foreach_1_condicao:
 	movq -48(%rbp), %rax
 	incq %rax
 	movq %rax, -48(%rbp)

@@ -173,6 +173,12 @@ let rec expr ctxs = function
       
       (* 5 - Retorna o valor *)
       l.(Int64.to_int(Int64.sub index i))
+  | Eternary (cond, e1, e2) -> 
+      let cond = expr_int ctxs cond in
+      let v1 = expr ctxs e1 in
+      let v2 = expr ctxs e2 in
+  
+      if cond = 1L then v1 else v2 
 
 (* interpretação de um valor e verificação de que se trata de um inteiro *)
 and expr_int ctxs e = 
@@ -187,14 +193,19 @@ and interpret_stmt ctxs = function
       if is_true (expr ctxs e) = 1L 
       then interpret_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 
       else interpret_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s2
-      
+  
+  | Snothing -> ()
+
   | Sreturn e ->
       (* 1 - Retorna a expressao e*)
       raise (Return (expr_int ctxs e))
+
   | Sbreak -> 
       raise Break
+
   | Scontinue ->
       raise Continue
+
   | Sassign (id, e1)  ->
       (* 1 - Ir buscar o tipo da variavel *)
       let local_tbl = List.hd (List.rev (find_id id ctxs)) in
@@ -388,7 +399,32 @@ and interpret_stmt ctxs = function
       done
       with 
       | Break -> () 
-    end    
+    end
+  | Sdowhile (e, bl) ->
+    (* 1 - Ir buscar o valor da expressão*)
+    let i = ref 0L in
+    i := vint_to_int(expr ctxs e);
+    
+    (* 2 - Iterar o corpo do while *)
+    begin try 
+    while true do
+      (* 2.1 - Cada iteração representa um contexto único*)
+      let while_ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
+    
+      begin try
+      (* 2.2 - Interpretamos o corpo do while\*)
+        interpret_stmt while_ctxs bl;
+      with 
+      | Continue -> ()
+      | Break -> raise Break end;
+
+      (* 2.3 - Verificar a condição do while *)
+      i := vint_to_int(expr ctxs e);
+      if(!i = 0L) then raise Break;
+    done
+    with 
+    | Break -> () 
+  end    
 (* Interpretacao de instrucoes - globais *)
 and interpret_stmts ctxs = function  
   | Stfunction (f, args, return, body) ->

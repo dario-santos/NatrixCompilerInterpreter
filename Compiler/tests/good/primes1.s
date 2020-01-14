@@ -148,6 +148,15 @@ if_true_1:
 if_end_1:
 	movq 0(%rbp), %rax
 	pushq %rax
+	movq -8(%rbp), %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq $0, %rdx
+	cmpq $0, %rbx
+	je print_error_z
+	idivq %rbx
+	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	je bool_true_2
@@ -158,15 +167,6 @@ bool_true_2:
 	movq $1, %rax
 	pushq %rax
 bool_end_2:
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	movq $0, %rdx
-	cmpq $0, %rbx
-	je print_error_z
-	idivq %rbx
-	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	jne if_true_2
@@ -181,6 +181,7 @@ if_true_2:
 	popq %rax
 	ret
 if_end_2:
+foreach_1_condicao:
 	movq -8(%rbp), %rax
 	incq %rax
 	movq %rax, -8(%rbp)
@@ -292,6 +293,7 @@ if_true_4:
 	popq %rdi
 	call printn_int
 if_end_4:
+foreach_2_condicao:
 	movq -32(%rbp), %rax
 	incq %rax
 	movq %rax, -32(%rbp)

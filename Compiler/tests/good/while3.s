@@ -1,9 +1,9 @@
 	.text
 	.globl	main
 main:
-	subq $40, %rsp
-	leaq 32(%rsp), %rbp
-	movq $3, %rax
+	subq $16, %rsp
+	leaq 8(%rsp), %rbp
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
@@ -16,22 +16,26 @@ inicio_true_1:
 	jle fim_true_1
 	jmp print_error_t
 fim_true_1:
+while_1_inicio:
 	movq 0(%rbp), %rax
 	pushq %rax
-	popq %rdi
-	call printn_int
+	movq $10, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	cmpq %rbx, %rax
+	jl bool_true_2
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_2
+bool_true_2:
 	movq $1, %rax
 	pushq %rax
+bool_end_2:
 	popq %rax
 	cmpq $0, %rax
-	jne if_true_1
-	jmp if_end_1
-if_true_1:
-	movq 0(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call printn_int
-	movq $2, %rax
+	je while_1_fim
+	movq $0, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, -8(%rbp)
@@ -44,82 +48,83 @@ inicio_true_2:
 	jle fim_true_2
 	jmp print_error_t
 fim_true_2:
+while_2_inicio:
 	movq -8(%rbp), %rax
 	pushq %rax
-	popq %rdi
-	call printn_int
+	movq $5, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	cmpq %rbx, %rax
+	jl bool_true_1
 	movq $0, %rax
 	pushq %rax
+	jmp bool_end_1
+bool_true_1:
+	movq $1, %rax
+	pushq %rax
+bool_end_1:
 	popq %rax
-	movq %rax, -16(%rbp)
-	cmpq $0, -16(%rbp)
+	cmpq $0, %rax
+	je while_2_fim
+	movq -8(%rbp), %rax
+	pushq %rax
+	movq 0(%rbp), %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rdi
+	call print_int
+	movq -8(%rbp), %rax
+	pushq %rax
+	movq $1, %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	movq %rax, -8(%rbp)
+	cmpq $0, -8(%rbp)
 	jge inicio_true_3
 	jmp print_error_t
 inicio_true_3:
 	movq $9223372036854775807, %rax
-	cmpq %rax, -16(%rbp)
+	cmpq %rax, -8(%rbp)
 	jle fim_true_3
 	jmp print_error_t
 fim_true_3:
-	movq $0, %rax
-	pushq %rax
-	movq $2, %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	cmpq %rbx, %rax
-	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
-	cmpq $0, %rbx
-	jl print_error_s
-	pushq %rbx
-	pushq %rax
-	popq %rbx
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq %rbx, -24(%rbp)
-foreach_1_inicio:
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call printn_int
-	movq $1, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -32(%rbp)
-	cmpq $0, -32(%rbp)
-	jge inicio_true_4
-	jmp print_error_t
-inicio_true_4:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -32(%rbp)
-	jle fim_true_4
-	jmp print_error_t
-fim_true_4:
-	movq -32(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call printn_int
-foreach_1_condicao:
-	movq -16(%rbp), %rax
-	incq %rax
-	movq %rax, -16(%rbp)
-	movq -24(%rbp), %rbx
-	cmpq %rbx, %rax
-	jle foreach_1_inicio
-foreach_1_fim:
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call printn_int
-if_end_1:
+	jmp while_2_inicio
+while_2_fim:
 	movq 0(%rbp), %rax
 	pushq %rax
 	popq %rdi
 	call printn_int
+	movq 0(%rbp), %rax
+	pushq %rax
+	movq $1, %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	movq %rax, 0(%rbp)
+	cmpq $0, 0(%rbp)
+	jge inicio_true_4
+	jmp print_error_t
+inicio_true_4:
+	movq $9223372036854775807, %rax
+	cmpq %rax, 0(%rbp)
+	jle fim_true_4
+	jmp print_error_t
+fim_true_4:
+	jmp while_1_inicio
+while_1_fim:
 end:
-	addq $40, %rsp
+	addq $16, %rsp
 	movq $0, %rax
 	ret
 printn_int:

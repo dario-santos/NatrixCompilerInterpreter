@@ -105,9 +105,18 @@ let () =
       exit 1
   | Interp.Error s ->
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Erro de interpretação:\n  %s\n@." s;
+	    eprintf "\nerror:\n\n    Interpretation Error:\n  %s\n@." s;
       exit 1
   | Interp.Return _ -> 
 	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Erro de interpretação:\n Run-time error: Illegal return statement. You can only use return statements inside functions  \n@.";
+	    eprintf "\nerror:\n\n    Interpretation Error:\n Run-time error: Illegal return statement. You can only use return statements inside of functions  \n@.";
       exit 1
+  | Interp.Continue -> 
+      (* Erro de utilização de variáveis durante a compilação *)
+      eprintf "\nerror:\n\n    Interpretation Error:\n Run-time error: Illegal continue statement. You can only use continue statements inside of loops  \n@.";
+      exit 1
+  | Interp.Break -> 
+      (* Erro de utilização de variáveis durante a compilação *)
+      eprintf "\nerror:\n\n    Interpretation Error:\n Run-time error: Illegal continue statement. You can only use break statements inside of loops  \n@.";
+      exit 1
+  

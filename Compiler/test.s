@@ -6,6 +6,16 @@ main:
 	movq $0, %rax
 	pushq %rax
 	popq %rax
+	cmpq $0, %rax
+	jne ternary_true_1
+	movq $60, %rax
+	pushq %rax
+	jmp ternary_end_1
+ternary_true_1:
+	movq $60, %rax
+	pushq %rax
+ternary_end_1:
+	popq %rax
 	movq %rax, 0(%rbp)
 	cmpq $0, 0(%rbp)
 	jge inicio_true_1
@@ -18,57 +28,8 @@ inicio_true_1:
 fim_true_1:
 	movq 0(%rbp), %rax
 	pushq %rax
-	movq $10, %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	cmpq %rbx, %rax
-	jl bool_true_1
-	movq $0, %rax
-	pushq %rax
-	jmp bool_end_1
-bool_true_1:
-	movq $1, %rax
-	pushq %rax
-bool_end_1:
-	popq %rax
-	cmpq $0, %rbx
-	je for_1_fim
-for_1_inicio:
-	movq 0(%rbp), %rax
-	pushq %rax
 	popq %rdi
 	call printn_int
-for_1_condicao:
-	movq 0(%rbp), %rax
-	pushq %rax
-	movq $1, %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	addq %rax, %rbx
-	pushq %rbx
-	popq %rax
-	movq %rax, 0(%rbp)
-	movq 0(%rbp), %rax
-	pushq %rax
-	movq $10, %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	cmpq %rbx, %rax
-	jl bool_true_2
-	movq $0, %rax
-	pushq %rax
-	jmp bool_end_2
-bool_true_2:
-	movq $1, %rax
-	pushq %rax
-bool_end_2:
-	popq %rax
-	cmpq $0, %rax
-	jne for_1_inicio
-for_1_fim:
 end:
 	addq $8, %rsp
 	movq $0, %rax

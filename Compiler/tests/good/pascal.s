@@ -188,6 +188,15 @@ bool_end_3:
 	jne if_true_1
 	movq -24(%rbp), %rax
 	pushq %rax
+	movq $7, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq $0, %rdx
+	cmpq $0, %rbx
+	je print_error_z
+	idivq %rbx
+	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	je bool_true_2
@@ -200,15 +209,6 @@ bool_true_2:
 bool_end_2:
 	movq $7, %rax
 	pushq %rax
-	popq %rbx
-	popq %rax
-	movq $0, %rdx
-	cmpq $0, %rbx
-	je print_error_z
-	idivq %rbx
-	pushq %rdx
-	movq $7, %rax
-	pushq %rax
 	popq %rax
 	popq %rbx
 	addq %rax, %rbx
@@ -219,6 +219,15 @@ bool_end_2:
 if_true_1:
 	movq -24(%rbp), %rax
 	pushq %rax
+	movq $10, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq $0, %rdx
+	cmpq $0, %rbx
+	je print_error_z
+	idivq %rbx
+	pushq %rdx
 	popq %rax
 	cmpq $0, %rax
 	je bool_true_1
@@ -229,18 +238,10 @@ bool_true_1:
 	movq $1, %rax
 	pushq %rax
 bool_end_1:
-	movq $10, %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	movq $0, %rdx
-	cmpq $0, %rbx
-	je print_error_z
-	idivq %rbx
-	pushq %rdx
 	popq %rdi
 	call print_int
 if_end_1:
+foreach_2_condicao:
 	movq -24(%rbp), %rax
 	incq %rax
 	movq %rax, -24(%rbp)
@@ -252,6 +253,7 @@ foreach_2_fim:
 	pushq %rax
 	popq %rdi
 	call printn_int
+foreach_1_condicao:
 	movq -8(%rbp), %rax
 	incq %rax
 	movq %rax, -8(%rbp)

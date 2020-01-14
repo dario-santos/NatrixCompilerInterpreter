@@ -235,6 +235,7 @@ inicio_true_5:
 	jle fim_true_5
 	jmp print_error_t
 fim_true_5:
+foreach_1_condicao:
 	movq -32(%rbp), %rax
 	incq %rax
 	movq %rax, -32(%rbp)

@@ -25,6 +25,7 @@ and expr =
   | Eunop of unop * expr
   | Ecall of ident * expr list
   | Eget of ident * expr (* id[e2] *)
+  | Eternary of expr * expr * expr
 
 and stmt =
   | Sif of expr * stmt * stmt
@@ -43,8 +44,10 @@ and stmt =
   | Sfor of ident * costumtype * expr * expr * expr * stmt
   | Sforeach of ident * expr * stmt
   | Swhile of expr * stmt
+  | Sdowhile of expr * stmt
   | Saset of ident * expr * expr (* id[e2] := e3 *)
-  
+  | Snothing
+
 (* Para não podermos definir funções dentro de instruções *)
 and stmts =                                               
   | Stblock of stmts list

@@ -47,6 +47,7 @@ foreach_1_inicio:
 	pushq %rax
 	popq %rdi
 	call printn_int
+foreach_1_condicao:
 	movq -16(%rbp), %rax
 	incq %rax
 	movq %rax, -16(%rbp)

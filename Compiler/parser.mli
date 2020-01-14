@@ -7,6 +7,7 @@ type token =
   | TYPE
   | TO
   | TIMES
+  | TERNARY
   | SCANF
   | RSHIFT
   | RPR
@@ -43,6 +44,7 @@ type token =
   | EQ
   | EOF
   | ELSE
+  | DO
   | DIV
   | DELIMITER
   | CST of (int64)

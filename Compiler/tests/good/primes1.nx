@@ -7,7 +7,7 @@ function is_prime(n : int ) : int
             return 1;
         }
 
-        if(!n % i)
+        if(!(n % i))
         {
             return 0;
         }

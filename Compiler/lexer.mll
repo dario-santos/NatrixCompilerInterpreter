@@ -21,6 +21,7 @@
       ("else", ELSE);
       ("foreach", FOREACH);
       ("while", WHILE);
+      ("do", DO);
       ("for", FOR);
       ("in", IN);
       ("break", BREAK);
@@ -69,6 +70,7 @@ rule analisador = parse
   | '*'             { [TIMES] }
   | '/'             { [DIV] }
   | '%'             { [MOD] }
+  | '?'             { [TERNARY] }
   | "&"             { [BITAND] }
   | "|"             { [BITOR] }
   | "^"             { [BITXOR] }

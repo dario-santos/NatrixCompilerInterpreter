@@ -10,7 +10,7 @@
 %token <int64>     CST
 %token <Ast.ident> IDENT
 %token IF ELSE PRINT PRINTN SCANF VAL INT
-%token FOREACH IN TO WHILE FOR
+%token FOREACH IN TO WHILE FOR DO
 %token CONTINUE BREAK
 %token FUNCTION RETURN
 %token TYPE
@@ -20,6 +20,7 @@
 %token BITAND BITOR BITXOR LSHIFT RSHIFT BITNOT
 %token GT GET LT LET 
 %token EQ NEQ
+%token TERNARY "?"
 %token LPR "(" 
 %token RPR ")"
 %token LBC "{"
@@ -37,6 +38,7 @@
 
 /* Definição das prioridades e associatividades dos tokens */
 
+%left TERNARY
 %left OR
 %left AND
 %left BITOR
@@ -72,16 +74,18 @@ argument_list:
 ;
 
 suite:
-| l = list(stmt) { Sblock l }
+| "{" l = list(stmt) "}" { Sblock l }
+| s = stmt               { Sblock [s] }
 ;
 
 stmt:
-| s = simple_stmt                                                 { s } 
-| IF "(" e = expr ")" "{" s1 = suite "}"                          { Sif(e, s1, Sblock []) }
-| IF "(" e = expr ")" "{" s1 = suite "}" ELSE "{" s2 = suite "}"  { Sif(e, s1, s2) }
-| FOREACH id = ident IN set = expr "{" s = suite "}"              { Sforeach(id, set, s) }
-| WHILE "(" e = expr ")" "{" s = suite "}"                        { Swhile(e, s) }
-| FOR "(" VAL id = ident ":" t = type_def "=" e = expr ";" cond = expr ";" incr = expr ")" "{" s = suite "}"  {Sfor(id, t, e, cond, incr, s)} 
+| s = simple_stmt                                 { s } 
+| IF "(" e = expr ")" s1 = suite                  { Sif(e, s1, Sblock []) }
+| IF "(" e = expr ")" s1 = suite ELSE s2 = suite  { Sif(e, s1, s2) }
+| FOREACH id = ident IN set = expr  s = suite     { Sforeach(id, set, s) }
+| WHILE "(" e = expr ")" s = suite                { Swhile(e, s) }
+| FOR "(" VAL id = ident ":" t = type_def "=" e = expr ";" cond = expr ";" incr = expr ")" s = suite  {Sfor(id, t, e, cond, incr, s)} 
+| DO s = suite WHILE "(" e = expr ")" ";"         { Sdowhile(e,s) }
 ;
 
 simple_stmt:
@@ -97,7 +101,7 @@ simple_stmt:
 | PRINT "(" e = expr ")" ";"                       { Sprint e }
 | PRINTN "(" e = expr ")" ";"                      { Sprintn e }
 | SCANF "(" id = ident ")" ";"                     { Sscanf id }
-
+| ";"                                              { Snothing }
 ;
 
 type_def:
@@ -115,6 +119,7 @@ expr:
 | u = unop e1 = expr                { Eunop (u, e1)}
 | e1 = expr o = binop e2 = expr     { Ebinop (o, e1, e2) }
 | id = ident "(" l = separated_list("," , expr) ")" {Ecall(id, l)}
+| cond = expr "?" e1 = expr ":" e2 = expr { Eternary(cond, e1, e2)}
 | "(" e = expr ")"                  { e }
 ;
 

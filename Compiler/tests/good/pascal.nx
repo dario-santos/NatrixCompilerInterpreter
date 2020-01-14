@@ -8,11 +8,11 @@ function print_int() : int
         {
             if(i % 2 == 0)
             {
-                print(!j % 10);
+                print(!(j % 10));
             }
             else
             {
-                print((!j % 7) + 7);
+                print((!(j % 7)) + 7);
             }
         }
         printn(0);

@@ -17,7 +17,7 @@ inicio_true_1:
 	jmp print_error_t
 fim_true_1:
 while_1_inicio:
-	movq -8(%rbp), %rax
+	movq 0(%rbp), %rax
 	pushq %rax
 	movq $10, %rax
 	pushq %rax

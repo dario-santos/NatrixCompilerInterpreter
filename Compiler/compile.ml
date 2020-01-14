@@ -24,6 +24,7 @@ let number_of_and_or = ref 0
 let number_of_ifs = ref 0
 let number_of_tipagens = ref 0
 let number_of_arraydefs = ref 0
+let number_of_ternary = ref 0
 
 let loops = ref []
 
@@ -434,6 +435,32 @@ let rec compile_expr ctxs = function
       movq (reg rax) (reg rbx) ++
       is_rbx_in_type_boundaries ctxs return ++
       pushq (reg rbx)
+  | Eternary (cond, e1, e2) -> 
+      (*1 - Incrementa o numero de ifs realizados ate ao momento *)
+      number_of_ternary := !number_of_ternary + 1;
+      let current_ternary = string_of_int(!number_of_ternary) in
+    
+      (* 2 - Calcular o valor da condicao *)
+      compile_expr ctxs cond ++
+      popq rax ++
+
+      (* 3 - Se vor diferente de entao e verdade *)
+      cmpq (imm 0) (reg rax) ++
+      jne ("ternary_true_" ^ current_ternary) ++
+
+      (* 4a - Se for 0 executa o else*)
+      compile_expr ctxs e2 ++
+
+      jmp ("ternary_end_" ^ current_ternary) ++
+
+      (* 4b - Se for 1 executa o then *)
+      label ("ternary_true_" ^ current_ternary) ++
+      
+      compile_expr ctxs e2 ++
+
+      (* 5 - Termina *)
+      label ("ternary_end_" ^ current_ternary)
+ 
   | _ -> error "Not implemented"
 
 let get_type_size ctxs s = 
@@ -470,7 +497,7 @@ let rec compile_stmt ctxs = function
     
       (* 5 - Termina *)
       label ("if_end_" ^ current_if_test)
-
+  | Snothing -> nop
   | Sreturn (e1) ->
       
       movq (imm64 0L) (reg rax) ++
@@ -775,7 +802,7 @@ let rec compile_stmt ctxs = function
   | Swhile(e, bl) ->
       (* 1 - Cria o contexto do foreach *)
 
-      let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
+      let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
 
       (* 2 - Incrementa o numero de fors existentes*)
       number_of_while := !number_of_while + 1;
@@ -793,7 +820,7 @@ let rec compile_stmt ctxs = function
         je ("while_" ^ while_index ^ "_fim") ++
 
         (* 6 - Compila o corpo do while *)
-        compile_stmt ctxs bl ++
+        compile_stmt while_ctxs bl ++
 
         (* 7 - Compara o valor do x em relacao ao limite superior do foreach *)
         jmp ("while_" ^ while_index ^ "_inicio") ++
@@ -802,6 +829,36 @@ let rec compile_stmt ctxs = function
       loops := List.tl !loops;
       
       code
+  | Sdowhile(e, bl) ->
+      (* 1 - Cria o contexto do foreach *)
+
+      let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
+
+      (* 2 - Incrementa o numero de fors existentes*)
+      number_of_while := !number_of_while + 1;
+      let while_index = string_of_int(!number_of_while) in
+      loops := [("dowhile_" ^ while_index)]@(!loops);
+       
+      let code = 
+        (* 3 - Cria a label do while - Vai buscar o valor de e *)
+        label ("dowhile_" ^ while_index ^ "_inicio") ++
+      
+        (* 6 - Compila o corpo do while *)
+        compile_stmt while_ctxs bl ++
+
+        compile_expr ctxs e ++
+        popq rax ++
+        
+        cmpq (imm64 0L) (reg rax) ++
+        jne ("dowhile_" ^ while_index ^ "_inicio") ++
+
+        (* 7 - Compara o valor do x em relacao ao limite superior do foreach *)
+        label ("dowhile_" ^ while_index ^ "_fim")
+      in
+      loops := List.tl !loops;
+      
+      code
+  
   | _ -> error "COMPILE STMT"
         
 and compile_block_stmt ctx = function
