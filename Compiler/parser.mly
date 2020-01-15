@@ -88,7 +88,7 @@ stmt:
 | FOREACH id = ident IN set = expr "{" s = suite "}"     { Sforeach(id, set, s) }
 | WHILE "(" e = expr ")" "{" s = suite "}"               { Swhile(e, s) }
 | FOR "(" VAL id = ident ":" t = type_def "=" e = expr ";" cond = expr ";" incr = expr ")" "{" s = suite "}" {Sfor(id, t, e, cond, incr, s)} 
-| DO "{" s = suite "}" WHILE "(" e = expr ")" ";"         { Sdowhile(e,s) }
+| DO "{" s = suite "}" WHILE "(" e = expr ")" ";"        { Sdowhile(e,s) }
 ;
 
 simple_stmt:
@@ -98,13 +98,19 @@ simple_stmt:
 | VAL id = ident ":" t = type_def "=" e = expr ";" { Sdeclare (id, t ,e) }
 | VAL id = ident ":" t = ident FILLED BY e = expr ";"     { Sdeclarearray (id, t ,e) }
 | TYPE id = ident "=" set = expr ";"               { Sset (id, set) }
-| TYPE id = ident ":" ARRAY size = expr OF t = expr ";"   { Sarray (id, size, t) }
+| TYPE id = ident ":" ARRAY size = expr OF t = array_type ";"   { Sarray (id, size, t) }
 | id = ident ":""=" e = expr ";"                   { Sassign (id, e) }
 | id = ident "["e2 = expr"]" ":""=" e3 = expr ";"  { Saset (id, e2, e3) }
 | PRINT "(" e = expr ")" ";"                       { Sprint e }
 | PRINTN "(" e = expr ")" ";"                      { Sprintn e }
 | SCANF "(" id = ident ")" ";"                     { Sscanf id }
 | ";"                                              { Snothing }
+;
+
+array_type:
+| INT                               { ATInt }
+| id = ident                        { ATid id }
+| "[" e1 = expr TO e2 = expr "]"    { ATset(e1, e2)}
 ;
 
 type_def:
@@ -127,8 +133,9 @@ expr:
 ;
 
 %inline unop:
-| NOT    {Unot}
-| BITNOT {Ubitnot}
+| MINUS  { Uneg }
+| NOT    { Unot }
+| BITNOT { Ubitnot }
 ;
 
 %inline binop:

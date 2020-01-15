@@ -14,7 +14,7 @@ and print_expr = function
   | Ebinop (Band, e1, e2) -> printf " Ebinop( Band, "; print_expr e1; printf ", "; print_expr e2; printf ") "
   | Ebinop (Bor, e1, e2)  -> printf " Ebinop( Bor, "; print_expr e1; printf ", "; print_expr e2; printf ") "
   | Ebinop (_, e1, e2)    -> printf " Ebinop( Op, "; print_expr e1; printf ", "; print_expr e2; printf ") "
-  | Eunop (Unot, e1)      -> printf " Eunop( Unot, "; print_expr e1; printf ") "
+  | Eunop (_ , e1)        -> printf " Eunop( Unot, "; print_expr e1; printf ") "
   | Ecall ("size", [e1])  -> printf " Ecall( size, "; print_expr e1; printf ") "
   | Ecall (f, el)         -> printf " Ecall( %s, " f; print_expr_list el; printf " ) "  
   | Eident id             -> printf " Eident( %s ) " id
@@ -26,7 +26,7 @@ and print_stmt = function
   | Sassign (id, e1)-> printf "Sassign(%s, " id; print_expr e1; printf ")"
   | Sdeclare (id, t ,e1) -> printf "Sdeclare(%s, t, " id ; print_expr e1; printf ")"
   | Sset (id, e)    -> printf "Sset(%s, " id; print_expr e; printf ")"
-  | Sarray(id,sz,t) -> printf "Sarray(%s, " id; print_expr sz; printf ", "; print_expr t; printf ")"
+  | Sarray(id,sz,_) -> printf "Sarray(%s, " id; print_expr sz; printf ", "; printf "_ )"
   | Sdeclarearray(id, ida, e) -> printf "Sdeclarearray(%s, %s, " id ida; print_expr e; printf ")"
   | Sprint e        -> printf "Sprint("; print_expr e; printf ")"
   | Sprintn e       -> printf "Sprintn("; print_expr e; printf ")"

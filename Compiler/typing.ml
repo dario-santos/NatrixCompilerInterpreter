@@ -156,7 +156,20 @@ let rec verify_expr ctxs = function
     if not (is_int tcond) then error ("The condition of the ternary operator only supports integers but was given a " ^ string_of_typ tcond ^".");
     if not (compare_typ (t1, t2)) then error ("Both branches of the ternary operator need to be of the same type .");
     t1
-     
+
+and verify_array_type ctxs e =
+  match e with 
+  | ATInt -> Tset(Tint, Tint)
+  | ATset(e1, e2) -> 
+      let t1 =  verify_expr ctxs (Eset(e1, e2)) in
+      if not (is_set t1) then error ("Lexical analysis: Error defining an array. The size of an array needs to be of the type Tint or Tset but was given " ^ string_of_typ t1 ^ ".");
+      Tset(Tint, Tint)
+  | ATid t -> 
+      let t1 =  verify_expr ctxs (Eident t) in
+      if not (is_set t1) then error ("Lexical analysis: Error defining an array. The size of an array needs to be of the type Tint or Tset but was given " ^ string_of_typ t1 ^ ".");
+      Tset(Tint, Tint)
+
+
 (* Verificacao de uma instrucao - Instruções nao devolvem um valor *)
 let rec verify_stmt ctxs = function
   | Sif (e, s1, elif) ->
@@ -239,8 +252,8 @@ let rec verify_stmt ctxs = function
       if not (is_int t1) && not (is_set t1) then error ("Lexical analysis: Error defining an array. The size of an array needs to be of the type Tint or Tset but was given " ^ string_of_typ t1 ^ ".");
 
       (*3 - Verificar se t é do tipo Tset*)
-      let t2 = verify_expr ctxs t in
-      if not (is_set t2) then error ("Lexical analysis: Error defining an array. The range of an array needs to be of the type Tset but was given " ^ string_of_typ t1 ^ ".");
+      let t2 = verify_array_type ctxs t in
+      if not (is_set t2) then error ("Lexical analysis: Error defining an array. The range of an array needs to be of the type Tset but was given " ^ string_of_typ t2 ^ ".");
       Hashtbl.add ctx id (Tarray, false) 
 
   | Sset (id, set) ->

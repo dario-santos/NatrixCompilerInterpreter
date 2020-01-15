@@ -134,14 +134,10 @@ let rec compile_expr ctxs = function
       popq rbx ++
 
       (* 4 - Faz as verificacoes *)
-      cmpq (reg rbx) (reg rax) ++      
+      
+      (* Verificar se f < i *)
+      cmpq (reg rbx) (reg rax) ++
       jle "print_error_s" ++
-
-      cmpq (imm64 0L) (reg rax) ++      
-      jl "print_error_s" ++
-
-      cmpq (imm64 0L) (reg rbx) ++      
-      jl "print_error_s" ++
 
       (* Coloca os valores *)
       pushq (reg rbx) ++
@@ -342,6 +338,17 @@ let rec compile_expr ctxs = function
 
       (* 6b - Terminamos *)  
       label ("bool_end_" ^ current_bool_test)
+
+  | Eunop (Uneg, e1) -> 
+      (* 1 - Colocar e1 na pilha *)  
+      compile_expr ctxs e1 ++
+      
+      (* 2 - Recebe o valor de e1 *)  
+      popq rax ++
+      
+      negq (reg rax) ++
+
+      pushq (reg rax)
 
   | Ecall ("size", [e1]) ->
       (* 1 - Colocar e1 na pilha *)  
@@ -583,6 +590,12 @@ let rec compile_stmt ctxs = function
       let ofs = - !frame_size in
       frame_size := 32 + !frame_size;
       
+      let t1 = 
+        match t with 
+        | ATInt -> compile_expr ctxs (Eset(Ecst(minint), Ecst(maxint)))
+        | ATset(e1, e2) -> compile_expr ctxs (Eset(e1, e2))
+        | ATid t -> compile_expr ctxs (Eident t)
+        in
       let code = 
         size ++
 
@@ -590,7 +603,7 @@ let rec compile_stmt ctxs = function
         popq rax ++ 
         movq (imm 0) (ind ~ofs rbp) ++
         movq (reg rax) (ind ~ofs:(ofs - 8) rbp) ++       
-        compile_expr ctxs t ++
+        t1 ++
         popq rax ++ (* fim *)
         popq rbx ++ (* inicio*)
         movq (reg rbx) (ind ~ofs:(ofs - 16) rbp) ++

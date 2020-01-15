@@ -1,26 +1,29 @@
 	.text
 	.globl	main
 main:
-	subq $24, %rsp
-	leaq 16(%rsp), %rbp
+	subq $32, %rsp
+	leaq 24(%rsp), %rbp
+	movq $6, %rax
+	pushq %rax
+	popq %rax
 	movq $0, 0(%rbp)
-	movq $0, -8(%rbp)
-	movq $3, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, 0(%rbp)
-	movq $2, %rax
-	pushq %rax
-	popq %rax
 	movq %rax, -8(%rbp)
-	addq $1, is_in_function
-	call userdiv
-	movq %rax, %rbx
+	movq $-9223372036854775808, %rax
+	pushq %rax
+	movq $-9223372036854775808, %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	cmpq %rbx, %rax
+	jle print_error_s
 	pushq %rbx
-	popq %rdi
-	call printn_int
+	pushq %rax
+	popq %rax
+	popq %rbx
+	movq %rbx, -16(%rbp)
+	movq %rbx, -24(%rbp)
 end:
-	addq $24, %rsp
+	addq $32, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -66,51 +69,6 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
-userdiv:
-	movq -8(%rbp), %rax
-	pushq %rax
-	movq $0, %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	cmpq %rbx, %rax
-	jne bool_true_1
-	movq $0, %rax
-	pushq %rax
-	jmp bool_end_1
-bool_true_1:
-	movq $1, %rax
-	pushq %rax
-bool_end_1:
-	popq %rax
-	cmpq $0, %rax
-	je if_else_11
-	movq 0(%rbp), %rax
-	pushq %rax
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rbx
-	popq %rax
-	movq $0, %rdx
-	cmpq $0, %rbx
-	je print_error_z
-	idivq %rbx
-	pushq %rax
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq $0, %rax
-	cmpq is_in_function, %rax
-	je print_error_f
-	decq is_in_function
-	movq -16(%rbp), %rax
-	pushq %rax
-	popq %rax
-	ret
-	jmp if_end_1
-if_else_11:
-if_end_1:
-	call print_error_f
-	ret
 	.data
 .Sprintn_int:
 	.string "%ld\n"

@@ -6,6 +6,7 @@
 type ident = string
 
 type unop = 
+  | Uneg
   | Unot
   | Ubitnot
 
@@ -35,7 +36,7 @@ and stmt =
   | Sassign of ident * expr
   | Sdeclare of ident * costumtype * expr
   | Sset of ident * expr
-  | Sarray of ident * expr * expr
+  | Sarray of ident * expr * array_type
   | Sdeclarearray of ident * ident * expr
   | Sprint of expr
   | Sprintn of expr
@@ -61,5 +62,11 @@ and argument = ident * costumtype
 and costumtype = 
   | Int
   | CTid of ident
+
+and array_type =
+  | ATInt
+  | ATid of ident
+  | ATset of expr * expr
   
+
 and program = stmts

@@ -108,8 +108,8 @@ let rec expr ctxs = function
   | Eset (e1, e2) -> 
       let i = expr_int ctxs e1 in 
       let f = expr_int ctxs e2 in
-      if i >= 0L && f >= 0L && i <= f && (Int64.sub f i) > 0L then Vset (i, f)
-      else error ("Invalid size of set. A set needs to have atleast the size of one, you are trying to do: [" ^ Int64.to_string i ^ " .. " ^ Int64.to_string f ^ "], try : [0 .. 1].")
+      if i < f then Vset (i, f)
+      else error ("Invalid size of set. A set needs to have atleast the size of one, you are trying to do: [" ^ Int64.to_string i ^ " .. " ^ Int64.to_string f ^ "].")
   | Eminint -> Vint minint
   | Emaxint -> Vint maxint
   | Ebinop (Band, e1, e2) ->
@@ -123,6 +123,8 @@ let rec expr ctxs = function
   | Ebinop (Badd | Bsub | Bmul | Bdiv | Bmod |
             Beq | Bneq | Blt | Ble | Bgt | Bge | Bitand | Bitor | Bitxor | Bitls | Bitrs as op, e1, e2) ->
       binop op (expr ctxs e1) (expr ctxs e2)
+  | Eunop (Uneg, e1) -> 
+      Vint (Int64.neg (expr_int ctxs e1))
 
   | Eunop (Unot, e1) ->
       Vint (is_false (expr ctxs e1))
@@ -186,6 +188,18 @@ and expr_int ctxs e =
   | Vint n -> n
   | _ -> error "expr_int: experavasse um inteiro"
 
+and expr_array_type ctxs e =
+  match e with 
+  | ATInt -> (minint, maxint)
+  | ATset(e1, e2) -> 
+      let v1 = expr_int ctxs e1 in
+      let v2 = expr_int ctxs e2 in
+      if v1 < v2 then (v1, v2)
+      else error ("Invalid size of set. A set needs to have atleast the size of one, you are trying to do: [" ^ Int64.to_string v1 ^ " .. " ^ Int64.to_string v2 ^ "].")
+  | ATid t -> 
+      let v = expr ctxs (Eident t) in
+      vset_to_tuplo v
+      
 (* Interpretacao de instrucoes - locais*)
 and interpret_stmt ctxs = function
   | Sif (e, s1, selif)   ->
@@ -268,8 +282,8 @@ and interpret_stmt ctxs = function
       if sv <= 0L then error ("Error defining " ^ id ^ " array. An array must have more than 0 elements but was givin " ^ Int64.to_string sv ^ " elements."); 
       
       (* 3 - Verificar que tp esta contido nos limites do tipo*)
-      let t1 = expr ctxs t in
-      if size_of_value t1 <= 0L then error ("Error defining the array " ^ id ^  ". The type of an arrray can't have a range of 0 or be negative."); 
+      let ti, tf = expr_array_type ctxs t in
+      let t1 = Vset(ti, tf) in
       
       (* 4 - Adiciona ao contexto atual *)
       let ctx = List.hd (List.rev ctxs) in

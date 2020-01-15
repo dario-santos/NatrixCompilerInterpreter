@@ -83,10 +83,6 @@ userprint_int:
 	popq %rbx
 	cmpq %rbx, %rax
 	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
-	cmpq $0, %rbx
-	jl print_error_s
 	pushq %rbx
 	pushq %rax
 	popq %rbx
@@ -112,10 +108,6 @@ foreach_1_inicio:
 	popq %rbx
 	cmpq %rbx, %rax
 	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
-	cmpq $0, %rbx
-	jl print_error_s
 	pushq %rbx
 	pushq %rax
 	popq %rbx

@@ -79,10 +79,6 @@ useris_prime:
 	popq %rbx
 	cmpq %rbx, %rax
 	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
-	cmpq $0, %rbx
-	jl print_error_s
 	pushq %rbx
 	pushq %rax
 	popq %rbx
@@ -210,10 +206,6 @@ if_end_3:
 	popq %rbx
 	cmpq %rbx, %rax
 	jle print_error_s
-	cmpq $0, %rax
-	jl print_error_s
-	cmpq $0, %rbx
-	jl print_error_s
 	pushq %rbx
 	pushq %rax
 	popq %rbx

@@ -1,12 +1,1 @@
-function div( x : int, y : int) : int 
-{
-    if(y != 0)
-    {
-        val y : int = x / y;
-
-        return y; 
-    }
-}
-
-printn(div(3, 2));
-
+type t : array 6 of [minint .. minint];
