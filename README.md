@@ -1,50 +1,50 @@
-# Natrix Compiler
-Um compilador para a linguagem Natrix
+# Natrix Compiler Interpreter
+This is the compiler and interpreter of the Natrix language. (Link to the documentation bellow).
 
-## Como compilar
 
-Executa o makefile contido na pasta Compiler
+## How to Use It
 
-```S
+If you have downloaded the source code use the makefile that is in the folder Compiler.
+
+
+```sh
 make
-
-./natrix file.nx
-
 ```
 
-O programa disponibiliza de um conjunto de opções
+It will generate a file with the name `natrix` that's our compiler/interpreter.
 
--parser-only: Executa o lexer e o parser.
--print-ast  : Imprime a árvore de sintaxe abstrata do ficheiro dado.
--interpt    : Utiliza o interpretador em vez do compilador.
+The programm contains a 
 
-Utilização:
+The program offers a set of options:
 
-```S
-./natrix -parser-only file.nx
+-parser-only: Executes only the lexer and parser.
+-print-ast  : Print the abstract syntax tree of the given file.
+-interpt    : Uses the interpreter instead of the compiler.
+
+Using an option:
+
+```sh
+./natrix -interpt file.nx
 ```
 
+## How to Test
 
-## Como testar
+This project contains a folder with a set of tests, the easiast way to test the compiler and interpreter is to use the entry `test` in the makefile.
 
-O makefile disponibiliza de uma entrada para testes
-
-```S
+```sh
 make
 
 make test
 ```
 
-## Documentação
+## Natrix Documentation
 
-No link abaixo temos acesso à documentação feita para a linguagem Natrix.
+The full documentation of the Natrix language can be accessed bellow:
 
 https://dario-santos.github.io/Natrix/index
 
 ## Todo:
 
-- [ ] Um comando para o do while (em vez do uso do while e do break);
-- [ ] if/else if/else;
-- [ ] Vetores no compilador;
-- [ ] operadores bitwise;
-- [ ] Um melhor manuseonamento da memório.
+- [ ] Add support to arrays in the compiler;
+- [ ] Bitwise operators;
+- [ ] A better memory management.
