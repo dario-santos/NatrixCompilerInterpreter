@@ -1,30 +1,20 @@
 	.text
 	.globl	main
 main:
-	subq $8, %rsp
-	leaq 0(%rsp), %rbp
+	subq $0, %rsp
+	leaq -8(%rsp), %rbp
 	movq $3, %rax
 	pushq %rax
-	popq %rax
-	movq %rax, 0(%rbp)
-	movq 0(%rbp), %rax
-	pushq %rax
-	popq %rdi
-	call printn_int
-	movq $1, %rax
+	movq $5, %rax
 	pushq %rax
 	popq %rax
-	cmpq $0, %rax
-	je if_else_11
-	movq 0(%rbp), %rax
-	pushq %rax
+	popq %rbx
+	subq %rax, %rbx
+	pushq %rbx
 	popq %rdi
 	call printn_int
-	jmp if_end_1
-if_else_11:
-if_end_1:
 end:
-	addq $8, %rsp
+	addq $0, %rsp
 	movq $0, %rax
 	ret
 printn_int:

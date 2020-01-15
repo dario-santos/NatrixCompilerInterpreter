@@ -9,27 +9,9 @@ main:
 	pushq %rax
 	popq %rax
 	movq %rax, -24(%rbp)
-	cmpq $0, -24(%rbp)
-	jge inicio_true_5
-	jmp print_error_t
-inicio_true_5:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -24(%rbp)
-	jle fim_true_5
-	jmp print_error_t
-fim_true_5:
 	addq $1, is_in_function
 	call userprint_primes
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_6
-	jmp print_error_t
-inicio_true_6:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_6
-	jmp print_error_t
-fim_true_6:
 	pushq %rbx
 	popq %rax
 	cmpq $0, %rax
@@ -89,15 +71,6 @@ useris_prime:
 	pushq %rax
 	popq %rax
 	movq %rax, -8(%rbp)
-	cmpq $0, -8(%rbp)
-	jge inicio_true_1
-	jmp print_error_t
-inicio_true_1:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -8(%rbp)
-	jle fim_true_1
-	jmp print_error_t
-fim_true_1:
 	movq $2, %rax
 	pushq %rax
 	movq 0(%rbp), %rax
@@ -229,15 +202,6 @@ if_end_3:
 	pushq %rax
 	popq %rax
 	movq %rax, -32(%rbp)
-	cmpq $0, -32(%rbp)
-	jge inicio_true_2
-	jmp print_error_t
-inicio_true_2:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -32(%rbp)
-	jle fim_true_2
-	jmp print_error_t
-fim_true_2:
 	movq $3, %rax
 	pushq %rax
 	movq -24(%rbp), %rax
@@ -261,27 +225,9 @@ foreach_2_inicio:
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
-	cmpq $0, 0(%rbp)
-	jge inicio_true_3
-	jmp print_error_t
-inicio_true_3:
-	movq $9223372036854775807, %rax
-	cmpq %rax, 0(%rbp)
-	jle fim_true_3
-	jmp print_error_t
-fim_true_3:
 	addq $1, is_in_function
 	call useris_prime
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_4
-	jmp print_error_t
-inicio_true_4:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_4
-	jmp print_error_t
-fim_true_4:
 	pushq %rbx
 	popq %rax
 	cmpq $0, %rax

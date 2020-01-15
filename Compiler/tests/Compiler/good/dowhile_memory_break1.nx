@@ -1,0 +1,19 @@
+val w : int = 49;
+
+do
+{
+    if(w == 50)
+    {
+        break;
+    }
+
+    printn(w);
+
+    val v : int = 2;
+    
+    printn(v);
+
+    w := w + 1;
+}while(w < 51);
+
+printn(w);

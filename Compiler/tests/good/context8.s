@@ -7,55 +7,19 @@ main:
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
-	cmpq $0, 0(%rbp)
-	jge inicio_true_1
-	jmp print_error_t
-inicio_true_1:
-	movq $9223372036854775807, %rax
-	cmpq %rax, 0(%rbp)
-	jle fim_true_1
-	jmp print_error_t
-fim_true_1:
 	movq $0, -8(%rbp)
 	movq $0, -16(%rbp)
 	movq $3, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, -8(%rbp)
-	cmpq $0, -8(%rbp)
-	jge inicio_true_3
-	jmp print_error_t
-inicio_true_3:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -8(%rbp)
-	jle fim_true_3
-	jmp print_error_t
-fim_true_3:
 	movq $2, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, -16(%rbp)
-	cmpq $0, -16(%rbp)
-	jge inicio_true_4
-	jmp print_error_t
-inicio_true_4:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -16(%rbp)
-	jle fim_true_4
-	jmp print_error_t
-fim_true_4:
 	addq $1, is_in_function
 	call userdiv
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_5
-	jmp print_error_t
-inicio_true_5:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_5
-	jmp print_error_t
-fim_true_5:
 	pushq %rbx
 	popq %rdi
 	call printn_int
@@ -146,15 +110,6 @@ bool_end_1:
 	pushq %rax
 	popq %rax
 	movq %rax, -24(%rbp)
-	cmpq $0, -24(%rbp)
-	jge inicio_true_2
-	jmp print_error_t
-inicio_true_2:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -24(%rbp)
-	jle fim_true_2
-	jmp print_error_t
-fim_true_2:
 	movq -24(%rbp), %rax
 	pushq %rax
 	popq %rdi

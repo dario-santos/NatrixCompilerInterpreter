@@ -7,15 +7,6 @@ main:
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
-	cmpq $0, 0(%rbp)
-	jge inicio_true_1
-	jmp print_error_t
-inicio_true_1:
-	movq $9223372036854775807, %rax
-	cmpq %rax, 0(%rbp)
-	jle fim_true_1
-	jmp print_error_t
-fim_true_1:
 	movq 0(%rbp), %rax
 	pushq %rax
 	popq %rdi
@@ -33,15 +24,6 @@ fim_true_1:
 	pushq %rax
 	popq %rax
 	movq %rax, -8(%rbp)
-	cmpq $0, -8(%rbp)
-	jge inicio_true_2
-	jmp print_error_t
-inicio_true_2:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -8(%rbp)
-	jle fim_true_2
-	jmp print_error_t
-fim_true_2:
 	movq -8(%rbp), %rax
 	pushq %rax
 	popq %rdi

@@ -25,7 +25,7 @@ let vint_to_int = function
 
 
 let vset_to_tuplo = function
-  | Vint n     -> (minint, (Int64.sub n 1L))
+  | Vint n     -> (0L , (Int64.sub n 1L))
   | Vset (i,f) -> (i, f)
   | _          -> error "A função vset_to_tuplo aceita apenas conjuntos"
 
@@ -39,7 +39,7 @@ let string_of_value = function
   | _           -> error "A função string_of_value aceita apenas Vint e Vset "
 
 let size_of_value = function
-  | Vint n     -> (Int64.sub n minint) 
+  | Vint n     -> n
   | Vset(i,f)  -> Int64.sub f i
   | Vlist(_,r) -> let i,f = vset_to_tuplo r in Int64.sub f i
 
@@ -206,7 +206,6 @@ and interpret_stmt ctxs = function
       else interpret_elif selif
           
   | Snothing -> ()
-
   | Sreturn e ->
       (* 1 - Retorna a expressao e*)
       raise (Return (expr_int ctxs e))
@@ -266,7 +265,7 @@ and interpret_stmt ctxs = function
 
       (* 2 - Verificar que a array criada tem mais do que 0 elementos *)
       let sv = size_of_value size in
-      if sv <= 0L then error ("Error defining " ^ id ^ " array. An array must have more than 0 elements but was givin " ^ Int64.to_string sv ^ "."); 
+      if sv <= 0L then error ("Error defining " ^ id ^ " array. An array must have more than 0 elements but was givin " ^ Int64.to_string sv ^ " elements."); 
       
       (* 3 - Verificar que tp esta contido nos limites do tipo*)
       let t1 = expr ctxs t in

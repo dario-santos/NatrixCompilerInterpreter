@@ -37,6 +37,7 @@ let string_of_binop = function
   | Bge -> ">="
   | Band -> "&&"
   | Bor -> "||"
+  | _ -> assert false  
 
 let is_int = function
   | Tint -> true
@@ -55,7 +56,7 @@ let is_arrayvar = function
   | _         -> false
 
 (* table_ctx representa um scope, contexto *)
-type table_ctx = (string, typ) Hashtbl.t
+type table_ctx = (string, typ * bool) Hashtbl.t
 
 (* As funções são globais *)
 let functions = (Hashtbl.create 17 : (string, table_ctx * costumtype * stmt) Hashtbl.t)
@@ -72,7 +73,9 @@ let costumtype_to_typ ctxs id =
     let ctxs_in = find_id t ctxs in
     if List.length(ctxs_in) == 0 then error ("Lexical analisys: The type " ^ t ^ " is not defined");
     let ctx = List.hd (List.rev ctxs_in) in
-    Hashtbl.find ctx t
+    let t1,_ = Hashtbl.find ctx t in
+    Hashtbl.replace ctx t (t1,true);
+    t1
 
 let rec verify_expr ctxs = function
   | Ecst n -> Tint
@@ -123,9 +126,11 @@ let rec verify_expr ctxs = function
       (* 1 - Verificar que o id existe *)
       if List.length(find_id id ctxs) == 0 then error ("Lexical analysis: Variable " ^ id ^ " not found"); 
       let ctx = List.hd (List.rev(find_id id ctxs)) in
+      let t1,_ = Hashtbl.find ctx id in
+      Hashtbl.replace ctx id (t1, true);
       
       (* 2 - Retornar o tipo do id*)
-      Hashtbl.find ctx id
+      fst(Hashtbl.find ctx id)
 
   | Eget (id, e1) -> 
       (* 1 - Verificar que o id existe *)
@@ -133,7 +138,8 @@ let rec verify_expr ctxs = function
       
       (* 2 - Verificar que id e do tipo Tarrayvar *)
       let ctx = List.hd (List.rev(find_id id ctxs)) in
-      let t1 = Hashtbl.find ctx id in
+      let t1,_ = Hashtbl.find ctx id in
+      Hashtbl.replace ctx id (t1, true);
       if not (is_arrayvar t1) then error ("Lexical analysis: The type " ^ string_of_typ t1 ^ " can\'t be used as an array.");
 
       (* 3 - Verificar que e2 e do tipo int *)
@@ -157,17 +163,17 @@ let rec verify_stmt ctxs = function
       (* 1 - Verificar a expressao e do tipo Tint *)
       let t1 = verify_expr ctxs e in
       if not (is_int t1) then error ("Lexical analisys: The expression of the if statement needs to be evaluated an integer.");
-      
+      let if_ctx = (Hashtbl.create 17 : table_ctx) in
       (* 2 - Verificar os dois ramos do if *)
-      verify_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1;
-      
+      verify_stmt (ctxs@[if_ctx]) s1;
       (* 3 - Verificar todos os else if *)
       let rec verify_elif = function
         | hd::tl -> 
           let e, s = hd in 
           let t1 = verify_expr ctxs e in
           if not(is_int t1) then error ("The statement Else If only accepts expressions of the type Tint but was givin " ^ string_of_typ t1 ^ ".");
-          verify_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s;
+          let elif_ctx =  (Hashtbl.create 17 : table_ctx) in
+          verify_stmt (ctxs@[elif_ctx]) s;
           verify_elif tl
         | _ -> ()  
         in
@@ -195,7 +201,7 @@ let rec verify_stmt ctxs = function
       (* 3 - Verificar se e do tipo Tint*)
       let t1 = verify_expr ctxs e in
       if not(is_int t1) then error ("Lexical analysis: the declaration statement only supports integers but was given a " ^ string_of_typ t1 ^ ".");
-      Hashtbl.add ctx id t1
+      Hashtbl.add ctx id (t1, false)
 
   | Sassign (id, e1)    ->
       (* 1 - Verificar se a variavel existe *)
@@ -214,13 +220,13 @@ let rec verify_stmt ctxs = function
       (* 2 - Verificar se ida existe e é do tipo Tarray *)
       if List.length(List.rev (find_id ida ctxs)) == 0 then error ("Lexical analysis: The array type " ^ id ^ " is not defined.");
       let array_ctx = List.hd (List.rev (find_id ida ctxs)) in
-      let ta = Hashtbl.find array_ctx ida in
+      let ta,_ = Hashtbl.find array_ctx ida in
       if not (is_array ta) then error ("Lexical analysis: Error declaring an array. Was expecting the type Tarray but was given " ^ string_of_typ ta ^ ".");
 
       (* 3 - Verificar se _e_ e do tipo Tint*)
       let t1 = verify_expr ctxs e in
       if not (is_int t1) then error ("Lexical analysis: Error declaring an array. The elements can only be filled with integers but was given " ^ string_of_typ t1 ^ ".");
-      Hashtbl.add ctx id Tarrayvar
+      Hashtbl.add ctx id (Tarrayvar, false)
 
   | Sarray (id, sz, t) ->
       (* 1 - Verificar se o id e unico *)
@@ -235,7 +241,7 @@ let rec verify_stmt ctxs = function
       (*3 - Verificar se t é do tipo Tset*)
       let t2 = verify_expr ctxs t in
       if not (is_set t2) then error ("Lexical analysis: Error defining an array. The range of an array needs to be of the type Tset but was given " ^ string_of_typ t1 ^ ".");
-      Hashtbl.add ctx id Tarray 
+      Hashtbl.add ctx id (Tarray, false) 
 
   | Sset (id, set) ->
       (* 1 - Verificar se o nome ja nao esta a ser usado *)
@@ -246,7 +252,7 @@ let rec verify_stmt ctxs = function
       (* 2 - Verificar se estamos a lhe dar um set *)
       let t1 = verify_expr ctxs set in
       if not(is_set t1) then error ("Error defining a set. Was expecting a Tset but was given " ^ string_of_typ t1 ^ ".");
-      Hashtbl.add ctx id t1
+      Hashtbl.add ctx id (t1,false)
 
   | Sprint e ->
       (* 1 - Verificar se estamos a receber um Tint*)
@@ -263,7 +269,8 @@ let rec verify_stmt ctxs = function
 
       (* 2 - Verificar se id e do tipo Tint *)
       let ctx = List.hd (List.rev(find_id id ctxs)) in
-      let t1 = Hashtbl.find ctx id in
+      let t1 = fst(Hashtbl.find ctx id) in
+      Hashtbl.replace ctx id (t1, true);
       if not (is_int t1) then error ("The scanf statement only supports Tint but was given a " ^ string_of_typ t1 ^ ".")
 
   | Sblock bl -> verify_block_stmt ctxs bl
@@ -329,7 +336,8 @@ let rec verify_stmt ctxs = function
       
       (* 2 - Verificar se ida existe e é do tipo Tarray *)
       let array_ctx = List.hd (List.rev (find_id id ctxs)) in
-      let ta = Hashtbl.find array_ctx id in
+      let ta = fst(Hashtbl.find array_ctx id) in
+      Hashtbl.replace array_ctx id (ta, true);
       if not (is_arrayvar ta) then error ("Error declaring an array. Was expecting the type Tarrayvar but was given " ^ string_of_typ ta ^ ".");
    
       (* 3 - Verificar que o index é do tipo Tint *)
@@ -362,7 +370,7 @@ and verify_stmts ctxs = function
         if not (is_set tp) && not (is_int tp) then error ("Lexical analysis: Expectet and int or a set but got " ^ (string_of_typ tp) ^ " in the function "^ f ^ ".");
         
         (* 2.3 - As variaveis so podem receber inteiros *)
-        Hashtbl.add args_ctx name Tint;
+        Hashtbl.add args_ctx name (Tint, false);
         verify_arguments tl
       | [] -> ()
       in

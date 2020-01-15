@@ -6,15 +6,6 @@ main:
 	addq $1, is_in_function
 	call userprinta
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_2
-	jmp print_error_t
-inicio_true_2:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_2
-	jmp print_error_t
-fim_true_2:
 	pushq %rbx
 	popq %rax
 	cmpq $1, %rax
@@ -22,15 +13,6 @@ fim_true_2:
 	addq $1, is_in_function
 	call userprinta
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_1
-	jmp print_error_t
-inicio_true_1:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_1
-	jmp print_error_t
-fim_true_1:
 	pushq %rbx
 	popq %rax
 	orq $1, %rax

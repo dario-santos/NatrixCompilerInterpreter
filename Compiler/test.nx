@@ -1,34 +1,12 @@
-val n : int = 0;
-val k : int = 0;
-val a : int = 0;
-val b : int = 0;
-
-scanf(n);
-scanf(k);
-scanf(a);
-scanf(b);
-
-function isValid(a : int, b : int) : int
+function div( x : int, y : int) : int 
 {
-    return (a >= 0 && a < n) && (b >= 0 && b < n);
-}
+    if(y != 0)
+    {
+        val y : int = x / y;
 
-function move(a : int, b : int, prof : int) : int
-{
-    if( (!isValid(a, b)) || prof > k) {
-        return 0;
+        return y; 
     }
-
-    val x : int = prof == k;
-
-    return x + move(a - 2, b + 1, prof + 1) 
-      + move(a - 1, b + 2, prof + 1) 
-      + move(a + 1, b + 2, prof + 1) 
-      + move(a + 2, b + 1, prof + 1) 
-      + move(a + 2, b - 1, prof + 1) 
-      + move(a + 1, b - 2, prof + 1) 
-      + move(a - 1, b - 2, prof + 1) 
-      + move(a - 2, b - 1, prof + 1);
 }
 
-printn(move(a, b, 0));
+printn(div(3, 2));
+

@@ -11,27 +11,9 @@ main:
 	pushq %rax
 	popq %rax
 	movq %rax, -48(%rbp)
-	cmpq $0, -48(%rbp)
-	jge inicio_true_10
-	jmp print_error_t
-inicio_true_10:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -48(%rbp)
-	jle fim_true_10
-	jmp print_error_t
-fim_true_10:
 	addq $1, is_in_function
 	call userfib
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_11
-	jmp print_error_t
-inicio_true_11:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_11
-	jmp print_error_t
-fim_true_11:
 	pushq %rbx
 	popq %rdi
 	call printn_int
@@ -39,27 +21,9 @@ fim_true_11:
 	pushq %rax
 	popq %rax
 	movq %rax, -48(%rbp)
-	cmpq $0, -48(%rbp)
-	jge inicio_true_12
-	jmp print_error_t
-inicio_true_12:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -48(%rbp)
-	jle fim_true_12
-	jmp print_error_t
-fim_true_12:
 	addq $1, is_in_function
 	call userfib
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_13
-	jmp print_error_t
-inicio_true_13:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_13
-	jmp print_error_t
-fim_true_13:
 	pushq %rbx
 	popq %rdi
 	call printn_int
@@ -67,27 +31,9 @@ fim_true_13:
 	pushq %rax
 	popq %rax
 	movq %rax, -48(%rbp)
-	cmpq $0, -48(%rbp)
-	jge inicio_true_14
-	jmp print_error_t
-inicio_true_14:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -48(%rbp)
-	jle fim_true_14
-	jmp print_error_t
-fim_true_14:
 	addq $1, is_in_function
 	call userfib
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_15
-	jmp print_error_t
-inicio_true_15:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_15
-	jmp print_error_t
-fim_true_15:
 	pushq %rbx
 	popq %rdi
 	call printn_int
@@ -143,28 +89,10 @@ userfibaux:
 	pushq %rax
 	popq %rax
 	movq %rax, -24(%rbp)
-	cmpq $0, -24(%rbp)
-	jge inicio_true_1
-	jmp print_error_t
-inicio_true_1:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -24(%rbp)
-	jle fim_true_1
-	jmp print_error_t
-fim_true_1:
 	movq $0, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, -32(%rbp)
-	cmpq $0, -32(%rbp)
-	jge inicio_true_2
-	jmp print_error_t
-inicio_true_2:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -32(%rbp)
-	jle fim_true_2
-	jmp print_error_t
-fim_true_2:
 	movq $0, %rax
 	pushq %rax
 	movq -16(%rbp), %rax
@@ -194,28 +122,10 @@ foreach_1_inicio:
 	pushq %rax
 	popq %rax
 	movq %rax, -24(%rbp)
-	cmpq $0, -24(%rbp)
-	jge inicio_true_3
-	jmp print_error_t
-inicio_true_3:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -24(%rbp)
-	jle fim_true_3
-	jmp print_error_t
-fim_true_3:
 	movq -8(%rbp), %rax
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
-	cmpq $0, 0(%rbp)
-	jge inicio_true_4
-	jmp print_error_t
-inicio_true_4:
-	movq $9223372036854775807, %rax
-	cmpq %rax, 0(%rbp)
-	jle fim_true_4
-	jmp print_error_t
-fim_true_4:
 	movq -24(%rbp), %rax
 	pushq %rax
 	movq -8(%rbp), %rax
@@ -226,15 +136,6 @@ fim_true_4:
 	pushq %rbx
 	popq %rax
 	movq %rax, -8(%rbp)
-	cmpq $0, -8(%rbp)
-	jge inicio_true_5
-	jmp print_error_t
-inicio_true_5:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -8(%rbp)
-	jle fim_true_5
-	jmp print_error_t
-fim_true_5:
 foreach_1_condicao:
 	movq -32(%rbp), %rax
 	incq %rax
@@ -262,53 +163,17 @@ userfib:
 	pushq %rax
 	popq %rax
 	movq %rax, 0(%rbp)
-	cmpq $0, 0(%rbp)
-	jge inicio_true_6
-	jmp print_error_t
-inicio_true_6:
-	movq $9223372036854775807, %rax
-	cmpq %rax, 0(%rbp)
-	jle fim_true_6
-	jmp print_error_t
-fim_true_6:
 	movq $1, %rax
 	pushq %rax
 	popq %rax
 	movq %rax, -8(%rbp)
-	cmpq $0, -8(%rbp)
-	jge inicio_true_7
-	jmp print_error_t
-inicio_true_7:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -8(%rbp)
-	jle fim_true_7
-	jmp print_error_t
-fim_true_7:
 	movq -48(%rbp), %rax
 	pushq %rax
 	popq %rax
 	movq %rax, -16(%rbp)
-	cmpq $0, -16(%rbp)
-	jge inicio_true_8
-	jmp print_error_t
-inicio_true_8:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -16(%rbp)
-	jle fim_true_8
-	jmp print_error_t
-fim_true_8:
 	addq $1, is_in_function
 	call userfibaux
 	movq %rax, %rbx
-	cmpq $0, %rbx
-	jge inicio_true_9
-	jmp print_error_t
-inicio_true_9:
-	movq $9223372036854775807, %rax
-	cmpq %rax, %rbx
-	jle fim_true_9
-	jmp print_error_t
-fim_true_9:
 	pushq %rbx
 	popq %rax
 	ret

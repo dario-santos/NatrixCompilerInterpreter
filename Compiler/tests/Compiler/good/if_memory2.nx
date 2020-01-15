@@ -1,0 +1,40 @@
+val x : int = 2;
+
+if(x == 1)
+{
+    printn(x);
+    val y : int = 201; 
+    printn(x);
+
+    printn(y);
+}
+else if(x == 2)
+{
+    val w : int = 544; 
+    printn(x);
+
+    printn(w);
+
+}
+else if(x == 3)
+{
+    val v : int = 789; 
+    printn(x);
+
+    printn(v);
+
+}
+else
+{
+    val p : int = 123132;
+
+    print(x);
+
+    printn(p);
+}
+
+printn(x);
+
+val z : int = 99;
+
+printn(z);

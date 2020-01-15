@@ -68,33 +68,7 @@ let rec find_id ctxs id =
 
 let is_rbx_in_type_boundaries ctxs t = 
   match t with
-  | Int ->
-      (* 1 - Incrementar numero de verificacoes *)
-      number_of_tipagens := !number_of_tipagens + 1;
-      let current_tipagem_test = string_of_int(!number_of_tipagens) in
-      
-      (* 2 - Como 0 é suficiente pequeno nao temos que colocar num registo para testar o limite inferior *) 
-      movq (imm64 minint) (reg rax) ++
-      cmpq (reg rax) (reg rbx) ++
-      
-      (* 3a - Se for superior entao vamos testar o limite superior*)
-      jge ("inicio_true_" ^ current_tipagem_test) ++
-
-      (* 3b - Se nao for superior entao terminamos *)
-      jmp "print_error_t" ++
-      
-      (* 4 - Verificamos se o limite superior tambem se cumpre *)
-      label ("inicio_true_" ^ current_tipagem_test) ++
-      movq (imm64 maxint) (reg rax) ++ 
-      cmpq (reg rax) (reg rbx) ++
-      
-      (* 5a - Se todos os limites foram compridos entao continuamos a execucao *)
-      jle ("fim_true_" ^ current_tipagem_test) ++
-      
-      (* 5b - Se algum dos limites nao for cumprido entao terminamos *)
-      jmp "print_error_t"++
-      label ("fim_true_" ^ current_tipagem_test) 
-
+  | Int -> nop
   | CTid t ->
       (* 1 - Incrementar numero de verificacoes *)
       let ctx = List.hd (List.rev (find_id ctxs t )) in
@@ -120,35 +94,7 @@ let is_rbx_in_type_boundaries ctxs t =
 
 let is_in_type_boundaries ctxs id_ofs t = 
   match t with
-  | Int ->
-
-      (* 1 - Incrementar o numero de verificacoes *)
-      number_of_tipagens := !number_of_tipagens + 1;
-      let current_tipagem_test = string_of_int(!number_of_tipagens) in
-
-      (* 2 - Como 0 é suficiente pequeno nao temos que colocar num registo para testar o limite inferior *) 
-      movq (imm64 minint) (reg rbx) ++
-      movq (ind ~ofs:(-id_ofs) rbp) (reg rax) ++
-      cmpq (reg rbx) (reg rax) ++
-      
-      (* 3a - Se for superior entao vamos testar o limite superior*)
-      jge ("inicio_true_" ^ current_tipagem_test) ++
-      
-      (* 3b - Se nao for superior entao terminamos *)
-      jmp "print_error_t"++
-
-      (* 4 - Verificamos se o limite superior tambem se cumpre *)
-      label ("inicio_true_" ^ current_tipagem_test) ++
-      movq (imm64 maxint) (reg rbx) ++
-      movq (ind ~ofs:(-id_ofs) rbp) (reg rax) ++
-      cmpq (reg rbx) (reg rax) ++
-      
-      (* 5a - Se todos os limites foram compridos entao continuamos a execucao *)
-      jle ("fim_true_" ^ current_tipagem_test) ++
-
-      (*  5b - Se algum dos limites nao for cumprido entao terminamos *)
-      jmp "print_error_t"++
-      label ("fim_true_" ^ current_tipagem_test) 
+  | Int -> nop
   | CTid t -> 
     let ctx = List.hd (List.rev (find_id ctxs t )) in
       let inicio_ofs, fim_ofs = tuple_of_vset (snd((Hashtbl.find ctx t))) in
@@ -414,7 +360,7 @@ let rec compile_expr ctxs = function
   | Ecall (f, el) ->
       (* 1 - Vai buscar a funcao f *)
       let ctx, return = Hashtbl.find function_ctx f in
-      
+      let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
       (* 2 - Ref onde vai ficar o codigo dos argumentos *)
       let code = ref nop in
       
@@ -439,6 +385,7 @@ let rec compile_expr ctxs = function
       movq (reg rax) (reg rbx) ++
       is_rbx_in_type_boundaries ctxs return ++
       pushq (reg rbx)
+      
   | Eternary (cond, e1, e2) -> 
       (*1 - Incrementa o numero de ifs realizados ate ao momento *)
       number_of_ternary := !number_of_ternary + 1;
@@ -451,7 +398,7 @@ let rec compile_expr ctxs = function
       (* 3 - Se vor diferente de entao e verdade *)
       cmpq (imm 0) (reg rax) ++
       jne ("ternary_true_" ^ current_ternary) ++
-
+      
       (* 4a - Se for 0 executa o else*)
       compile_expr ctxs e2 ++
 
@@ -482,18 +429,19 @@ let rec compile_stmt ctxs = function
       (*1 - Incrementa o numero de ifs realizados ate ao momento *)
       number_of_ifs := !number_of_ifs + 1;
       let current_if_test = string_of_int(!number_of_ifs) in
-  
+     
       let rec compile_elif index = function
         | [hd] ->
             let _, s = hd in 
+            let body = compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s in
+       
             label ("if_else_" ^ string_of_int index ^ current_if_test) ++
-            
-            (* 4a - Se for 0 executa o else*)
-            compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s
-          
+            body
+     
         | hd::tl -> 
-          let e, s = hd in 
-        
+            let e, s = hd in 
+            let body = compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s in
+            
             label ("if_else_" ^ (string_of_int index) ^ current_if_test) ++
             compile_expr ctxs e ++
             popq rax ++
@@ -502,14 +450,17 @@ let rec compile_stmt ctxs = function
             cmpq (imm 0) (reg rax) ++
             je ("if_else_" ^ string_of_int (index + 1) ^ current_if_test) ++
     
-            (* 4a - Se for 0 executa o else*)
-            compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s ++
+            body ++
+            
             jmp ("if_end_" ^ current_if_test) ++
             
             compile_elif (index + 1) tl
         | _ -> label ("if_else_" ^ string_of_int index ^ current_if_test)
         in
-
+        
+      (* Corpo do if *)
+      let body = compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 in
+      
       (* 2 - Calcular o valor da condicao *)
       compile_expr ctxs e ++
       popq rax ++
@@ -517,10 +468,11 @@ let rec compile_stmt ctxs = function
       (* 3 - Se vor diferente de 0 entao é verdade *)
       cmpq (imm 0) (reg rax) ++
       je ("if_else_" ^ string_of_int 1 ^ current_if_test) ++
-    
-      (* 4b - Se for diferente de 0 executa o if *)
-      compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s1 ++
+      
+      body ++
+
       jmp ("if_end_" ^ current_if_test) ++
+
       (* 4a - Se for 0 vai à próxima condição*)
       compile_elif 1 selif ++
     
@@ -538,7 +490,6 @@ let rec compile_stmt ctxs = function
       (* 1 - Calcula o valor de e1*) 
       compile_expr ctxs e1 ++
       popq rax ++
-      
       (* 2 - Retorna *)
       ret
   | Sbreak ->
@@ -574,33 +525,42 @@ let rec compile_stmt ctxs = function
     code
 
   | Sdeclarearray (id, ida, e) ->
-      (*
-        1 - Verificar que o id ainda não foi usado
-        2 - Verificar se o tipo existe
-        3 - Ir buscar o valor da expressão, verificar se é um inteiro válido
-        4 - Reservar n elementos
+      (* 
+        1 - O tamanho da array está em (ida^sz)
       *)
+      
       (* 1 - Incrementar o numero de declaracoes de arrays *)
       number_of_arraydefs := !number_of_arraydefs + 1;
       let current_arraydefs = string_of_int(!number_of_arraydefs) in
 
-      (* Calcular offset *)
+      (* 2 - Guardamos o frame anterior para calcular o tamanho da array *)
+      let frame_size_array = ref !frame_size in
       let ofs = !frame_size in
       frame_size := 16 + !frame_size;
-
+      
+      let array_ctx = List.hd (List.rev(find_id ctxs ida)) in
+      let _, size = Hashtbl.find array_ctx (ida ^ "sz") in
+      let ofs_inicio, ofs_fim = tuple_of_vset size in
       let code =
+        
+        movq  (imm64 0L) (reg r8) ++
         label ("arraydef_" ^ current_arraydefs) ++
-        popq rax ++ (* value  *)
+        
+        compile_expr ctxs e ++
+        popq rax ++
         movq (reg rbx) (ind ~ofs:(-ofs) rbp) ++
+        
+
         (* Verificar o valor *)
-        popq rbx ++ (* size *)
+        movq (ind ~ofs:(-ofs_fim) rbp) (reg rbx) ++
         decq (reg rbx) ++
-        pushq (reg rbx) ++
-        cmpq (imm 0) (reg rbx) ++
-        jl ("arraydef_" ^ current_arraydefs)
+        movq (ind ~ofs:(-ofs_inicio) rbp) (reg rax) ++
+        cmpq (reg rbx) (reg rax) ++
+
+        jge ("arraydef_" ^ current_arraydefs)
       in
       let ctx = List.hd (List.rev ctxs) in
-      Hashtbl.add ctx (id ^ "_array0") (Int, Vlist(Vset(0, 3), Vset(0,1)));
+      Hashtbl.add ctx id (Int, Vlist(Vset(0, 3), Vset(0,1)));
       code
   | Sassign (id, e1)  ->
       (* 1 - Vai buscar o contexto em que o id esta declarado *)        
@@ -619,21 +579,13 @@ let rec compile_stmt ctxs = function
 
   | Sarray (id, sz, t) -> 
       let ctx = List.hd (List.rev ctxs) in
-      (*
-        1 - Verificar que o id ainda não foi usado
-        2 - Verificar se o tipo existe
-        3 - Ir buscar o valor da expressão, verificar se é um conjunto
-        
-        ofs + 0  -> id_array_start
-        ofs + 8  -> id_array_elements
-        ofs + 16 -> id_array_t_inicio
-        ofs + 32 -> id_array_t_fim  
-      *)
       let size = get_type_size ctxs sz in
       let ofs = - !frame_size in
       frame_size := 32 + !frame_size;
+      
       let code = 
         size ++
+
         (* Guardar o valor do size *)
         popq rax ++ 
         movq (imm 0) (ind ~ofs rbp) ++
@@ -642,14 +594,13 @@ let rec compile_stmt ctxs = function
         popq rax ++ (* fim *)
         popq rbx ++ (* inicio*)
         movq (reg rbx) (ind ~ofs:(ofs - 16) rbp) ++
-  
         movq (reg rbx) (ind ~ofs:(ofs - 24) rbp)
       in
-      Hashtbl.add ctx (id ^ "_array_start") (Int   , Vint(-(ofs)));
-      Hashtbl.add ctx (id ^ "_array_elements") (Int, Vint(-(ofs + 8)));
-      Hashtbl.add ctx (id ^ "_array_t_inicio") (Int, Vint(-(ofs + 16)));
-      Hashtbl.add ctx (id ^ "_array_t_fim") (Int   , Vint(-(ofs + 24)));
+      Hashtbl.add ctx (id ^ "sz") (Int, Vset(-ofs, -(ofs + 8)));
+      Hashtbl.add ctx id (CTid (id ^ "sz"), Vset(-(ofs + 16), -(ofs + 24)));
+
       code
+
   | Sset (id, set) ->
       (* 1 - Vai buscar o contexto atual *)
       let ctx = List.hd (List.rev ctxs) in
@@ -721,41 +672,43 @@ let rec compile_stmt ctxs = function
       (* 4 - Guarda o offset da variavel id *)
       let ofs = - int_of_vint (snd(Hashtbl.find ctx id)) in
       
-      (* 4 - Incrementa o numero de fors existentes *)
+      (* 5 - Incrementa o numero de fors existentes *)
       number_of_for := !number_of_for + 1;
       let for_index = string_of_int(!number_of_for) in
-      
+   
+      (* 6 - Para saber ser utilizado pelo continue/break *)
       loops := [("for_" ^ for_index)]@(!loops);
 
-      (* 5 - Inicializacao do foreach *)
+      (* 7 - Inicializacao do foreach *)
       let loop_initialize = 
-        (* 5.1 - Acrescenta o codigo da declaracao do id *)
+        (* 7.1 - Acrescenta o codigo da declaracao do id *)
+        
         code ++
 
-        (* 5.2 - Vai buscar o valor de cond *)
+        (* 7.2 - Vai buscar o valor de cond *)
         compile_expr ctxs cond ++
         popq rax ++
 
-        (* 5.3 - Verifica se a condição é válida *)
+        (* 7.3 - Verifica se a condição é válida *)
         cmpq (imm64 0L) (reg rbx) ++
         je ("for_" ^ for_index ^ "_fim") ++
 
-        (* 5.6 - Cria a label do foreach para os jumps*)
+        (* 7.6 - Cria a label do foreach para os jumps*)
         label ("for_" ^ for_index ^ "_inicio")
       in
 
-      (* 6 - Compila o corpo do foreach *)
+      (* 8 - Compila o corpo do foreach *)
       let body = compile_stmt ctxs bl in
 
-      (* 7 - Atualiza a variavel id *)
+      (* 9 - Atualiza a variavel id *)
       let for_verification = 
         label ("for_" ^ for_index ^ "_condicao") ++
-        (* 7.1 Incrementa o valor de id*)
+        (* 9.1 Incrementa o valor de id*)
         compile_expr ctxs incr ++
         popq rax ++
         movq (reg rax) (ind ~ofs rbp) ++
         
-        (* 7.2 Compara o valor a expr *) 
+        (* 9.2 Compara o valor a expr *) 
         compile_expr ctxs cond ++
         popq rax ++
         cmpq (imm64 0L)  (reg rax) ++
@@ -763,21 +716,26 @@ let rec compile_stmt ctxs = function
         label ("for_" ^ for_index ^ "_fim")
       in
       loops := List.tl !loops;
-
-      (* 8 - Junta a inicializacao, o corpo e a verificacao *)
-      loop_initialize ++ body ++ for_verification  
-  
+     
+      loop_initialize ++ 
+      
+      body ++ 
+      
+      for_verification
+     
   | Sforeach(x, e, bl) ->
       (* 1 - Cria o contexto do foreach *)
       let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
-
+       
+      (* Reserva memória para o fim do conjunto *)
       (* 2 - Declara a variavel x*)
       let code = compile_stmt ctxs (Sdeclare(x, Int, Ecst 0L)) in
       frame_size := 8 + !frame_size;
-
+      
+      
       (* 3 - Vai buscar o contexto do foreach *)
       let ctx = List.hd (List.rev ctxs) in
-
+      
       (* 4 - Guarda o offset da variavel i*)
       let ofs = - int_of_vint  (snd(Hashtbl.find ctx x)) in
       
@@ -790,7 +748,8 @@ let rec compile_stmt ctxs = function
       let loop_initialize = 
         (* 5.1 - Acrescenta o codigo da declaracao do x *)
         code ++
-        (* 5.2 - Vai buscar o valor de 3 *)
+
+        (* 5.2 - Vai buscar o valor do conjunto *)
         compile_expr ctxs e ++
 
         (* 5.3 - Como tem que ser um conjunto retiramos dois valores *)
@@ -812,28 +771,34 @@ let rec compile_stmt ctxs = function
 
       (* 7 - Compara o valor do x em relacao ao limite superior do foreach *)
       let for_verification = 
+
         label ("foreach_" ^ foreach_index ^ "_condicao") ++
+        
         (* 7.1 Incrementa o valor de x*)
         movq (ind ~ofs rbp) (reg rax) ++
         incq (reg rax) ++
         movq (reg rax) (ind ~ofs rbp) ++
+        
         (* 7.2 Compara ao valor final *) 
         
         movq (ind ~ofs:(ofs - 8) rbp) (reg rbx) ++
-        cmpq (reg rbx)  (reg rax) ++
+        cmpq (reg rbx) (reg rax) ++
+
         jle ("foreach_" ^ foreach_index ^ "_inicio") ++
         label ("foreach_" ^ foreach_index ^ "_fim")
       in
-      
       loops := List.tl !loops;
-      (* 8 - Junta a inicializacao, o corpo e a verificacao *)
-      loop_initialize ++ body ++ for_verification
+
+      loop_initialize ++ 
+      body ++ 
+      for_verification      
 
   | Swhile(e, bl) ->
       (* 1 - Cria o contexto do foreach *)
 
       let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
-
+      
+     
       (* 2 - Incrementa o numero de fors existentes*)
       number_of_while := !number_of_while + 1;
       let while_index = string_of_int(!number_of_while) in
@@ -857,13 +822,13 @@ let rec compile_stmt ctxs = function
         label ("while_" ^ while_index ^ "_fim")
       in
       loops := List.tl !loops;
-      
+    
       code
+      
   | Sdowhile(e, bl) ->
       (* 1 - Cria o contexto do foreach *)
-
       let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
-
+    
       (* 2 - Incrementa o numero de fors existentes*)
       number_of_while := !number_of_while + 1;
       let while_index = string_of_int(!number_of_while) in
@@ -904,10 +869,10 @@ and compile_stmts ctxs = function
       (* 1 - Cria o contexto do corpo da funcao *)
       let ctx = (Hashtbl.create 17 : table_ctx) in
       let ctx_list = ref [] in
+      
       (* 2 - Declara os argumentos da função no contexto desta *)
       let rec translate_arguments = function
         | hd::tl ->
-
           let id, t = hd in
           let ofs = !frame_size in
 
@@ -923,18 +888,17 @@ and compile_stmts ctxs = function
       let arguments_code = translate_arguments args in
       let ctx_body = Hashtbl.copy ctx in
       
-      Hashtbl.add function_ctx f (!ctx_list, return);
-      
       functions_code := !functions_code ++
       label ("user" ^ f) ++
       compile_stmt (ctxs@[ctx_body]) body ++
-
+      
       (* Se chegou aqui é porque não houve returns *)
       call "print_error_f" ++
       ret;
-
+      
+      Hashtbl.add function_ctx f (!ctx_list, return);
       arguments_code
-
+      
   | Stblock bl -> 
       let block = List.rev(compile_block_stmts ctxs bl) in
       List.fold_right (++) block nop

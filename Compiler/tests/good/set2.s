@@ -25,15 +25,6 @@ main:
 	pushq %rax
 	popq %rax
 	movq %rax, -16(%rbp)
-	cmpq $0, -16(%rbp)
-	jge inicio_true_1
-	jmp print_error_t
-inicio_true_1:
-	movq $9223372036854775807, %rax
-	cmpq %rax, -16(%rbp)
-	jle fim_true_1
-	jmp print_error_t
-fim_true_1:
 	movq 0(%rbp), %rax
 	pushq %rax
 	movq -8(%rbp), %rax
