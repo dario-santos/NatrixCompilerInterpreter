@@ -1,7 +1,7 @@
 # Change Log
 
-**Date:** 15/01/2020
+**Date:** 16/01/2020
 
-## Compiler & Interpreter:
+## Typing & Interpreter:
 
-- Added bitwise operetors.
+- Changed the error messages to display the number of the line.
