@@ -5,6 +5,7 @@
   open Int64
 
   exception Lexing_error of string
+  exception Lexing_error_comment of string
 
 
   let create_hashtable size init =
@@ -39,11 +40,13 @@
       ("maxint", MAXINT);
       ("minint", MININT)
     ]
+  let line_num = ref 1
 
   let newline lexbuf =
     let pos = lexbuf.lex_curr_p in
     lexbuf.lex_curr_p <-
-      { pos with pos_lnum = pos.pos_lnum + 1; pos_bol = pos.pos_cnum }
+      { pos with pos_lnum = pos.pos_lnum + 1;  pos_bol = pos.pos_cnum }
+
 }
 
 let digit      = ['0'-'9']
@@ -56,7 +59,7 @@ let whitespace = [' ' '\t']
 rule analisador = parse
   | "//"            { singlecomment lexbuf}
   | "(*"            { multicomment lexbuf }
-  | newline         { new_line lexbuf; analisador lexbuf}
+  | newline         { new_line lexbuf; line_num := !line_num + 1;analisador lexbuf}
   | whitespace      { analisador lexbuf}
   | '='             { [ASSIGN] }
   | '('             { [LPR] }
@@ -95,7 +98,7 @@ rule analisador = parse
       try
         [CST (Int64.of_string snum)]
       with _ -> raise (Lexing_error ("The constant is too big : " ^ snum)) }
-  | id as word      
+  | id as word
   { try
       let token = Hashtbl.find keyword_table word in  
       [token]
@@ -105,14 +108,14 @@ rule analisador = parse
   | _ as c    { raise (Lexing_error (Char.escaped c)) }
 
 and singlecomment = parse
-  | '\n'      { newline lexbuf; analisador lexbuf}
+  | newline      { newline lexbuf; line_num := !line_num + 1; analisador lexbuf}
   | eof       { [EOF]}
   | _         { singlecomment lexbuf}
 
 and multicomment = parse
   | "*)"      { analisador lexbuf}
-  | eof       { raise (Lexing_error "comentario nao fechado")}
-  | '\n'      {new_line lexbuf; multicomment lexbuf}
+  | eof       { raise (Lexing_error_comment "Commentary not closed, you need to close the multi line comments with: *)")}
+  | newline   {new_line lexbuf; line_num := !line_num + 1; multicomment lexbuf}
   | _         { multicomment lexbuf}
 
 {

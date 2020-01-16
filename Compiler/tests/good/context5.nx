@@ -1,5 +1,6 @@
-type t = [0 .. 4];
-val x : t = 3;
+type small_int = [0 .. 4];
+
+val x : small_int = 3;
 
 printn(x);
 
@@ -8,14 +9,16 @@ if(1)
     printn(x);
 
     val x : int = 2;
-
+    
     printn(x);
 
-    type t = [0 .. 1];
-    foreach i in t
+    type small_int = [0 .. 1];
+    
+    foreach i in small_int
     {
         printn(x);
 
+        
         val x : int = 1;
 
         printn(x);

@@ -9,8 +9,8 @@ main.cmo : typing.cmo printer.cmo parser.cmi lexer.cmo interp.cmo \
     compile.cmo ast.cmi
 main.cmx : typing.cmx printer.cmx parser.cmx lexer.cmx interp.cmx \
     compile.cmx ast.cmi
-parser.cmo : ast.cmi parser.cmi
-parser.cmx : ast.cmi parser.cmi
+parser.cmo : lexer.cmo ast.cmi parser.cmi
+parser.cmx : lexer.cmx ast.cmi parser.cmi
 parser.cmi : ast.cmi
 printer.cmo : ast.cmi
 printer.cmx : ast.cmi

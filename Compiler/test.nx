@@ -1,1 +1,18 @@
-type t : array 6 of [minint .. minint];
+function somar(x:int,y:int) : int
+    => x * y;
+
+type t = [0 .. 10];
+
+if(t)
+{
+    print(2);
+}
+else
+{
+    print(3);
+}
+
+val y : int = 2; 
+val x : int = 2;
+
+

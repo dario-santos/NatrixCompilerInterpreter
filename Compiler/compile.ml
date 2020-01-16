@@ -118,12 +118,12 @@ let is_in_type_boundaries ctxs id_ofs t =
     label ("fim_true_" ^ current_tipagem_test)
     
 let rec compile_expr ctxs = function
-  | Ecst i ->
+  | Ecst (i, line) ->
       (* 1 - Colocar a constante no topo da pilha *)
       movq (imm64 i) (reg rax) ++
       pushq (reg rax)
 
-  | Eset (e1, e2) ->
+  | Eset (e1, e2, line) ->
       (* 1 - Colocar o inicio na pilha *)
       compile_expr ctxs e1 ++
       
@@ -144,17 +144,17 @@ let rec compile_expr ctxs = function
       pushq (reg rbx) ++
       pushq (reg rax)
 
-  | Eminint -> 
+  | Eminint line -> 
       (* 1 - Colocar a constante minint na pilha *)
       movq (imm64 minint) (reg rax) ++
       pushq (reg rax) 
 
-  | Emaxint ->
+  | Emaxint line ->
       (* 1 - Colocar a constante maxint na pilha *)
       movq (imm64 maxint) (reg rax) ++
       pushq (reg rax)
 
-  | Eident id ->
+  | Eident(id, line) ->
       (* 1 - Ir buscar  o valor de id *)
       let ctx = List.hd( List.rev (find_id ctxs id )) in
       let v = snd(Hashtbl.find ctx id) in
@@ -162,7 +162,7 @@ let rec compile_expr ctxs = function
       (* 2 - Gerar o codigo respondente  ao tipo de dados*)
       extract_to_assembly v
   
-  | Ebinop (Bmod | Bdiv as op, e1, e2) ->
+  | Ebinop (Bmod | Bdiv as op, e1, e2, line) ->
       
       (* 1 - Dependendo da operacao queremos um registo diferente *)
       let rg = 
@@ -191,7 +191,7 @@ let rec compile_expr ctxs = function
       idivq (reg rbx) ++
       pushq (reg rg)
 
-  | Ebinop (Badd | Bsub | Bmul as o , e1, e2) ->
+  | Ebinop (Badd | Bsub | Bmul as o , e1, e2, line) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
       let op = match o with
         | Badd -> addq
@@ -212,7 +212,7 @@ let rec compile_expr ctxs = function
       op (reg rax) (reg rbx) ++
       pushq (reg rbx)
 
-  | Ebinop (Band | Bor as o, e1, e2) ->
+  | Ebinop (Band | Bor as o, e1, e2, line) ->
       number_of_and_or := !number_of_and_or + 1;
       let current_and_or = string_of_int(!number_of_and_or) in
         
@@ -244,7 +244,7 @@ let rec compile_expr ctxs = function
       pushq (reg rax)
 
 
-  | Ebinop (Bitand | Bitor | Bitxor as o, e1 , e2) ->
+  | Ebinop (Bitand | Bitor | Bitxor as o, e1 , e2, line) ->
       let op = match o with
         | Bitand -> andq
         | Bitor-> orq
@@ -264,7 +264,7 @@ let rec compile_expr ctxs = function
 
       op  (lab "shift") (reg rax) ++
       pushq (reg rax)
-  | Ebinop (Bitls | Bitrs as o, e1 , e2) ->
+  | Ebinop (Bitls | Bitrs as o, e1 , e2, line) ->
       let op = match o with
         | Bitrs -> shrq
         | Bitls -> shlq
@@ -295,7 +295,7 @@ let rec compile_expr ctxs = function
       pushq (reg rax) 
       
    
-  | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2) ->
+  | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2, line) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
       let op = match o with
         | Beq -> je
@@ -338,7 +338,7 @@ let rec compile_expr ctxs = function
       (* 7a - Termina *)
       label ("bool_end_" ^ current_bool_test)
 
-  | Eunop (Unot, e1) ->
+  | Eunop (Unot, e1, line) ->
       (* 1 - Incrementar numero de verificacoes *)
       number_of_bool_tests := !number_of_bool_tests + 1;
       let current_bool_test = string_of_int(!number_of_bool_tests) in
@@ -368,7 +368,7 @@ let rec compile_expr ctxs = function
       (* 6b - Terminamos *)  
       label ("bool_end_" ^ current_bool_test)
 
-  | Eunop (Uneg, e1) -> 
+  | Eunop (Uneg, e1, line) -> 
       (* 1 - Colocar e1 na pilha *)  
       compile_expr ctxs e1 ++
       
@@ -378,7 +378,7 @@ let rec compile_expr ctxs = function
       negq (reg rax) ++
 
       pushq (reg rax)
-  | Eunop (Ubitnot, e1) -> 
+  | Eunop (Ubitnot, e1, line) -> 
       (* 1 - Colocar e1 na pilha *)  
       compile_expr ctxs e1 ++
       
@@ -389,7 +389,7 @@ let rec compile_expr ctxs = function
 
       pushq (reg rax)
 
-  | Ecall ("size", [e1]) ->
+  | Ecall ("size", [e1], line) ->
       (* 1 - Colocar e1 na pilha *)  
       compile_expr ctxs e1 ++
 
@@ -403,7 +403,7 @@ let rec compile_expr ctxs = function
       (* 4 - Termina *)
       pushq (reg rax)
 
-  | Ecall (f, el) ->
+  | Ecall (f, el, line) ->
       (* 1 - Vai buscar a funcao f *)
       let ctx, return = Hashtbl.find function_ctx f in
       let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
@@ -432,7 +432,7 @@ let rec compile_expr ctxs = function
       is_rbx_in_type_boundaries ctxs return ++
       pushq (reg rbx)
       
-  | Eternary (cond, e1, e2) -> 
+  | Eternary (cond, e1, e2, line) -> 
       (*1 - Incrementa o numero de ifs realizados ate ao momento *)
       number_of_ternary := !number_of_ternary + 1;
       let current_ternary = string_of_int(!number_of_ternary) in
@@ -462,7 +462,7 @@ let rec compile_expr ctxs = function
 
 let get_type_size ctxs s = 
   match s with
-  | Eset (e1, e2) ->
+  | Eset (e1, e2, line) ->
     compile_expr ctxs e1 ++
     popq rax ++ (* Fim *)
     popq rbx ++ (* Inicio *)
@@ -471,21 +471,21 @@ let get_type_size ctxs s =
   | _ -> compile_expr ctxs s
 
 let rec compile_stmt ctxs = function
-  | Sif (e, s1, selif) ->
+  | Sif (e, s1, selif, line) ->
       (*1 - Incrementa o numero de ifs realizados ate ao momento *)
       number_of_ifs := !number_of_ifs + 1;
       let current_if_test = string_of_int(!number_of_ifs) in
      
       let rec compile_elif index = function
         | [hd] ->
-            let _, s = hd in 
+            let _, s, line = hd in 
             let body = compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s in
        
             label ("if_else_" ^ string_of_int index ^ current_if_test) ++
             body
      
         | hd::tl -> 
-            let e, s = hd in 
+            let e, s, line = hd in 
             let body = compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s in
             
             label ("if_else_" ^ (string_of_int index) ^ current_if_test) ++
@@ -525,8 +525,8 @@ let rec compile_stmt ctxs = function
       (* 5 - Termina *)
       label ("if_end_" ^ current_if_test)
 
-  | Snothing -> nop
-  | Sreturn (e1) ->
+  | Snothing line -> nop
+  | Sreturn (e1, line) ->
       
       movq (imm64 0L) (reg rax) ++
       cmpq (lab "is_in_function") (reg rax) ++
@@ -538,19 +538,19 @@ let rec compile_stmt ctxs = function
       popq rax ++
       (* 2 - Retorna *)
       ret
-  | Sbreak ->
+  | Sbreak line ->
       if List.length !loops <= 0 then error "Using the break statement outside of a loop";
       let current_loop = List.hd !loops in
      
       jmp (current_loop ^  "_fim")
 
-  | Scontinue -> 
+  | Scontinue line-> 
       if List.length !loops <= 0 then error "Using the continue statement outside of a loop";
       let current_loop = List.hd !loops in
      
       jmp (current_loop ^  "_condicao")
 
-  | Sdeclare (id, t ,e) ->
+  | Sdeclare (id, t, e, line) ->
       (* 1 - Calcular o tamanho do frame *)
       let ofs = !frame_size in
       frame_size := 8 + !frame_size;
@@ -570,7 +570,7 @@ let rec compile_stmt ctxs = function
     Hashtbl.add ctx id (t, Vint ofs);
     code
 
-  | Sdeclarearray (id, ida, e) ->
+  | Sdeclarearray (id, ida, e, line) ->
       (* 
         1 - O tamanho da array está em (ida^sz)
       *)
@@ -608,7 +608,7 @@ let rec compile_stmt ctxs = function
       let ctx = List.hd (List.rev ctxs) in
       Hashtbl.add ctx id (Int, Vlist(Vset(0, 3), Vset(0,1)));
       code
-  | Sassign (id, e1)  ->
+  | Sassign (id, e1, line)  ->
       (* 1 - Vai buscar o contexto em que o id esta declarado *)        
       let ctx = List.hd (List.rev (find_id ctxs id)) in
 
@@ -623,7 +623,7 @@ let rec compile_stmt ctxs = function
       movq (reg rax) (ind ~ofs:(-ofs) rbp) ++
       is_in_type_boundaries ctxs ofs t
 
-  | Sarray (id, sz, t) -> 
+  | Sarray (id, sz, t, line) -> 
       let ctx = List.hd (List.rev ctxs) in
       let size = get_type_size ctxs sz in
       let ofs = - !frame_size in
@@ -631,9 +631,9 @@ let rec compile_stmt ctxs = function
       
       let t1 = 
         match t with 
-        | ATInt -> compile_expr ctxs (Eset(Ecst(minint), Ecst(maxint)))
-        | ATset(e1, e2) -> compile_expr ctxs (Eset(e1, e2))
-        | ATid t -> compile_expr ctxs (Eident t)
+        | ATInt -> compile_expr ctxs (Eset(Ecst(minint, line), Ecst(maxint, line), line))
+        | ATset(e1, e2) -> compile_expr ctxs (Eset(e1, e2, line))
+        | ATid t -> compile_expr ctxs (Eident(t, line))
         in
       let code = 
         size ++
@@ -653,7 +653,7 @@ let rec compile_stmt ctxs = function
 
       code
 
-  | Sset (id, set) ->
+  | Sset (id, set, line) ->
       (* 1 - Vai buscar o contexto atual *)
       let ctx = List.hd (List.rev ctxs) in
       
@@ -674,14 +674,14 @@ let rec compile_stmt ctxs = function
       Hashtbl.add ctx id (Int, Vset(ofs, ofs + 8));
       code
 
-  | Sprint e ->
+  | Sprint (e, line) ->
       (* 1 - Vai buscar o valor de e *)
       compile_expr ctxs e ++
 
       (* 2 - Passa como parametro para a funcao print_int e chama-a*)
       popq rdi ++
       call "print_int"
-  | Sprintn e ->
+  | Sprintn (e, line) ->
       (* 1 - Vai buscar o valor de e *)  
       compile_expr ctxs e ++
       
@@ -689,7 +689,7 @@ let rec compile_stmt ctxs = function
       popq rdi ++
       call "printn_int"
 
-  | Sscanf id ->
+  | Sscanf (id, line) ->
       (* 1 - Vai buscar o contexto em que o id esta declarado *)        
       let ctx = List.hd (List.rev (find_id ctxs id)) in
 
@@ -706,17 +706,17 @@ let rec compile_stmt ctxs = function
       (* 3 - Atualiza o valor que esta no endereço ofs*)
       is_in_type_boundaries ctxs ofs t
 
-  | Sblock bl -> 
+  | Sblock (bl, line) -> 
       (* 1 - Compila um bloco de instrucoes *)
       let block = List.rev(compile_block_stmt ctxs bl) in
       List.fold_right (++) block nop
 
-  | Sfor(id, t, e, cond, incr, bl) ->
+  | Sfor(id, t, e, cond, incr, bl, line) ->
       (* 1 - Cria o contexto do for *)
       let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
 
       (* 2 - Declara a variavel id *)
-      let code = compile_stmt ctxs (Sdeclare(id, t, e)) in
+      let code = compile_stmt ctxs (Sdeclare(id, t, e, line)) in
 
       (* 3 - Vai buscar o contexto do for *)
       let ctx = List.hd (List.rev ctxs) in
@@ -775,13 +775,13 @@ let rec compile_stmt ctxs = function
       
       for_verification
      
-  | Sforeach(x, e, bl) ->
+  | Sforeach(x, e, bl, line) ->
       (* 1 - Cria o contexto do foreach *)
       let ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
        
       (* Reserva memória para o fim do conjunto *)
       (* 2 - Declara a variavel x*)
-      let code = compile_stmt ctxs (Sdeclare(x, Int, Ecst 0L)) in
+      let code = compile_stmt ctxs (Sdeclare(x, Int, Ecst(0L, line), line)) in
       frame_size := 8 + !frame_size;
       
       
@@ -845,7 +845,7 @@ let rec compile_stmt ctxs = function
       body ++ 
       for_verification      
 
-  | Swhile(e, bl) ->
+  | Swhile(e, bl, line) ->
       (* 1 - Cria o contexto do foreach *)
 
       let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
@@ -877,7 +877,7 @@ let rec compile_stmt ctxs = function
     
       code
       
-  | Sdowhile(e, bl) ->
+  | Sdowhile(e, bl, line) ->
       (* 1 - Cria o contexto do foreach *)
       let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
     
@@ -906,7 +906,7 @@ let rec compile_stmt ctxs = function
       
       code
   
-  | _ -> error "COMPILE STMT"
+  | _ -> error "STMT NOT IMPLEMENTED IN THE COMPILER."
         
 and compile_block_stmt ctx = function
   | [] -> [nop]
@@ -917,7 +917,7 @@ and compile_block_stmts ctx = function
   | s::sl -> (compile_block_stmts ctx sl) @ [compile_stmts ctx s]
         
 and compile_stmts ctxs = function  
-  | Stfunction (f, args, return, body) -> 
+  | Stfunction (f, args, return, body, line) -> 
       (* 1 - Cria o contexto do corpo da funcao *)
       let ctx = (Hashtbl.create 17 : table_ctx) in
       let ctx_list = ref [] in
@@ -951,10 +951,10 @@ and compile_stmts ctxs = function
       Hashtbl.add function_ctx f (!ctx_list, return);
       arguments_code
       
-  | Stblock bl -> 
+  | Stblock (bl, line) -> 
       let block = List.rev(compile_block_stmts ctxs bl) in
       List.fold_right (++) block nop
-  | Stmt s     -> compile_stmt ctxs s
+  | Stmt (s, line)     -> compile_stmt ctxs s
 
 (* Compilação do programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =

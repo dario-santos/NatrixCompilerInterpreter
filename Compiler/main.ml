@@ -25,7 +25,7 @@ let options =
   "-print-ast", Arg.Set print_ast,
   "  Prints the AST of a givin file ";
   "-interpt", Arg.Set interpt,
-  "  Utilizes the interpt instead of the compiler ";
+  "  Utilizes the interpter instead of the compiler ";
    "-o", Arg.String (set_file ofile),
    "<file>  To indicate the name of the output file"]
 
@@ -87,13 +87,18 @@ let () =
       localisation (Lexing.lexeme_start_p buf);
 	    eprintf "\nerror:\n\n  Lexical error: invalid symbol: %s.\n\n@." c;
       exit 1
+  | Lexer.Lexing_error_comment c ->
+      localisation (Lexing.lexeme_start_p buf);
+	    eprintf "\nerror:\n\n  Lexical error:\n  %s.\n\n@." c;
+      exit 1
   | Parser.Error ->
 	    (* Erro sintáctio. Recupera-se a posição e converte-se para número de linha *)
 	    localisation (Lexing.lexeme_start_p buf);
-	    eprintf "\nerror:\n\n   Syntatic error: invalid derivation.\n\n@.";
+	    eprintf "\nerror:\n\n  Syntatic error: invalid derivation.\n\n@.";
       exit 1
-  | Typing.Error s -> 
-      eprintf "\nerror:\n\n  Semmantic analysis:\n    %s\n@." s;
+  | Typing.Error (s, line)-> 
+      eprintf "\n\nFile \"%s\", line %d:\n" !ifile line;
+      eprintf "\nerror:\n\n  Semmantic Analysis:\n  %s\n@." s;
       exit 1
   | Compile.VarUndef s->
 	    (* Erro de utilização de variáveis durante a compilação *)
@@ -103,20 +108,20 @@ let () =
 	    (* Erro de utilização de variáveis durante a compilação *)
 	    eprintf "\nerror:\n\n  Erro de compilação:\n  %s\n@." s;
       exit 1
-  | Interp.Error s ->
-	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Interpretation Error:\n  %s\n@." s;
+  | Interp.Error (s, line) ->
+      eprintf "\n\nFile \"%s\", line %d:\n" !ifile line;
+      eprintf "\nerror:\n\n    Interpretation Error:\n  %s\n@." s;
       exit 1
-  | Interp.Return _ -> 
-	    (* Erro de utilização de variáveis durante a compilação *)
-	    eprintf "\nerror:\n\n    Interpretation Error:\n Run-time error: Illegal return statement. You can only use return statements inside of functions  \n@.";
+  | Interp.Return (_, line) -> 
+      eprintf "\n\nFile \"%s\", line %d:\n" !ifile line;
+      eprintf "\nerror:\n\n    Interpretation Error:\n Run-time error: Illegal return statement. You can only use return statements inside of functions  \n@.";
       exit 1
-  | Interp.Continue -> 
-      (* Erro de utilização de variáveis durante a compilação *)
+  | Interp.Continue line -> 
+      eprintf "\n\nFile \"%s\", line %d:\n" !ifile line;
       eprintf "\nerror:\n\n    Interpretation Error:\n Run-time error: Illegal continue statement. You can only use continue statements inside of loops  \n@.";
       exit 1
-  | Interp.Break -> 
-      (* Erro de utilização de variáveis durante a compilação *)
+  | Interp.Break line -> 
+      eprintf "\n\nFile \"%s\", line %d:\n" !ifile line;
       eprintf "\nerror:\n\n    Interpretation Error:\n Run-time error: Illegal continue statement. You can only use break statements inside of loops  \n@.";
       exit 1
   

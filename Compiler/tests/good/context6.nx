@@ -1,14 +1,14 @@
-type t = [0 .. 4];
-type a : array t of t;
+type small_int = [0 .. 4];
+type arr : array small_int of small_int;
 
-val v : a filled by 3;
+val v : arr filled by 3;
 
 printn(v[2]);
 
 if(1)
 {
     printn(v[2]);
-    val v : a filled by 1;
+    val v : arr filled by 1;
     printn(v[2]);
 }
 
