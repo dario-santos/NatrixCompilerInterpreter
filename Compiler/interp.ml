@@ -103,7 +103,6 @@ let value_in_type_limits v t =
 (* Interpretação de uma expressão (devolve um valor) *)
 let rec expr ctxs = function
   | Ecst n ->
-      if n < 0L then error ("Invalid constante, you are trying to use a negative number.");  
       Vint n
   | Eset (e1, e2) -> 
       let i = expr_int ctxs e1 in 
@@ -345,7 +344,7 @@ and interpret_stmt ctxs = function
       
       (* 2 - Iterar o corpo do foreach *)
       begin try 
-      while(not (!i = 0L)) do
+      while(not (!i <= 0L)) do
         (* 2.1 - Cada iteração representa um contexto único*)
         let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
         

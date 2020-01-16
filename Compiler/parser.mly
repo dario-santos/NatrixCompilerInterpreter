@@ -16,9 +16,11 @@
 %token TYPE
 %token ARRAY OF FILLED BY
 %token MAXINT MININT
-%token PLUS MINUS TIMES DIV MOD
+%token PLUS "+" 
+%token MINUS TIMES DIV MOD
 %token BITAND BITOR BITXOR LSHIFT RSHIFT BITNOT
-%token GT GET LT LET 
+%token GT ">"
+%token GET LT LET 
 %token EQ NEQ
 %token TERNARY "?"
 %token LPR "(" 
@@ -64,7 +66,7 @@ prog:
 ;
 
 stmts:
-| FUNCTION f = ident "(" x = separated_list(",", argument_list) ")" ":"  r = type_def "{" s = suite "}" 
+| FUNCTION f = ident "(" x = separated_list(",", argument_list) ")" ":"  r = type_def s = function_suite 
               { Stfunction(f, x, r, s)}
 | s = stmt    { Stmt s } 
 ;
@@ -73,8 +75,14 @@ argument_list:
 |  id = ident ":" t = type_def {(id, t)}
 ;
 
+function_suite:
+| "{" l = list(stmt) "}"    { Sblock  l}
+| "="">" e = expr ";"       { Sreturn e}
+;
+
+
 suite:
-| l = list(stmt) { Sblock l }
+| l = list(stmt)     { Sblock l }
 ;
 
 elif:
@@ -100,6 +108,7 @@ simple_stmt:
 | TYPE id = ident "=" set = expr ";"               { Sset (id, set) }
 | TYPE id = ident ":" ARRAY size = expr OF t = array_type ";"   { Sarray (id, size, t) }
 | id = ident ":""=" e = expr ";"                   { Sassign (id, e) }
+| id = ident o = binop"=" e = expr ";"            { Sassign (id, Ebinop(o, Eident id, e)) }
 | id = ident "["e2 = expr"]" ":""=" e3 = expr ";"  { Saset (id, e2, e3) }
 | PRINT "(" e = expr ")" ";"                       { Sprint e }
 | PRINTN "(" e = expr ")" ";"                      { Sprintn e }

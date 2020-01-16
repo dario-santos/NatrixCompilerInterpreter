@@ -25,6 +25,7 @@ let number_of_ifs = ref 0
 let number_of_tipagens = ref 0
 let number_of_arraydefs = ref 0
 let number_of_ternary = ref 0
+let number_of_shift = ref 0
 
 let loops = ref []
 
@@ -243,13 +244,11 @@ let rec compile_expr ctxs = function
       pushq (reg rax)
 
 
-  | Ebinop (Bitls | Bitrs | Bitand | Bitor | Bitxor as o, e1 , e2) ->
+  | Ebinop (Bitand | Bitor | Bitxor as o, e1 , e2) ->
       let op = match o with
         | Bitand -> andq
         | Bitor-> orq
         | Bitxor -> xorq
-        | Bitrs -> shrq
-        | Bitls -> shlq
         | _ -> assert false
       in  
 
@@ -265,7 +264,37 @@ let rec compile_expr ctxs = function
 
       op  (lab "shift") (reg rax) ++
       pushq (reg rax)
+  | Ebinop (Bitls | Bitrs as o, e1 , e2) ->
+      let op = match o with
+        | Bitrs -> shrq
+        | Bitls -> shlq
+        | _ -> assert false
+      in  
+      (* 1 - Incrementar numero de verificacoes *)
+      number_of_shift := !number_of_shift + 1;
+      let current_shift = string_of_int(!number_of_shift) in
+
+      (* 3 - Colocar e1 e e2 na pilha*)  
+      compile_expr ctxs e1 ++
+      compile_expr ctxs e2 ++
   
+      (* 4 - Recebe os valores da pilha *)
+      popq rbx ++
+      popq rax ++
+
+      cmpq (imm64 0L) (reg rbx) ++
+      jle ("print_error_s") ++
+      label ("bitwise_shift_" ^ current_shift) ++
+      
+      op (imm 1) (reg rax) ++
+      decq (reg rbx) ++
+      
+      cmpq (imm64 0L) (reg rbx) ++
+      jg ("bitwise_shift_" ^ current_shift) ++
+      
+      pushq (reg rax) 
+      
+   
   | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
       let op = match o with
@@ -347,6 +376,16 @@ let rec compile_expr ctxs = function
       popq rax ++
       
       negq (reg rax) ++
+
+      pushq (reg rax)
+  | Eunop (Ubitnot, e1) -> 
+      (* 1 - Colocar e1 na pilha *)  
+      compile_expr ctxs e1 ++
+      
+      (* 2 - Recebe o valor de e1 *)  
+      popq rax ++
+      
+      notq (reg rax) ++
 
       pushq (reg rax)
 
