@@ -46,5 +46,4 @@ https://dario-santos.github.io/Natrix/index
 ## Todo:
 
 - [ ] Add support to arrays in the compiler;
-- [ ] Bitwise operators;
 - [ ] A better memory management.
