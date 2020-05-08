@@ -4,16 +4,14 @@ This is the compiler and interpreter of the Natrix language. (Link to the docume
 
 ## How to Use It
 
-If you have downloaded the source code use the makefile that is in the folder Compiler.
+If you have downloaded the source code use the makefile that is in the folder ./Compiler.
 
 
 ```sh
 make
 ```
 
-It will generate a file with the name `natrix` that's our compiler/interpreter.
-
-The programm contains a 
+It will generate a file with the name `natrix` that's our compiler/interpreter. 
 
 The program offers a set of options:
 
@@ -41,9 +39,4 @@ make test
 
 The full documentation of the Natrix language can be accessed bellow:
 
-https://dario-santos.github.io/Natrix/index
-
-## Todo:
-
-- [ ] Add support to arrays in the compiler;
-- [ ] A better memory management.
+https://dario-santos.github.io/2020/01/12/natrixdoc.html
