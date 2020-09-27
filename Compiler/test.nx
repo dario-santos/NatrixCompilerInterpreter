@@ -1,7 +1,7 @@
 function somar(x:int,y:int) : int
     => x * y;
 
-type t = [0 .. 10];
+val t : int = 1;
 
 if(t)
 {

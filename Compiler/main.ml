@@ -3,9 +3,6 @@
 
 open Format
 open Lexing
-open Parser
-open Compile
-open Ast
 
 (* Opção de compilação, para parar na fase de parsing *)
 let parse_only = ref false

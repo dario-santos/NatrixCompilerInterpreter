@@ -1,40 +1,35 @@
 	.text
 	.globl	main
 main:
-	subq $40, %rsp
-	leaq 32(%rsp), %rbp
-	movq $0, 0(%rbp)
-	movq $0, -8(%rbp)
-	movq $1, %rax
-	pushq %rax
+	subq $0, %rsp
+	leaq -8(%rsp), %rbp
+	addq $1, is_in_function
+	call userprinta
+	movq %rax, %rbx
+	pushq %rbx
 	popq %rax
-	movq %rax, -16(%rbp)
-	movq -16(%rbp), %rax
+	cmpq $1, %rax
+	je lazy_evaluation_1
+	addq $1, is_in_function
+	call userprinta
+	movq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	orq $1, %rax
+lazy_evaluation_1:
 	pushq %rax
 	popq %rax
 	cmpq $0, %rax
 	je if_else_11
-	movq $2, %rax
-	pushq %rax
-	popq %rdi
-	call print_int
-	jmp if_end_1
-if_else_11:
 	movq $3, %rax
 	pushq %rax
 	popq %rdi
-	call print_int
+	call printn_int
+	jmp if_end_1
+if_else_11:
 if_end_1:
-	movq $2, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -24(%rbp)
-	movq $2, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -32(%rbp)
 end:
-	addq $40, %rsp
+	addq $0, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -80,19 +75,17 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
-usersomar:
+userprinta:
+	movq $1, %rax
+	pushq %rax
+	popq %rdi
+	call printn_int
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
 	decq is_in_function
-	movq 0(%rbp), %rax
+	movq $1, %rax
 	pushq %rax
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	imulq %rax, %rbx
-	pushq %rbx
 	popq %rax
 	ret
 	call print_error_f

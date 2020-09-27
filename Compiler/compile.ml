@@ -3,7 +3,6 @@
 open Format
 open X86_64
 open Ast
-open Int64
       
 exception VarUndef of string
 exception Error of string
@@ -118,12 +117,12 @@ let is_in_type_boundaries ctxs id_ofs t =
     label ("fim_true_" ^ current_tipagem_test)
     
 let rec compile_expr ctxs = function
-  | Ecst (i, line) ->
+  | Ecst (i, _) ->
       (* 1 - Colocar a constante no topo da pilha *)
       movq (imm64 i) (reg rax) ++
       pushq (reg rax)
 
-  | Eset (e1, e2, line) ->
+  | Eset (e1, e2, _) ->
       (* 1 - Colocar o inicio na pilha *)
       compile_expr ctxs e1 ++
       
@@ -144,17 +143,17 @@ let rec compile_expr ctxs = function
       pushq (reg rbx) ++
       pushq (reg rax)
 
-  | Eminint line -> 
+  | Eminint _ -> 
       (* 1 - Colocar a constante minint na pilha *)
       movq (imm64 minint) (reg rax) ++
       pushq (reg rax) 
 
-  | Emaxint line ->
+  | Emaxint _ ->
       (* 1 - Colocar a constante maxint na pilha *)
       movq (imm64 maxint) (reg rax) ++
       pushq (reg rax)
 
-  | Eident(id, line) ->
+  | Eident(id, _) ->
       (* 1 - Ir buscar  o valor de id *)
       let ctx = List.hd( List.rev (find_id ctxs id )) in
       let v = snd(Hashtbl.find ctx id) in
@@ -162,7 +161,7 @@ let rec compile_expr ctxs = function
       (* 2 - Gerar o codigo respondente  ao tipo de dados*)
       extract_to_assembly v
   
-  | Ebinop (Bmod | Bdiv as op, e1, e2, line) ->
+  | Ebinop (Bmod | Bdiv as op, e1, e2, _) ->
       
       (* 1 - Dependendo da operacao queremos um registo diferente *)
       let rg = 
@@ -191,7 +190,7 @@ let rec compile_expr ctxs = function
       idivq (reg rbx) ++
       pushq (reg rg)
 
-  | Ebinop (Badd | Bsub | Bmul as o , e1, e2, line) ->
+  | Ebinop (Badd | Bsub | Bmul as o , e1, e2, _) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
       let op = match o with
         | Badd -> addq
@@ -212,7 +211,7 @@ let rec compile_expr ctxs = function
       op (reg rax) (reg rbx) ++
       pushq (reg rbx)
 
-  | Ebinop (Band | Bor as o, e1, e2, line) ->
+  | Ebinop (Band | Bor as o, e1, e2, _) ->
       number_of_and_or := !number_of_and_or + 1;
       let current_and_or = string_of_int(!number_of_and_or) in
         
@@ -244,7 +243,7 @@ let rec compile_expr ctxs = function
       pushq (reg rax)
 
 
-  | Ebinop (Bitand | Bitor | Bitxor as o, e1 , e2, line) ->
+  | Ebinop (Bitand | Bitor | Bitxor as o, e1 , e2, _) ->
       let op = match o with
         | Bitand -> andq
         | Bitor-> orq
@@ -264,7 +263,7 @@ let rec compile_expr ctxs = function
 
       op  (lab "shift") (reg rax) ++
       pushq (reg rax)
-  | Ebinop (Bitls | Bitrs as o, e1 , e2, line) ->
+  | Ebinop (Bitls | Bitrs as o, e1 , e2, _) ->
       let op = match o with
         | Bitrs -> shrq
         | Bitls -> shlq
@@ -295,7 +294,7 @@ let rec compile_expr ctxs = function
       pushq (reg rax) 
       
    
-  | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2, line) ->
+  | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2, _) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
       let op = match o with
         | Beq -> je
@@ -338,7 +337,7 @@ let rec compile_expr ctxs = function
       (* 7a - Termina *)
       label ("bool_end_" ^ current_bool_test)
 
-  | Eunop (Unot, e1, line) ->
+  | Eunop (Unot, e1, _) ->
       (* 1 - Incrementar numero de verificacoes *)
       number_of_bool_tests := !number_of_bool_tests + 1;
       let current_bool_test = string_of_int(!number_of_bool_tests) in
@@ -368,7 +367,7 @@ let rec compile_expr ctxs = function
       (* 6b - Terminamos *)  
       label ("bool_end_" ^ current_bool_test)
 
-  | Eunop (Uneg, e1, line) -> 
+  | Eunop (Uneg, e1, _) -> 
       (* 1 - Colocar e1 na pilha *)  
       compile_expr ctxs e1 ++
       
@@ -378,7 +377,7 @@ let rec compile_expr ctxs = function
       negq (reg rax) ++
 
       pushq (reg rax)
-  | Eunop (Ubitnot, e1, line) -> 
+  | Eunop (Ubitnot, e1, _) -> 
       (* 1 - Colocar e1 na pilha *)  
       compile_expr ctxs e1 ++
       
@@ -389,7 +388,7 @@ let rec compile_expr ctxs = function
 
       pushq (reg rax)
 
-  | Ecall ("size", [e1], line) ->
+  | Ecall ("size", [e1], _) ->
       (* 1 - Colocar e1 na pilha *)  
       compile_expr ctxs e1 ++
 
@@ -403,7 +402,7 @@ let rec compile_expr ctxs = function
       (* 4 - Termina *)
       pushq (reg rax)
 
-  | Ecall (f, el, line) ->
+  | Ecall (f, el, _) ->
       (* 1 - Vai buscar a funcao f *)
       let ctx, return = Hashtbl.find function_ctx f in
       let ctxs = ctxs@[(Hashtbl.create 17 : table_ctx)] in
@@ -412,7 +411,7 @@ let rec compile_expr ctxs = function
       
       for i = 0 to (List.length el) - 1 do
         (* 4.1 - Vai buscar os dados do argumento i *)
-        let k, v = List.nth ctx i in
+        let _, v = List.nth ctx i in
         let t, ofs = v in
         let ofs = - int_of_vint ofs in
         code := !code ++
@@ -432,7 +431,7 @@ let rec compile_expr ctxs = function
       is_rbx_in_type_boundaries ctxs return ++
       pushq (reg rbx)
       
-  | Eternary (cond, e1, e2, line) -> 
+  | Eternary (cond, e1, e2, _) -> 
       (*1 - Incrementa o numero de ifs realizados ate ao momento *)
       number_of_ternary := !number_of_ternary + 1;
       let current_ternary = string_of_int(!number_of_ternary) in
@@ -462,7 +461,7 @@ let rec compile_expr ctxs = function
 
 let get_type_size ctxs s = 
   match s with
-  | Eset (e1, e2, line) ->
+  | Eset (e1, _, _) ->
     compile_expr ctxs e1 ++
     popq rax ++ (* Fim *)
     popq rbx ++ (* Inicio *)
@@ -471,21 +470,21 @@ let get_type_size ctxs s =
   | _ -> compile_expr ctxs s
 
 let rec compile_stmt ctxs = function
-  | Sif (e, s1, selif, line) ->
+  | Sif (e, s1, selif, _) ->
       (*1 - Incrementa o numero de ifs realizados ate ao momento *)
       number_of_ifs := !number_of_ifs + 1;
       let current_if_test = string_of_int(!number_of_ifs) in
      
       let rec compile_elif index = function
         | [hd] ->
-            let _, s, line = hd in 
+            let _, s, _ = hd in 
             let body = compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s in
        
             label ("if_else_" ^ string_of_int index ^ current_if_test) ++
             body
      
         | hd::tl -> 
-            let e, s, line = hd in 
+            let e, s, _ = hd in 
             let body = compile_stmt (ctxs@[(Hashtbl.create 17 : table_ctx)]) s in
             
             label ("if_else_" ^ (string_of_int index) ^ current_if_test) ++
@@ -525,8 +524,8 @@ let rec compile_stmt ctxs = function
       (* 5 - Termina *)
       label ("if_end_" ^ current_if_test)
 
-  | Snothing line -> nop
-  | Sreturn (e1, line) ->
+  | Snothing _ -> nop
+  | Sreturn (e1, _) ->
       
       movq (imm64 0L) (reg rax) ++
       cmpq (lab "is_in_function") (reg rax) ++
@@ -538,19 +537,19 @@ let rec compile_stmt ctxs = function
       popq rax ++
       (* 2 - Retorna *)
       ret
-  | Sbreak line ->
+  | Sbreak _ ->
       if List.length !loops <= 0 then error "Using the break statement outside of a loop";
       let current_loop = List.hd !loops in
      
       jmp (current_loop ^  "_fim")
 
-  | Scontinue line-> 
+  | Scontinue _ -> 
       if List.length !loops <= 0 then error "Using the continue statement outside of a loop";
       let current_loop = List.hd !loops in
      
       jmp (current_loop ^  "_condicao")
 
-  | Sdeclare (id, t, e, line) ->
+  | Sdeclare (id, t, e, _) ->
       (* 1 - Calcular o tamanho do frame *)
       let ofs = !frame_size in
       frame_size := 8 + !frame_size;
@@ -570,7 +569,7 @@ let rec compile_stmt ctxs = function
     Hashtbl.add ctx id (t, Vint ofs);
     code
 
-  | Sdeclarearray (id, ida, e, line) ->
+  | Sdeclarearray (id, ida, e, _) ->
       (* 
         1 - O tamanho da array está em (ida^sz)
       *)
@@ -580,7 +579,6 @@ let rec compile_stmt ctxs = function
       let current_arraydefs = string_of_int(!number_of_arraydefs) in
 
       (* 2 - Guardamos o frame anterior para calcular o tamanho da array *)
-      let frame_size_array = ref !frame_size in
       let ofs = !frame_size in
       frame_size := 16 + !frame_size;
       
@@ -608,7 +606,7 @@ let rec compile_stmt ctxs = function
       let ctx = List.hd (List.rev ctxs) in
       Hashtbl.add ctx id (Int, Vlist(Vset(0, 3), Vset(0,1)));
       code
-  | Sassign (id, e1, line)  ->
+  | Sassign (id, e1, _)  ->
       (* 1 - Vai buscar o contexto em que o id esta declarado *)        
       let ctx = List.hd (List.rev (find_id ctxs id)) in
 
@@ -653,7 +651,7 @@ let rec compile_stmt ctxs = function
 
       code
 
-  | Sset (id, set, line) ->
+  | Sset (id, set, _) ->
       (* 1 - Vai buscar o contexto atual *)
       let ctx = List.hd (List.rev ctxs) in
       
@@ -674,14 +672,14 @@ let rec compile_stmt ctxs = function
       Hashtbl.add ctx id (Int, Vset(ofs, ofs + 8));
       code
 
-  | Sprint (e, line) ->
+  | Sprint (e, _) ->
       (* 1 - Vai buscar o valor de e *)
       compile_expr ctxs e ++
 
       (* 2 - Passa como parametro para a funcao print_int e chama-a*)
       popq rdi ++
       call "print_int"
-  | Sprintn (e, line) ->
+  | Sprintn (e, _) ->
       (* 1 - Vai buscar o valor de e *)  
       compile_expr ctxs e ++
       
@@ -689,7 +687,7 @@ let rec compile_stmt ctxs = function
       popq rdi ++
       call "printn_int"
 
-  | Sscanf (id, line) ->
+  | Sscanf (id, _) ->
       (* 1 - Vai buscar o contexto em que o id esta declarado *)        
       let ctx = List.hd (List.rev (find_id ctxs id)) in
 
@@ -706,7 +704,7 @@ let rec compile_stmt ctxs = function
       (* 3 - Atualiza o valor que esta no endereço ofs*)
       is_in_type_boundaries ctxs ofs t
 
-  | Sblock (bl, line) -> 
+  | Sblock (bl, _) -> 
       (* 1 - Compila um bloco de instrucoes *)
       let block = List.rev(compile_block_stmt ctxs bl) in
       List.fold_right (++) block nop
@@ -845,7 +843,7 @@ let rec compile_stmt ctxs = function
       body ++ 
       for_verification      
 
-  | Swhile(e, bl, line) ->
+  | Swhile(e, bl, _) ->
       (* 1 - Cria o contexto do foreach *)
 
       let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
@@ -877,7 +875,7 @@ let rec compile_stmt ctxs = function
     
       code
       
-  | Sdowhile(e, bl, line) ->
+  | Sdowhile(e, bl, _) ->
       (* 1 - Cria o contexto do foreach *)
       let while_ctxs = (ctxs@[(Hashtbl.create 17 : table_ctx)]) in
     
@@ -917,7 +915,7 @@ and compile_block_stmts ctx = function
   | s::sl -> (compile_block_stmts ctx sl) @ [compile_stmts ctx s]
         
 and compile_stmts ctxs = function  
-  | Stfunction (f, args, return, body, line) -> 
+  | Stfunction (f, args, return, body, _) -> 
       (* 1 - Cria o contexto do corpo da funcao *)
       let ctx = (Hashtbl.create 17 : table_ctx) in
       let ctx_list = ref [] in
@@ -951,10 +949,10 @@ and compile_stmts ctxs = function
       Hashtbl.add function_ctx f (!ctx_list, return);
       arguments_code
       
-  | Stblock (bl, line) -> 
+  | Stblock (bl, _) -> 
       let block = List.rev(compile_block_stmts ctxs bl) in
       List.fold_right (++) block nop
-  | Stmt (s, line)     -> compile_stmt ctxs s
+  | Stmt (s, _)     -> compile_stmt ctxs s
 
 (* Compilação do programa p e grava o código no ficheiro ofile *)
 let compile_program p ofile =

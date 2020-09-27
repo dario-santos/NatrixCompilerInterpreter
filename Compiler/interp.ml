@@ -44,7 +44,7 @@ let size_of_value = function
   | Vlist(_,r) -> let i,f = vset_to_tuplo r in Int64.sub f i
 
 (* Funcao print *)
-let rec print_value = function
+let print_value = function
   | Vint n ->  printf "%s" (Int64.to_string n)
   | _ -> error "THE TYPING IS NOT GETTING ALL OF THE ERRORS - print_value" 0
 
@@ -102,7 +102,7 @@ let value_in_type_limits v t =
 
 (* Interpretação de uma expressão (devolve um valor) *)
 let rec expr ctxs = function
-  | Ecst (n, line) ->
+  | Ecst (n, _) ->
       Vint n
   | Eset (e1, e2, line) -> 
       let i = expr_int ctxs e1 in 
@@ -110,33 +110,33 @@ let rec expr ctxs = function
       if not(i < f) then error ("Invalid size of set. A set needs to have atleast the size of one, but you are trying to initialize a set with " ^Int64.to_string (Int64.sub f i) ^" elements.") line;
       Vset (i, f)
 
-  | Eminint line -> 
+  | Eminint _ -> 
       Vint minint
       
-  | Emaxint line -> 
+  | Emaxint _ -> 
       Vint maxint
 
-  | Ebinop (Band, e1, e2, line) ->
+  | Ebinop (Band, e1, e2, _) ->
       let v1 = expr ctxs e1 in
       if is_true v1 = 1L then expr ctxs e2 else v1
 
-  | Ebinop (Bor, e1, e2, line) ->
+  | Ebinop (Bor, e1, e2, _) ->
       let v1 = expr ctxs e1 in
       if is_false v1 = 1L then expr ctxs e2 else v1
 
   | Ebinop (Badd | Bsub | Bmul | Bdiv | Bmod |
             Beq | Bneq | Blt | Ble | Bgt | Bge | Bitand | Bitor | Bitxor | Bitls | Bitrs as op, e1, e2, line) ->
       binop op (expr ctxs e1) (expr ctxs e2) line
-  | Eunop (Uneg, e1, line) -> 
+  | Eunop (Uneg, e1, _) -> 
       Vint (Int64.neg (expr_int ctxs e1))
 
-  | Eunop (Unot, e1, line) ->
+  | Eunop (Unot, e1, _) ->
       Vint (is_false (expr ctxs e1))
 
-  | Eunop (Ubitnot, e1, line) ->
+  | Eunop (Ubitnot, e1, _) ->
       Vint (Int64.lognot  (expr_int ctxs e1))
 
-  | Ecall ("size", [e1], line) -> 
+  | Ecall ("size", [e1], _) -> 
       Vint (size_of_value (expr ctxs e1))
 
   | Ecall (f, el, line) ->
@@ -162,7 +162,7 @@ let rec expr ctxs = function
             if value_in_type_limits r return then Vint r 
             else error ("Value out of bounds. The value "^Int64.to_string r ^" can\'t be used as the return of the function " ^ f ^ ", try a value in the range of the type " ^ string_of_value return ^ ".") line;
     end
-  | Eident(id, line) ->
+  | Eident(id, _) ->
       let ctx = List.hd (List.rev (find_id id ctxs)) in
       fst(Hashtbl.find ctx id)
         
@@ -178,7 +178,7 @@ let rec expr ctxs = function
       (* 2 - Retorna o valor *)
       l.(Int64.to_int(Int64.sub index i))
 
-  | Eternary (cond, e1, e2, line) -> 
+  | Eternary (cond, e1, e2, _) -> 
       let cond = expr_int ctxs cond in
       let v1 = expr ctxs e1 in
       let v2 = expr ctxs e2 in
@@ -205,7 +205,7 @@ and expr_array_type ctxs e =
       
 (* Interpretacao de instrucoes - locais*)
 and interpret_stmt ctxs = function
-  | Sif (e, s1, selif, line)   -> 
+  | Sif (e, s1, selif, _)   -> 
       let rec interpret_elif = function
         | hd::tl -> 
           let e, s, _ = hd in 
@@ -221,7 +221,7 @@ and interpret_stmt ctxs = function
       (* 2 - Vai testar cada um dos else if e o else *)
       else interpret_elif selif
           
-  | Snothing line -> ()
+  | Snothing _ -> ()
   | Sreturn (e, line) ->
       (* 1 - Retorna a expressao e*)
       raise (Return ((expr_int ctxs e), line))
@@ -291,7 +291,7 @@ and interpret_stmt ctxs = function
       let ctx = List.hd (List.rev ctxs) in
       Hashtbl.add ctx id (size, t1)
 
-  | Sset (id, set, line) ->
+  | Sset (id, set, _) ->
       (* 1 - Ir buscar o conjunto *)
       let ctx = List.hd (List.rev ctxs) in
       let v1 = expr ctxs set in
@@ -319,11 +319,11 @@ and interpret_stmt ctxs = function
       (* 5 - Atualiza o elemento da  array*)
       l.(Int64.to_int (Int64.sub index i)) <- Vint(v1)
       
-  | Sprint (e, line) -> 
+  | Sprint (e, _) -> 
       (* 1 - Imprime a expressao _e_ sem \n*)
       print_value (expr ctxs e);
 
-  | Sprintn (e, line) ->
+  | Sprintn (e, _) ->
       (* 1 - Imprime a expressao _e_ com \n*)
       print_value (expr ctxs e); printf "@."
   | Sscanf (id, line) -> 
@@ -334,7 +334,7 @@ and interpret_stmt ctxs = function
       | _ ->  begin interpret_stmt ctxs (Sassign (id, Ecst(0L, line), line)) end
       end
   
-  | Sblock (bl, line) -> 
+  | Sblock (bl, _) -> 
       interpret_block_stmt ctxs bl
 
   | Sfor(id, t, e, cond, incr, bl, line) ->
@@ -358,7 +358,7 @@ and interpret_stmt ctxs = function
         (* 2.3 - Interpretamos o corpo do for*)
           interpret_stmt ctxs bl;
         with 
-        | Continue line -> ()
+        | Continue _ -> ()
         | Break line -> raise (Break line) end;
 
         (* 2.4 - Atualizar o valor de id *)
@@ -370,7 +370,7 @@ and interpret_stmt ctxs = function
         i := (expr_int ctxs cond)
       done
       with
-      | Break line -> ()
+      | Break _ -> ()
     end
   | Sforeach(x, e, bl, line) ->
       (* 1 - Ir buscar os limites do foreach*)
@@ -398,7 +398,7 @@ and interpret_stmt ctxs = function
         | Break _ -> ()
       end 
 
-  | Swhile (e, bl, line) ->
+  | Swhile (e, bl, _) ->
       (* 1 - Ir buscar o valor da expressão*)
       let i = ref 0L in
       i := vint_to_int(expr ctxs e);
@@ -451,18 +451,18 @@ and interpret_stmt ctxs = function
 
 (* Interpretacao de instrucoes - globais *)
 and interpret_stmts ctxs = function  
-  | Stfunction (f, args, return, body, line) ->
+  | Stfunction (f, args, return, body, _) ->
       (* 1 - Vamos buscar o retorno *)
       let return = value_of_costumtype ctxs return in
 
       (* 1 - Adicionamos a funcao a tabela*)
       Hashtbl.add functions f (args, return, body)
 
-  | Stblock (bl, line) -> 
+  | Stblock (bl, _) -> 
       (* 1 - Interpretamos o bloco de instruções *)
       interpret_block_stmts ctxs bl
 
-  | Stmt(s, line) -> 
+  | Stmt(s, _) -> 
       (* 2 - Interpretamos uma instrucao *)
       interpret_stmt ctxs s
 

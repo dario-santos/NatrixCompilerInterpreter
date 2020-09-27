@@ -89,7 +89,6 @@ type label = string
 type 'size operand = formatter -> unit -> unit
 
 let mangle_none fmt (l: label) = fprintf fmt "%s" l
-let mangle_leading_underscore fmt (l: label) = fprintf fmt "_%s" l
 let mangle = mangle_none
 
 let reg r = fun fmt () -> fprintf fmt "%s" r
@@ -101,7 +100,6 @@ let ind ?(ofs=0) ?index ?(scale=1) r = fun fmt () -> match index with
   | None -> fprintf fmt "%d(%s)" ofs r
   | Some r1 -> fprintf fmt "%d(%s,%s,%d)" ofs r r1 scale
 let abslab (l: label) = fun fmt () -> fprintf fmt "%a" mangle l
-let rellab (l: label) = fun fmt () -> fprintf fmt "%a(%%rip)" mangle l
 let lab = abslab
 let ilab (l: label) = fun fmt () -> fprintf fmt "$%a" mangle l
 
@@ -282,8 +280,6 @@ let label (s : label) = S (asprintf "%a:\n" mangle s)
 let globl (s: label) = S (asprintf "\t.globl\t%a\n" mangle s)
 
 let comment s = S ("#" ^ s ^ "\n")
-
-let align n = ins ".align %i" n
 
 let dbyte l = ins ".byte %a" pr_ilist l
 let dint  l = ins ".int %a" pr_ilist l

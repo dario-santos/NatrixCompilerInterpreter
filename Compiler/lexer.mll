@@ -1,8 +1,6 @@
 {
   open Lexing
-  open Ast
-  open Parser
-  open Int64
+  open Tokens
 
   exception Lexing_error of string
   exception Lexing_error_comment of string

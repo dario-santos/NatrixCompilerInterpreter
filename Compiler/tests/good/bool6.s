@@ -1,40 +1,112 @@
 	.text
 	.globl	main
 main:
-	subq $40, %rsp
-	leaq 32(%rsp), %rbp
-	movq $0, 0(%rbp)
-	movq $0, -8(%rbp)
+	subq $0, %rsp
+	leaq -8(%rsp), %rbp
 	movq $1, %rax
 	pushq %rax
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq -16(%rbp), %rax
+	movq $0, %rax
 	pushq %rax
+	popq %rbx
 	popq %rax
-	cmpq $0, %rax
-	je if_else_11
-	movq $2, %rax
+	cmpq %rbx, %rax
+	je bool_true_1
+	movq $0, %rax
 	pushq %rax
+	jmp bool_end_1
+bool_true_1:
+	movq $1, %rax
+	pushq %rax
+bool_end_1:
 	popq %rdi
-	call print_int
-	jmp if_end_1
-if_else_11:
-	movq $3, %rax
+	call printn_int
+	movq $1, %rax
 	pushq %rax
+	movq $0, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	cmpq %rbx, %rax
+	jne bool_true_2
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_2
+bool_true_2:
+	movq $1, %rax
+	pushq %rax
+bool_end_2:
 	popq %rdi
-	call print_int
-if_end_1:
-	movq $2, %rax
+	call printn_int
+	movq $1, %rax
 	pushq %rax
-	popq %rax
-	movq %rax, -24(%rbp)
-	movq $2, %rax
+	movq $0, %rax
 	pushq %rax
+	popq %rbx
 	popq %rax
-	movq %rax, -32(%rbp)
+	cmpq %rbx, %rax
+	jl bool_true_3
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_3
+bool_true_3:
+	movq $1, %rax
+	pushq %rax
+bool_end_3:
+	popq %rdi
+	call printn_int
+	movq $1, %rax
+	pushq %rax
+	movq $0, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	cmpq %rbx, %rax
+	jle bool_true_4
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_4
+bool_true_4:
+	movq $1, %rax
+	pushq %rax
+bool_end_4:
+	popq %rdi
+	call printn_int
+	movq $1, %rax
+	pushq %rax
+	movq $0, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	cmpq %rbx, %rax
+	jg bool_true_5
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_5
+bool_true_5:
+	movq $1, %rax
+	pushq %rax
+bool_end_5:
+	popq %rdi
+	call printn_int
+	movq $1, %rax
+	pushq %rax
+	movq $0, %rax
+	pushq %rax
+	popq %rbx
+	popq %rax
+	cmpq %rbx, %rax
+	jge bool_true_6
+	movq $0, %rax
+	pushq %rax
+	jmp bool_end_6
+bool_true_6:
+	movq $1, %rax
+	pushq %rax
+bool_end_6:
+	popq %rdi
+	call printn_int
 end:
-	addq $40, %rsp
+	addq $0, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -80,23 +152,6 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
-usersomar:
-	movq $0, %rax
-	cmpq is_in_function, %rax
-	je print_error_f
-	decq is_in_function
-	movq 0(%rbp), %rax
-	pushq %rax
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	imulq %rax, %rbx
-	pushq %rbx
-	popq %rax
-	ret
-	call print_error_f
-	ret
 	.data
 .Sprintn_int:
 	.string "%ld\n"

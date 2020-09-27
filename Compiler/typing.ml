@@ -78,8 +78,8 @@ let costumtype_to_typ ctxs id =
       t1
 
 let rec verify_expr ctxs = function
-  | Ecst (n, line) -> Tint
-  | Eminint line | Emaxint line -> Tint
+  | Ecst _ -> Tint
+  | Eminint _ | Emaxint _ -> Tint
   | Eset (e1, e2, line) ->
       let t1 = verify_expr ctxs e1 in
       let t2 = verify_expr ctxs e2 in
@@ -91,7 +91,7 @@ let rec verify_expr ctxs = function
       let t2 = verify_expr ctxs e2 in
       if not (is_int t1) || not (is_int t2) then error ("The operator "^string_of_binop op^" was expecting two integers but was given "^string_of_typ t1^" and "^string_of_typ t2^".") line; 
       Tint
-  | Eunop (op, e1, line) ->
+  | Eunop (_, e1, line) ->
       let t1 = verify_expr ctxs e1 in
       if not (is_int t1) then error ("The operator ! was expecting one integer but was given "^string_of_typ t1^".") line; 
       Tint
@@ -103,12 +103,12 @@ let rec verify_expr ctxs = function
   | Ecall (f, el, line) ->
       (* 1 - Verify if f exists *)
       if not (Hashtbl.mem functions f) then error ("Could not find a function with the identifier "^f^".") line;
-      let function_ctx ,return,_ = Hashtbl.find functions f in
+      let function_ctx, _, _ = Hashtbl.find functions f in
 
       (* 2 - Verify if all of the arguments are of the type Tint or Tset *)
       (* TODO: Change the verification of the arguments to compare with the real types of the arguments *)
-      let rec verify_arguments = function
-        | hd::tl -> 
+      let verify_arguments = function
+        | hd::_ -> 
           let tp = verify_expr ctxs hd in
           if not(is_int tp) && not(is_set tp) then error ("Invalid argument type in the function call to "^f^", was expecting an Tint or Tset but was given "^string_of_typ tp^ ".") line
         | [] -> ()

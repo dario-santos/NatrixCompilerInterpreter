@@ -1,40 +1,16 @@
 	.text
 	.globl	main
 main:
-	subq $40, %rsp
-	leaq 32(%rsp), %rbp
-	movq $0, 0(%rbp)
-	movq $0, -8(%rbp)
-	movq $1, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -16(%rbp)
-	movq -16(%rbp), %rax
-	pushq %rax
-	popq %rax
-	cmpq $0, %rax
-	je if_else_11
-	movq $2, %rax
-	pushq %rax
+	subq $0, %rsp
+	leaq -8(%rsp), %rbp
+	addq $1, is_in_function
+	call userx
+	movq %rax, %rbx
+	pushq %rbx
 	popq %rdi
-	call print_int
-	jmp if_end_1
-if_else_11:
-	movq $3, %rax
-	pushq %rax
-	popq %rdi
-	call print_int
-if_end_1:
-	movq $2, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -24(%rbp)
-	movq $2, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -32(%rbp)
+	call printn_int
 end:
-	addq $40, %rsp
+	addq $0, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -80,18 +56,64 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
-usersomar:
+userf:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
 	decq is_in_function
-	movq 0(%rbp), %rax
-	pushq %rax
-	movq -8(%rbp), %rax
+	movq $3, %rax
 	pushq %rax
 	popq %rax
-	popq %rbx
-	imulq %rax, %rbx
+	ret
+	call print_error_f
+	ret
+userw:
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	decq is_in_function
+	addq $1, is_in_function
+	call userf
+	movq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	ret
+	call print_error_f
+	ret
+userz:
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	decq is_in_function
+	addq $1, is_in_function
+	call userw
+	movq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	ret
+	call print_error_f
+	ret
+usery:
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	decq is_in_function
+	addq $1, is_in_function
+	call userz
+	movq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	ret
+	call print_error_f
+	ret
+userx:
+	movq $0, %rax
+	cmpq is_in_function, %rax
+	je print_error_f
+	decq is_in_function
+	addq $1, is_in_function
+	call usery
+	movq %rax, %rbx
 	pushq %rbx
 	popq %rax
 	ret

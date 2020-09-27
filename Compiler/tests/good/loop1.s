@@ -1,40 +1,25 @@
 	.text
 	.globl	main
 main:
-	subq $40, %rsp
-	leaq 32(%rsp), %rbp
+	subq $24, %rsp
+	leaq 16(%rsp), %rbp
 	movq $0, 0(%rbp)
-	movq $0, -8(%rbp)
-	movq $1, %rax
+	movq $0, %rax
 	pushq %rax
 	popq %rax
-	movq %rax, -16(%rbp)
-	movq -16(%rbp), %rax
-	pushq %rax
+	movq %rax, 0(%rbp)
+	addq $1, is_in_function
+	call userloop
+	movq %rax, %rbx
+	pushq %rbx
 	popq %rax
 	cmpq $0, %rax
 	je if_else_11
-	movq $2, %rax
-	pushq %rax
-	popq %rdi
-	call print_int
 	jmp if_end_1
 if_else_11:
-	movq $3, %rax
-	pushq %rax
-	popq %rdi
-	call print_int
 if_end_1:
-	movq $2, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -24(%rbp)
-	movq $2, %rax
-	pushq %rax
-	popq %rax
-	movq %rax, -32(%rbp)
 end:
-	addq $40, %rsp
+	addq $24, %rsp
 	movq $0, %rax
 	ret
 printn_int:
@@ -80,19 +65,50 @@ print_error_f:
 	movq $0, %rax
 	call printf
 	jmp end
-usersomar:
+userloop:
+	movq $0, %rax
+	pushq %rax
+	popq %rax
+	movq %rax, -8(%rbp)
+	movq 0(%rbp), %rax
+	pushq %rax
+	movq 0(%rbp), %rax
+	pushq %rax
+	movq $3, %rax
+	pushq %rax
+	popq %rax
+	popq %rbx
+	addq %rax, %rbx
+	pushq %rbx
+	popq %rax
+	popq %rbx
+	cmpq %rbx, %rax
+	jle print_error_s
+	pushq %rbx
+	pushq %rax
+	popq %rbx
+	popq %rax
+	movq %rax, -8(%rbp)
+	movq %rbx, -16(%rbp)
+foreach_1_inicio:
+	movq -8(%rbp), %rax
+	pushq %rax
+	popq %rdi
+	call printn_int
+foreach_1_condicao:
+	movq -8(%rbp), %rax
+	incq %rax
+	movq %rax, -8(%rbp)
+	movq -16(%rbp), %rbx
+	cmpq %rbx, %rax
+	jle foreach_1_inicio
+foreach_1_fim:
 	movq $0, %rax
 	cmpq is_in_function, %rax
 	je print_error_f
 	decq is_in_function
-	movq 0(%rbp), %rax
+	movq $0, %rax
 	pushq %rax
-	movq -8(%rbp), %rax
-	pushq %rax
-	popq %rax
-	popq %rbx
-	imulq %rax, %rbx
-	pushq %rbx
 	popq %rax
 	ret
 	call print_error_f

@@ -136,21 +136,21 @@ type 'size operand
   (** O tipo abstracto das operandas *)
 
 val imm: int -> [>] operand
-  (** operanda directa $i *)
+  (* operanda directa $i *)
 val imm32: int32 -> [>] operand
-  (** operande directa $i *)
+  (* operande directa $i *)
 val imm64: int64 -> [>] operand
-  (** operanda directa $i *)
+  (* operanda directa $i *)
 val reg: 'size register -> 'size operand
 val (!%): 'size register -> 'size operand
-  (** registro *)
+  (* registro *)
 val ind: ?ofs:int -> ?index:'size1 register -> ?scale:int ->
   'size2 register -> [>] operand
-  (** operanda indirecta ofs(register, index, scale) *)
+  (* operanda indirecta ofs(register, index, scale) *)
 val lab: label -> [>] operand
-  (** etiqueta L  *)
+  (* etiqueta L  *)
 val ilab: label -> [`Q] operand
-  (** etiqueta directa $L *)
+  (* etiqueta directa $L *)
 
 (** {1 Instruções } *)
 
@@ -160,20 +160,20 @@ val movb: [`B] operand -> [`B] operand -> text
 val movw: [`W] operand -> [`W] operand -> text
 val movl: [`L] operand -> [`L] operand -> text
 val movq: [`Q] operand -> [`Q] operand -> text
-  (** Cuidado : nem todas as combinações de operandas são permitidas *)
+  (* Cuidado : nem todas as combinações de operandas são permitidas *)
 val movsbw: [`B] operand -> [`W] register -> text
 val movsbl: [`B] operand -> [`L] register -> text
 val movsbq: [`B] operand -> [`Q] register -> text
 val movswl: [`W] operand -> [`L] register -> text
 val movswq: [`W] operand -> [`Q] register -> text
 val movslq: [`L] operand -> [`Q] register -> text
-  (** 8->64 bit, com extensão de sinal *)
+  (* 8->64 bit, com extensão de sinal *)
 val movzbw: [`B] operand -> [`W] register -> text
 val movzbl: [`B] operand -> [`L] register -> text
 val movzbq: [`B] operand -> [`Q] register -> text
 val movzwl: [`W] operand -> [`L] register -> text
 val movzwq: [`W] operand -> [`Q] register -> text
-  (** 8->64 bit, com extensão por zero *)
+  (* 8->64 bit, com extensão por zero *)
 
 val movabsq: [`Q] operand -> [`Q] register -> text
   (** copia um valor directo de 64 bits num registro *)
@@ -267,7 +267,7 @@ val ret: text
   (** chamada de função e retorno *)
 
 val jmp : label -> text
-  (** salto incondicional *)
+  (* salto incondicional *)
 val jmp_star: [`Q] operand -> text
   (** salto para um endereço calculado *)
 
@@ -325,7 +325,7 @@ val popq : [`Q] register -> text
 (** {2 Diversos } *)
 
 val label : label -> [> ] asm
-  (** uma etiqueta. Pode ser encontrada em text ou em data *)
+  (* uma etiqueta. Pode ser encontrada em text ou em data *)
 val globl : label -> [> ] asm
   (** declaração .globl (para main, tipicamente) *)
 
@@ -335,13 +335,13 @@ val comment : string -> [> ] asm
 (** {2 Dados } *)
 
 val string : string -> data
-  (** uma constante string  (que termina com um 0) *)
+  (* uma constante string  (que termina com um 0) *)
 val dbyte  : int list -> data
 val dword  : int list -> data
 val dint   : int list -> data
 val dquad  : int list -> data
-  (** coloca uma lista de valores em  1/2/4/8 bytes na zona data *)
+  (* coloca uma lista de valores em  1/2/4/8 bytes na zona data *)
 val address: label list -> data
-  (** coloca uma lista de endereços na zona data (com .quad) *)
+  (* coloca uma lista de endereços na zona data (com .quad) *)
 val space  : int -> data
-  (** [space n] aloca [n] bytes (com valor 0) no segmento dos dados *)
+  (* [space n] aloca [n] bytes (com valor 0) no segmento dos dados *)
