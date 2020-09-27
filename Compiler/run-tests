@@ -10,7 +10,7 @@ for f in tests/good/*.nx; do
     echo $f
     expected=tests/good/`basename $f .nx`.out
     rm -f out
-    if dune exec -- ./main.exe -interpt $f > out; then
+    if dune exec -- ./natrix.exe -interpt $f > out; then
 	if cmp --quiet out $expected; then
 	    score_i=`expr $score_i + 1`;
 	else
@@ -28,7 +28,7 @@ for f in tests/bad/*.nx; do
     max_i=`expr $max_i + 1`;
     echo $f
     rm -f out
-    if dune exec -- ./main.exe -interpt $f > out 2>&1; then
+    if dune exec -- ./natrix.exe -interpt $f > out 2>&1; then
 	echo "  FALHA : a avaliação de $f deveria falhar"
     else
         if grep -q "^error:" out; then

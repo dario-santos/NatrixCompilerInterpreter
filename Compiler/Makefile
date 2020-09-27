@@ -1,5 +1,5 @@
 all:
-	dune build ./main.exe
+	dune build ./natrix.exe
 
 test:
 	./run-tests

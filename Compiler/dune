@@ -13,7 +13,7 @@
   (merge_into parser)
   (flags      --external-tokens Tokens))
 
-;; Gera o executavel main.exe
+;; Gera o executavel natrix.exe
 (executable
-  (name      main)
+  (name      natrix)
   (modules_without_implementation ast))

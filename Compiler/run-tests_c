@@ -12,7 +12,7 @@ for f in tests/good/*.nx; do
     assembly=tests/good/`basename $f .nx`.s
     
     rm -f out
-    dune exec ./main.exe $f
+    dune exec ./natrix.exe $f
     gcc -g -no-pie $assembly
     if ./a.out > out; then
     
@@ -33,7 +33,7 @@ for f in tests/bad/*.nx; do
     max_i=`expr $max_i + 1`;
     echo $f
     rm -f out
-    if dune exec -- ./main.exe -interpt $f > out 2>&1; then
+    if dune exec -- ./natrix.exe -interpt $f > out 2>&1; then
 	echo "  FALHA : a avaliação de $f deveria falhar"
     else
         if grep -q "^error:" out; then

@@ -11,18 +11,18 @@ If you have downloaded the source code use the makefile that is in the folder ./
 make
 ```
 
-It will generate a file with the name `natrix` that's our compiler/interpreter. 
+This coomand will  generate the  `natrix.exe` executable.
 
 The program offers a set of options:
 
 -parser-only: Executes only the lexer and parser.
--print-ast  : Print the abstract syntax tree of the given file.
--interpt    : Uses the interpreter instead of the compiler.
+-print-ast      : Print the abstract syntax tree of the given file.
+-interpt         : Uses the interpreter instead of the compiler.
 
 Using an option:
 
 ```sh
-./natrix -interpt file.nx
+dune exec ./natrix.exe -interpt file.nx
 ```
 
 ## How to Test
