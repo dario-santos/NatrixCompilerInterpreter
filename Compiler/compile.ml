@@ -297,45 +297,28 @@ let rec compile_expr ctxs = function
   | Ebinop (Beq | Bneq | Blt | Ble | Bgt | Bge as o, e1, e2, _) ->
       (* 1 - Dependendo da operacao queremos uma operacao diferente *)
       let op = match o with
-        | Beq -> je
-        | Bneq-> jne
-        | Blt -> jl
-        | Ble -> jle
-        | Bgt -> jg
-        | Bge -> jge
+        | Beq -> sete
+        | Bneq-> setne
+        | Blt -> setl
+        | Ble -> setle
+        | Bgt -> setg
+        | Bge -> setge
         | _ -> assert false
       in
     
-      (* 2 - Incrementar numero de verificacoes *)
-      number_of_bool_tests := !number_of_bool_tests + 1;
-      let current_bool_test = string_of_int(!number_of_bool_tests) in
-    
-      (* 3 - Colocar e1 e e2 na pilha*)  
+      (* 2 - Colocar e1 e e2 na pilha*)  
       compile_expr ctxs e1 ++
       compile_expr ctxs e2 ++
 
-      (* 4 - Recebe os valores da pilha *)
+      (* 3 - Recebe os valores da pilha *)
       popq rbx ++
       popq rax ++
 
-      (* 5 - Compara ambos os valores e faz o devido salto *)
+      (* 4 - Compara ambos os valores e atribui o valor *)
       cmpq (reg rbx) (reg rax) ++
-      op ("bool_true_" ^ current_bool_test) ++
-
-      (* 6a - Se for falso *)
       movq (imm 0) (reg rax) ++
-      pushq (reg rax) ++
-
-      (* 7a - Termina *)
-      jmp ("bool_end_" ^ current_bool_test) ++
-      
-      (* 6b - Se for verdade *)
-      label ("bool_true_" ^ current_bool_test) ++
-      movq (imm 1) (reg rax) ++
-      pushq (reg rax) ++
-      
-      (* 7a - Termina *)
-      label ("bool_end_" ^ current_bool_test)
+      op (reg al) ++
+      pushq (reg rax)
 
   | Eunop (Unot, e1, _) ->
       (* 1 - Incrementar numero de verificacoes *)
