@@ -958,36 +958,46 @@ and compile_stmts ctxs = function
 let compile_program p ofile =
   let ctxs = [(Hashtbl.create 17 : table_ctx)] in
   let code = compile_stmts ctxs p in
-  functions_code := !functions_code; 
+  functions_code := !functions_code;
+  if !frame_size mod 16 = 8 then frame_size := 8 + !frame_size;
   let p =
     { text =
         globl "main" ++ label "main" ++
+
+        pushq (reg rbp) ++
+        movq (reg rsp) (reg rbp) ++
+
         subq (imm !frame_size) (reg rsp) ++ (* aloca a frame *)
-        leaq (ind ~ofs:(!frame_size - 8) rsp) rbp ++ (* %rbp = ... *)
+
         code ++
         label "end" ++
-        addq (imm !frame_size) (reg rsp) ++ (* desaloca a frame *)
-        movq (imm64 0L) (reg rax) ++ (* exit *)
+        movq (reg rbp) (reg rsp) ++
+        popq rbp ++
+        xorq (reg rax) (reg rax) ++
         ret ++
+
         label "printn_int" ++
+        pushq (reg rbp) ++
         movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprintn_int") rdi ++
-        movq (imm64 0L) (reg rax) ++
+        xorq (reg rax) (reg rax) ++
         call "printf" ++
+        popq rbp ++
         ret ++
+
         label "print_int" ++
+        pushq (reg rbp) ++
         movq (reg rdi) (reg rsi) ++
         leaq (lab ".Sprint_int") rdi ++
-        movq (imm64 0L) (reg rax) ++
+        xorq (reg rax) (reg rax) ++
         call "printf" ++
+        popq rbp ++
         ret ++
 
         label "scanf_int" ++
-        
         leaq (lab ".Sscanf_int") rdi ++
         leaq (lab "input") rsi  ++
         xorq (reg rax) (reg rax) ++
-  
         call "scanf" ++
         movq (lab "input") (reg rax) ++
         ret ++

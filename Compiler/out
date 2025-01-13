@@ -1,9 +1,0 @@
-
-
-File "tests/bad/while1.nx", line 6:
-
-error:
-
-  Semmantic Analysis:
-  The condition of the while statement only accepts Tint but was givin a Tset.
-

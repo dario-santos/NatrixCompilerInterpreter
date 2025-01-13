@@ -1,5 +1,6 @@
 all:
-	dune build ./natrix.exe
+	dune exec ./natrix.exe ./test.nx
+	gcc -s -no-pie ./test.s
 
 test:
 	./run-tests
